@@ -92,23 +92,71 @@ function Onboarding({ onDone }) {
 //  HOME SCREEN
 // ─────────────────────────────────────────────
 
+function TimePickerModal({ value, label, onChange, onClose }) {
+  const d = new Date(value);
+  const [h, setH] = useState(d.getHours());
+  const [m, setM] = useState(d.getMinutes());
+
+  const confirm = () => {
+    const newD = new Date(value);
+    newD.setHours(h); newD.setMinutes(m); newD.setSeconds(0);
+    onChange(newD.getTime());
+    onClose();
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 1000, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div style={{ background: "#fff", borderRadius: "24px 24px 0 0", padding: 28, width: "100%", maxWidth: 480 }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 18, color: "#2D3B2E", marginBottom: 24 }}>{label}</p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: 28 }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            <button onClick={() => setH((h + 1) % 24)} style={arrowBtn}>▲</button>
+            <div style={{ fontFamily: "Georgia, serif", fontSize: 48, color: "#2D3B2E", width: 64, textAlign: "center" }}>{String(h).padStart(2, "0")}</div>
+            <button onClick={() => setH((h + 23) % 24)} style={arrowBtn}>▼</button>
+          </div>
+          <span style={{ fontFamily: "Georgia, serif", fontSize: 48, color: "#8FAF8F" }}>:</span>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            <button onClick={() => setM((m + 5) % 60)} style={arrowBtn}>▲</button>
+            <div style={{ fontFamily: "Georgia, serif", fontSize: 48, color: "#2D3B2E", width: 64, textAlign: "center" }}>{String(m).padStart(2, "0")}</div>
+            <button onClick={() => setM((m + 55) % 60)} style={arrowBtn}>▼</button>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: 14, background: "#EAF2EA", border: "none", borderRadius: 14, fontFamily: "sans-serif", fontSize: 15, color: "#6b7b6b", cursor: "pointer" }}>Cancel</button>
+          <button onClick={confirm} style={{ flex: 1, padding: 14, background: "#8FAF8F", border: "none", borderRadius: 14, fontFamily: "sans-serif", fontSize: 15, color: "#fff", fontWeight: 600, cursor: "pointer" }}>Confirm</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const arrowBtn = { background: "#EAF2EA", border: "none", borderRadius: 10, width: 44, height: 38, fontSize: 16, cursor: "pointer", color: "#5C7F60" };
+
 function HomeScreen({ name, lastPeriod }) {
   const cycleDay = getCycleDay(lastPeriod);
   const phase    = getPhase(cycleDay);
   const info     = PHASE_INFO[phase];
 
-  const fastOptions = [12, 14, 16, 18, 20];
+  const fastOptions = [12, 16, 24];
 
   const [selectedFast, setSelectedFast] = useState(() => parseInt(localStorage.getItem("lf_selectedFast") || "16"));
-  const [fasting, setFasting]           = useState(() => localStorage.getItem("lf_fasting") === "true");
-  const [startTime, setStart]           = useState(() => parseInt(localStorage.getItem("lf_startTime") || "0"));
-  const [elapsed, setElapsed]           = useState(0);
+  const [fasting,      setFasting]      = useState(() => localStorage.getItem("lf_fasting") === "true");
+  const [startTime,    setStart]        = useState(() => parseInt(localStorage.getItem("lf_startTime") || "0"));
+  const [endTime,      setEnd]          = useState(() => parseInt(localStorage.getItem("lf_endTime") || "0"));
+  const [elapsed,      setElapsed]      = useState(0);
+  const [editModal,    setEditModal]    = useState(null);
+  const [customEnds,   setCustomEnds]   = useState(() => {
+    try { return JSON.parse(localStorage.getItem("lf_customEnds") || "{}"); }
+    catch { return {}; }
+  });
 
   useEffect(() => {
-    localStorage.setItem("lf_fasting", fasting);
-    localStorage.setItem("lf_startTime", startTime);
+    localStorage.setItem("lf_fasting",      fasting);
+    localStorage.setItem("lf_startTime",    startTime);
+    localStorage.setItem("lf_endTime",      endTime);
     localStorage.setItem("lf_selectedFast", selectedFast);
-  }, [fasting, startTime, selectedFast]);
+    localStorage.setItem("lf_customEnds",   JSON.stringify(customEnds));
+  }, [fasting, startTime, endTime, selectedFast, customEnds]);
 
   useEffect(() => {
     if (!fasting) { setElapsed(0); return; }
@@ -119,8 +167,12 @@ function HomeScreen({ name, lastPeriod }) {
   }, [fasting, startTime]);
 
   const toggleFast = () => {
-    if (fasting) { setFasting(false); setStart(0); }
-    else         { setStart(Date.now()); setFasting(true); }
+    if (fasting) {
+      setFasting(false); setStart(0); setEnd(0);
+    } else {
+      const now = Date.now();
+      setStart(now); setEnd(now + selectedFast * 3600000); setFasting(true);
+    }
   };
 
   const pad = n => String(n).padStart(2, "0");
@@ -128,14 +180,20 @@ function HomeScreen({ name, lastPeriod }) {
   const mins = Math.floor((elapsed % 3600) / 60);
   const secs = elapsed % 60;
 
-  const eatAt = () => {
-    const d = new Date((fasting ? startTime : Date.now()) + selectedFast * 3600000);
+  const formatTime = (ts) => {
+    const d = new Date(ts);
     const isToday = d.toDateString() === new Date().toDateString();
     const t = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     return isToday ? `Today at ${t}` : `Tomorrow at ${t}`;
   };
 
-  const progress = Math.min(elapsed / (selectedFast * 3600), 1);
+  const getCardEndTime = (hours) => {
+    const custom = customEnds[hours];
+    if (custom) return custom;
+    return Date.now() + hours * 3600000;
+  };
+
+  const progress = fasting ? Math.min(elapsed / (selectedFast * 3600), 1) : 0;
   const R = 70;
   const circ = 2 * Math.PI * R;
 
@@ -183,9 +241,22 @@ function HomeScreen({ name, lastPeriod }) {
           </div>
 
           {fasting && (
-            <p style={{ fontSize: 13, color: "#6b7b6b", marginTop: 8 }}>
-              Eat window opens: <strong>{eatAt()}</strong>
-            </p>
+            <div style={{ width: "100%", marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F4F8F4", borderRadius: 12, padding: "10px 14px" }}>
+                <div>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: 0 }}>Started</p>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", margin: 0, fontWeight: 600 }}>{formatTime(startTime)}</p>
+                </div>
+                <button onClick={() => setEditModal("start")} style={{ background: "#EAF2EA", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 14 }}>✏️</button>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F4F8F4", borderRadius: 12, padding: "10px 14px" }}>
+                <div>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: 0 }}>Eat window opens</p>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", margin: 0, fontWeight: 600 }}>{formatTime(endTime)}</p>
+                </div>
+                <button onClick={() => setEditModal("end")} style={{ background: "#EAF2EA", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 14 }}>✏️</button>
+              </div>
+            </div>
           )}
         </div>
 
@@ -198,16 +269,28 @@ function HomeScreen({ name, lastPeriod }) {
         {!fasting && (
           <>
             <p style={{ ...s.label, marginTop: 16, marginBottom: 8 }}>Quick Start</p>
-            {fastOptions.map(h => (
-              <div key={h} onClick={() => setSelectedFast(h)} style={{
-                ...s.fastOption,
-                border: selectedFast === h ? "2px solid #8FAF8F" : "1px solid #e0e0e0",
-                background: selectedFast === h ? "#EAF2EA" : "#fff",
-              }}>
-                <strong style={{ color: "#2D3B2E" }}>{h}h fast</strong>
-                <span style={{ fontSize: 12, color: "#8FA090" }}>{eatAt()}</span>
-              </div>
-            ))}
+            {fastOptions.map(h => {
+              const cardEnd = getCardEndTime(h);
+              return (
+                <div key={h} style={{ marginBottom: 8 }}>
+                  <div onClick={() => setSelectedFast(h)} style={{
+                    ...s.fastOption,
+                    border: selectedFast === h ? "2px solid #8FAF8F" : "1px solid #e0e0e0",
+                    background: selectedFast === h ? "#EAF2EA" : "#fff",
+                  }}>
+                    <strong style={{ color: "#2D3B2E" }}>{h}h fast</strong>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 12, color: "#8FA090" }}>{formatTime(cardEnd)}</span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setEditModal(h); }}
+                        style={{ background: "#EAF2EA", border: "none", borderRadius: 8, padding: "4px 8px", cursor: "pointer", fontSize: 12 }}>
+                        ✏️
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </>
         )}
 
@@ -219,38 +302,24 @@ function HomeScreen({ name, lastPeriod }) {
           {fasting ? "End Fast" : `Start ${selectedFast}h Fast Now`}
         </button>
       </div>
+
+      {editModal === "start" && (
+        <TimePickerModal value={startTime} label="Edit Start Time" onChange={(ts) => setStart(ts)} onClose={() => setEditModal(null)} />
+      )}
+      {editModal === "end" && (
+        <TimePickerModal value={endTime} label="Edit End Time" onChange={(ts) => setEnd(ts)} onClose={() => setEditModal(null)} />
+      )}
+      {typeof editModal === "number" && (
+        <TimePickerModal
+          value={getCardEndTime(editModal)}
+          label={`Edit ${editModal}h Fast End Time`}
+          onChange={(ts) => setCustomEnds(prev => ({ ...prev, [editModal]: ts }))}
+          onClose={() => setEditModal(null)}
+        />
+      )}
     </div>
   );
 }
-
-// ─────────────────────────────────────────────
-//  DAILY CHECK-IN SCREEN
-// ─────────────────────────────────────────────
-
-const MOOD_OPTIONS = [
-  { label: "Very Low", color: "#D4736A" },
-  { label: "Low",      color: "#D4956A" },
-  { label: "Neutral",  color: "#D4C46A" },
-  { label: "Good",     color: "#A3C46A" },
-  { label: "Great",    color: "#6AB87A" },
-];
-
-const ENERGY_OPTIONS = [
-  { label: "Low",    color: "#D4736A" },
-  { label: "Steady", color: "#D4C46A" },
-  { label: "High",   color: "#6AB87A" },
-];
-
-const SYMPTOM_TAGS = [
-  "Cramps", "Bloating", "Headache", "Fatigue",
-  "Mood swings", "Brain fog", "Cravings", "Backache",
-  "Tender breasts", "Insomnia", "Acne", "Nausea",
-];
-
-function getTodayKey() {
-  return "lf_checkin_" + new Date().toISOString().split("T")[0];
-}
-
 function CheckInScreen() {
   const todayKey = getTodayKey();
 
