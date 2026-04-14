@@ -3,35 +3,37 @@ import { useState, useEffect } from "react";
 // ─────────────────────────────────────────────
 //  CYCLE LOGIC
 // ─────────────────────────────────────────────
-
 function getCycleDay(lastPeriod) {
   if (!lastPeriod) return 1;
   const diff = Math.floor((Date.now() - new Date(lastPeriod).getTime()) / 86400000);
   return (diff % 28) + 1;
 }
-
+function getCycleDayFor(d) {
+  return d;
+}
 function getPhase(day) {
   if (day <= 5)  return "Menstrual";
   if (day <= 13) return "Follicular";
   if (day <= 16) return "Ovulation";
   return "Luteal";
 }
-
 const PHASE_INFO = {
-  Menstrual:  { emoji: "🌑", color: "#C97B7B", bg: "#FDEAEA", fast: "12–14h — keep it gentle", move: "Gentle yoga or rest" },
-  Follicular: { emoji: "🌒", color: "#7BA8C9", bg: "#EAF2F9", fast: "14–16h — energy is rising", move: "Strength training & cardio" },
-  Ovulation:  { emoji: "🌕", color: "#C9A87B", bg: "#F9F4EA", fast: "16–18h — peak flexibility", move: "HIIT, lift heavy, compete" },
-  Luteal:     { emoji: "🌗", color: "#9B7BC9", bg: "#F2EAFA", fast: "12–14h — be gentle again", move: "Walks, pilates, slow down" },
+  Menstrual:  { emoji: "🌑", color: "#C97B7B", bg: "#FDEAEA", fast: "12–14h – keep it gentle",    move: "Gentle yoga or rest" },
+  Follicular: { emoji: "🌒", color: "#7BA8C9", bg: "#EAF2F9", fast: "14–16h – energy is rising",  move: "Strength training & cardio" },
+  Ovulation:  { emoji: "🌕", color: "#C9A87B", bg: "#F9F4EA", fast: "16–18h – peak flexibility",  move: "HIIT, lift heavy, compete" },
+  Luteal:     { emoji: "🌗", color: "#9B7BC9", bg: "#F2EAFA", fast: "12–14h – be gentle again",   move: "Walks, pilates, slow down" },
 };
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 // ─────────────────────────────────────────────
 //  ONBOARDING
 // ─────────────────────────────────────────────
-
 function Onboarding({ onDone }) {
   const [step, setStep]       = useState(1);
   const [name, setName]       = useState("");
   const [lastPeriod, setLast] = useState("");
+  const [agreed, setAgreed]   = useState(false);
   const today = new Date().toISOString().split("T")[0];
 
   return (
@@ -49,39 +51,56 @@ function Onboarding({ onDone }) {
       {step === 1 && (
         <div style={s.onboardBox}>
           <div style={{ fontSize: 56, marginBottom: 16 }}>🌿</div>
-          <h2 style={s.heading}>Welcome to<br />Lumen Flow</h2>
-          <p style={s.sub}>Track your cycle and fasting<br />in sync with your body.</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", margin: "20px 0 32px" }}>
-            {Object.entries(PHASE_INFO).map(([n, info]) => (
-              <span key={n} style={{ ...s.chip, background: info.bg, color: info.color }}>
-                {info.emoji} {n}
-              </span>
-            ))}
-          </div>
-          <button style={s.btn} onClick={() => setStep(2)}>Get Started →</button>
+          <h1 style={s.heading}>Welcome to<br />Lumen Flow</h1>
+          <p style={{ ...s.sub, marginBottom: 32 }}>Cycle-synced fasting & wellness,<br />designed for women.</p>
+          <button style={s.btn} onClick={() => setStep(2)}>Get Started</button>
         </div>
       )}
 
       {step === 2 && (
         <div style={s.onboardBox}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>👋</div>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🌸</div>
           <h2 style={s.heading}>What's your name?</h2>
-          <p style={s.sub}>We'll use this to greet you.</p>
-          <input style={{ ...s.input, marginTop: 20, marginBottom: 16 }} placeholder="Your name" value={name} onChange={e => setName(e.target.value)} />
-          <button style={{ ...s.btn, background: name.trim() ? "#8FAF8F" : "#C5D9C5", cursor: name.trim() ? "pointer" : "default" }} onClick={() => name.trim() && setStep(3)}>Continue →</button>
+          <p style={{ ...s.sub, marginBottom: 24 }}>We'll personalise your experience.</p>
+          <input
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Your first name"
+            style={{ ...s.input, textAlign: "center", marginBottom: 20 }}
+          />
+          <button style={s.btn} onClick={() => name.trim() && setStep(3)}>Continue</button>
           <button style={s.backBtn} onClick={() => setStep(1)}>← Back</button>
         </div>
       )}
 
       {step === 3 && (
         <div style={s.onboardBox}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>🌑</div>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🌙</div>
           <h2 style={s.heading}>When did your<br />last period start?</h2>
-          <p style={s.sub}>This lets us calculate your phase.</p>
-          <input type="date" max={today} style={{ ...s.input, marginTop: 20, marginBottom: 16 }} value={lastPeriod} onChange={e => setLast(e.target.value)} />
-          <button style={{ ...s.btn, background: lastPeriod ? "#8FAF8F" : "#C5D9C5", cursor: lastPeriod ? "pointer" : "default" }} onClick={() => lastPeriod && onDone({ name, lastPeriod })}>Start Flowing 🌿</button>
+          <p style={{ ...s.sub, marginBottom: 24 }}>This helps us calculate your cycle phase.</p>
+          <input
+            type="date"
+            value={lastPeriod}
+            max={today}
+            onChange={e => setLast(e.target.value)}
+            style={{ ...s.input, textAlign: "center", marginBottom: 20 }}
+          />
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20, textAlign: "left" }}>
+            <input
+              type="checkbox"
+              id="agree"
+              checked={agreed}
+              onChange={e => setAgreed(e.target.checked)}
+              style={{ marginTop: 3, accentColor: "#8FAF8F", width: 18, height: 18, flexShrink: 0, cursor: "pointer" }}
+            />
+            <label htmlFor="agree" style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", lineHeight: 1.6, cursor: "pointer" }}>
+              I agree to the <span style={{ color: "#8FAF8F", fontWeight: 600 }}>Terms of Service</span> and <span style={{ color: "#8FAF8F", fontWeight: 600 }}>Privacy Policy</span>
+            </label>
+          </div>
+          <button style={{ ...s.btn, opacity: agreed ? 1 : 0.4, cursor: agreed ? "pointer" : "not-allowed" }} onClick={() => lastPeriod && agreed && onDone({ name, lastPeriod, cycleLength: 28 })}>
+            Start My Journey 🌿
+          </button>
           <button style={s.backBtn} onClick={() => setStep(2)}>← Back</button>
-          <button style={{ ...s.backBtn, color: "#aaa", marginTop: 4 }} onClick={() => onDone({ name, lastPeriod: "" })}>Skip for now</button>
         </div>
       )}
     </div>
@@ -91,374 +110,220 @@ function Onboarding({ onDone }) {
 // ─────────────────────────────────────────────
 //  HOME SCREEN
 // ─────────────────────────────────────────────
-
-function TimePickerModal({ value, label, onChange, onClose }) {
-  const d = new Date(value);
-  const [h, setH] = useState(d.getHours());
-  const [m, setM] = useState(d.getMinutes());
-
-  const confirm = () => {
-    const newD = new Date(value);
-    newD.setHours(h); newD.setMinutes(m); newD.setSeconds(0);
-    onChange(newD.getTime());
-    onClose();
-  };
-
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 1000, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div style={{ background: "#fff", borderRadius: "24px 24px 0 0", padding: 28, width: "100%", maxWidth: 480 }}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 18, color: "#2D3B2E", marginBottom: 24 }}>{label}</p>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: 28 }}>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-            <button onClick={() => setH((h + 1) % 24)} style={arrowBtn}>▲</button>
-            <div style={{ fontFamily: "Georgia, serif", fontSize: 48, color: "#2D3B2E", width: 64, textAlign: "center" }}>{String(h).padStart(2, "0")}</div>
-            <button onClick={() => setH((h + 23) % 24)} style={arrowBtn}>▼</button>
-          </div>
-          <span style={{ fontFamily: "Georgia, serif", fontSize: 48, color: "#8FAF8F" }}>:</span>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-            <button onClick={() => setM((m + 5) % 60)} style={arrowBtn}>▲</button>
-            <div style={{ fontFamily: "Georgia, serif", fontSize: 48, color: "#2D3B2E", width: 64, textAlign: "center" }}>{String(m).padStart(2, "0")}</div>
-            <button onClick={() => setM((m + 55) % 60)} style={arrowBtn}>▼</button>
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 12 }}>
-          <button onClick={onClose} style={{ flex: 1, padding: 14, background: "#EAF2EA", border: "none", borderRadius: 14, fontFamily: "sans-serif", fontSize: 15, color: "#6b7b6b", cursor: "pointer" }}>Cancel</button>
-          <button onClick={confirm} style={{ flex: 1, padding: 14, background: "#8FAF8F", border: "none", borderRadius: 14, fontFamily: "sans-serif", fontSize: 15, color: "#fff", fontWeight: 600, cursor: "pointer" }}>Confirm</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const arrowBtn = { background: "#EAF2EA", border: "none", borderRadius: 10, width: 44, height: 38, fontSize: 16, cursor: "pointer", color: "#5C7F60" };
-
 function HomeScreen({ name, lastPeriod }) {
   const cycleDay = getCycleDay(lastPeriod);
   const phase    = getPhase(cycleDay);
   const info     = PHASE_INFO[phase];
 
-  const fastOptions = [12, 16, 24];
-
-  const [selectedFast, setSelectedFast] = useState(() => parseInt(localStorage.getItem("lf_selectedFast") || "16"));
-  const [fasting,      setFasting]      = useState(() => localStorage.getItem("lf_fasting") === "true");
-  const [startTime,    setStart]        = useState(() => parseInt(localStorage.getItem("lf_startTime") || "0"));
-  const [endTime,      setEnd]          = useState(() => parseInt(localStorage.getItem("lf_endTime") || "0"));
-  const [elapsed,      setElapsed]      = useState(0);
-  const [editModal,    setEditModal]    = useState(null);
-  const [customEnds,   setCustomEnds]   = useState(() => {
-    try { return JSON.parse(localStorage.getItem("lf_customEnds") || "{}"); }
-    catch { return {}; }
-  });
+  const [fastStart, setFastStart]   = useState(null);
+  const [elapsed,   setElapsed]     = useState(0);
+  const [goalHours, setGoalHours]   = useState(16);
+  const [showGoals, setShowGoals]   = useState(false);
 
   useEffect(() => {
-    localStorage.setItem("lf_fasting",      fasting);
-    localStorage.setItem("lf_startTime",    startTime);
-    localStorage.setItem("lf_endTime",      endTime);
-    localStorage.setItem("lf_selectedFast", selectedFast);
-    localStorage.setItem("lf_customEnds",   JSON.stringify(customEnds));
-  }, [fasting, startTime, endTime, selectedFast, customEnds]);
+    const saved = localStorage.getItem("lf_fast_start");
+    if (saved) setFastStart(Number(saved));
+  }, []);
 
   useEffect(() => {
-    if (!fasting) { setElapsed(0); return; }
-    const tick = () => setElapsed(Math.floor((Date.now() - startTime) / 1000));
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [fasting, startTime]);
+    if (!fastStart) return;
+    const iv = setInterval(() => setElapsed(Date.now() - fastStart), 1000);
+    return () => clearInterval(iv);
+  }, [fastStart]);
 
-  const toggleFast = () => {
-    if (fasting) {
-      setFasting(false); setStart(0); setEnd(0);
-    } else {
-      const now = Date.now();
-      setStart(now); setEnd(now + selectedFast * 3600000); setFasting(true);
-    }
+  const startFast = () => {
+    const now = Date.now();
+    setFastStart(now);
+    localStorage.setItem("lf_fast_start", now);
+  };
+  const stopFast = () => {
+    setFastStart(null);
+    setElapsed(0);
+    localStorage.removeItem("lf_fast_start");
   };
 
-  const pad = n => String(n).padStart(2, "0");
-  const hrs  = Math.floor(elapsed / 3600);
-  const mins = Math.floor((elapsed % 3600) / 60);
-  const secs = elapsed % 60;
-
-  const formatTime = (ts) => {
-    const d = new Date(ts);
-    const isToday = d.toDateString() === new Date().toDateString();
-    const t = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-    return isToday ? `Today at ${t}` : `Tomorrow at ${t}`;
+  const fmtTime = ms => {
+    const s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sc = s % 60;
+    return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(sc).padStart(2,"0")}`;
   };
 
-  const getCardEndTime = (hours) => {
-    const custom = customEnds[hours];
-    if (custom) return custom;
-    return Date.now() + hours * 3600000;
-  };
-
-  const progress = fasting ? Math.min(elapsed / (selectedFast * 3600), 1) : 0;
-  const R = 70;
-  const circ = 2 * Math.PI * R;
+  const progress  = fastStart ? Math.min(elapsed / (goalHours * 3600000), 1) : 0;
+  const circumference = 2 * Math.PI * 54;
+  const goalOptions = [12, 14, 16, 18, 20, 24];
 
   return (
-    <div style={{ paddingBottom: 80 }}>
-      <div style={{ ...s.header, background: "#EAF2EA" }}>
-        <span style={{ fontSize: 22 }}>🌿</span>
-        <h2 style={{ margin: 0, fontSize: 18 }}>Lumen Flow</h2>
+    <div style={{ padding: "0 0 90px" }}>
+      {/* Header */}
+      <div style={{ ...s.header, justifyContent: "space-between", paddingTop: 20 }}>
+        <div>
+          <p style={{ ...s.label, marginBottom: 2 }}>Good {getGreeting()},</p>
+          <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: "#2D3B2E", margin: 0, fontWeight: 400 }}>{name} 🌿</h2>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <span style={{ ...s.chip, background: info.bg, color: info.color, fontFamily: "sans-serif" }}>
+            {info.emoji} {phase}
+          </span>
+          <p style={{ ...s.label, marginTop: 4 }}>Day {cycleDay}</p>
+        </div>
       </div>
 
-      <div style={{ padding: "0 16px" }}>
-        <h3 style={{ ...s.title, marginTop: 16 }}>
-          Good {getGreeting()}, {name || "lovely"} 👋
-        </h3>
+      {/* Fasting Timer */}
+      <div style={{ ...s.card, margin: "12px 16px", position: "relative" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 16px" }}>
+          {fastStart ? "Fasting in progress 🌙" : "Start your fast"}
+        </p>
 
-        <div style={{ ...s.phaseCard, background: info.bg, color: info.color }}>
-          {info.emoji} {phase} · Day {cycleDay}
-        </div>
-
-        <div style={{ ...s.card, display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <p style={{ ...s.label, marginBottom: 12 }}>
-            {fasting ? "Fasting in progress" : "Intermittent Fasting"}
-          </p>
-
-          <div style={{ position: "relative", width: 160, height: 160 }}>
-            <svg width={160} height={160} style={{ transform: "rotate(-90deg)" }}>
-              <circle cx={80} cy={80} r={R} fill="none" stroke="#EAF2EA" strokeWidth={10} />
-              <circle cx={80} cy={80} r={R} fill="none"
-                stroke={fasting ? "#8FAF8F" : "#C5D9C5"}
-                strokeWidth={10}
-                strokeDasharray={circ}
-                strokeDashoffset={circ * (1 - progress)}
-                strokeLinecap="round"
-                style={{ transition: "stroke-dashoffset 1s linear" }}
-              />
-            </svg>
-            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-              <div style={{ fontSize: fasting ? 22 : 28, fontWeight: "bold", color: "#2D3B2E" }}>
-                {fasting ? `${pad(hrs)}:${pad(mins)}:${pad(secs)}` : "0h"}
-              </div>
-              <div style={{ fontSize: 12, color: "#8FA090", marginTop: 2 }}>
-                {fasting ? `${Math.round(progress * 100)}% complete` : "Not fasting"}
-              </div>
-            </div>
+        {/* Circle */}
+        <div style={{ position: "relative", width: 128, height: 128, margin: "0 auto 16px" }}>
+          <svg width="128" height="128" style={{ transform: "rotate(-90deg)" }}>
+            <circle cx="64" cy="64" r="54" fill="none" stroke="#EAF2EA" strokeWidth="10" />
+            <circle cx="64" cy="64" r="54" fill="none" stroke={info.color} strokeWidth="10"
+              strokeDasharray={circumference}
+              strokeDashoffset={circumference * (1 - progress)}
+              strokeLinecap="round"
+              style={{ transition: "stroke-dashoffset 1s linear" }}
+            />
+          </svg>
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 20, color: "#2D3B2E", margin: 0 }}>
+              {fastStart ? fmtTime(elapsed) : "00:00:00"}
+            </p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: 0 }}>
+              {fastStart ? `Goal: ${goalHours}h` : "ready"}
+            </p>
           </div>
-
-          {fasting && (
-            <div style={{ width: "100%", marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F4F8F4", borderRadius: 12, padding: "10px 14px" }}>
-                <div>
-                  <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: 0 }}>Started</p>
-                  <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", margin: 0, fontWeight: 600 }}>{formatTime(startTime)}</p>
-                </div>
-                <button onClick={() => setEditModal("start")} style={{ background: "#EAF2EA", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 14 }}>✏️</button>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F4F8F4", borderRadius: 12, padding: "10px 14px" }}>
-                <div>
-                  <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: 0 }}>Eat window opens</p>
-                  <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", margin: 0, fontWeight: 600 }}>{formatTime(endTime)}</p>
-                </div>
-                <button onClick={() => setEditModal("end")} style={{ background: "#EAF2EA", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 14 }}>✏️</button>
-              </div>
-            </div>
-          )}
         </div>
 
-        <div style={{ ...s.card, background: info.bg, border: `1px solid ${info.color}33`, textAlign: "left" }}>
-          <p style={{ margin: "0 0 6px", fontWeight: 600, color: info.color }}>{info.emoji} {phase} Phase</p>
-          <p style={{ margin: "0 0 4px", fontSize: 13, color: "#4a5a4b" }}>💧 <b>Fast:</b> {info.fast}</p>
-          <p style={{ margin: 0, fontSize: 13, color: "#4a5a4b" }}>🏋️ <b>Move:</b> {info.move}</p>
-        </div>
-
-        {!fasting && (
-          <>
-            <p style={{ ...s.label, marginTop: 16, marginBottom: 8 }}>Quick Start</p>
-            {fastOptions.map(h => {
-              const cardEnd = getCardEndTime(h);
-              return (
-                <div key={h} style={{ marginBottom: 8 }}>
-                  <div onClick={() => setSelectedFast(h)} style={{
-                    ...s.fastOption,
-                    border: selectedFast === h ? "2px solid #8FAF8F" : "1px solid #e0e0e0",
-                    background: selectedFast === h ? "#EAF2EA" : "#fff",
-                  }}>
-                    <strong style={{ color: "#2D3B2E" }}>{h}h fast</strong>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 12, color: "#8FA090" }}>{formatTime(cardEnd)}</span>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setEditModal(h); }}
-                        style={{ background: "#EAF2EA", border: "none", borderRadius: 8, padding: "4px 8px", cursor: "pointer", fontSize: 12 }}>
-                        ✏️
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </>
+        {/* Goal selector */}
+        <button onClick={() => setShowGoals(!showGoals)} style={{ background: "#EAF2EA", border: "none", borderRadius: 10, padding: "6px 14px", fontFamily: "sans-serif", fontSize: 13, color: "#5C7F60", cursor: "pointer", marginBottom: 12 }}>
+          Goal: {goalHours}h ▾
+        </button>
+        {showGoals && (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginBottom: 12 }}>
+            {goalOptions.map(h => (
+              <button key={h} onClick={() => { setGoalHours(h); setShowGoals(false); }} style={{
+                padding: "6px 14px", borderRadius: 100, border: "none",
+                background: goalHours === h ? info.color : "#EAF2EA",
+                color: goalHours === h ? "#fff" : "#6b7b6b",
+                fontFamily: "sans-serif", fontSize: 13, cursor: "pointer",
+              }}>{h}h</button>
+            ))}
+          </div>
         )}
 
-        <button onClick={toggleFast} style={{
-          ...s.btn, marginTop: 16,
-          background: fasting ? "#F2EAFA" : "#8FAF8F",
-          color: fasting ? "#9B7BC9" : "#fff",
-        }}>
-          {fasting ? "End Fast" : `Start ${selectedFast}h Fast Now`}
-        </button>
+        {fastStart ? (
+          <button onClick={stopFast} style={{ ...s.btn, background: "#C97B7B" }}>End Fast</button>
+        ) : (
+          <button onClick={startFast} style={s.btn}>Begin Fast 🌙</button>
+        )}
       </div>
 
-      {editModal === "start" && (
-        <TimePickerModal value={startTime} label="Edit Start Time" onChange={(ts) => setStart(ts)} onClose={() => setEditModal(null)} />
-      )}
-      {editModal === "end" && (
-        <TimePickerModal value={endTime} label="Edit End Time" onChange={(ts) => setEnd(ts)} onClose={() => setEditModal(null)} />
-      )}
-      {typeof editModal === "number" && (
-        <TimePickerModal
-          value={getCardEndTime(editModal)}
-          label={`Edit ${editModal}h Fast End Time`}
-          onChange={(ts) => setCustomEnds(prev => ({ ...prev, [editModal]: ts }))}
-          onClose={() => setEditModal(null)}
-        />
-      )}
+      {/* Phase card */}
+      <div style={{ ...s.card, margin: "0 16px", background: info.bg, border: `1px solid ${info.color}33`, textAlign: "left" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+          <span style={{ fontSize: 28 }}>{info.emoji}</span>
+          <div>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: info.color, margin: 0 }}>{phase} Phase</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0 }}>Day {cycleDay} of your cycle</p>
+          </div>
+        </div>
+        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: "0 0 6px" }}>💧 <b>Fast:</b> {info.fast}</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: 0 }}>🏋️ <b>Move:</b> {info.move}</p>
+      </div>
     </div>
   );
 }
+
+// ─────────────────────────────────────────────
+//  CHECK-IN SCREEN
+// ─────────────────────────────────────────────
 function CheckInScreen() {
-  const todayKey = getTodayKey();
+  const today = new Date().toISOString().split("T")[0];
+  const key   = `lf_checkin_${today}`;
 
-  const [saved, setSaved] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(todayKey)); }
-    catch { return null; }
+  const [saved,  setSaved]  = useState(() => {
+    try { return JSON.parse(localStorage.getItem(key)) || null; } catch { return null; }
   });
+  const [energy, setEnergy] = useState(3);
+  const [mood,   setMood]   = useState(3);
+  const [flow,   setFlow]   = useState("none");
+  const [notes,  setNotes]  = useState("");
 
-  const [mood,     setMood]     = useState(null);
-  const [energy,   setEnergy]   = useState(null);
-  const [symptoms, setSymptoms] = useState([]);
-  const [notes,    setNotes]    = useState("");
-
-  const toggleSymptom = (sym) => {
-    setSymptoms(prev =>
-      prev.includes(sym) ? prev.filter(x => x !== sym) : [...prev, sym]
-    );
-  };
-
-  const saveCheckIn = () => {
-    const data = { mood, energy, symptoms, notes, date: new Date().toISOString() };
-    localStorage.setItem(todayKey, JSON.stringify(data));
+  const save = () => {
+    const data = { energy, mood, flow, notes, date: today };
+    localStorage.setItem(key, JSON.stringify(data));
     setSaved(data);
   };
 
-  if (saved) {
-    return (
-      <div style={{ padding: 16 }}>
-        <h3 style={s.title}>Daily Check-In</h3>
-        <div style={{ ...s.card, background: "#EAF2EA", textAlign: "center" }}>
-          <div style={{ fontSize: 40, marginBottom: 8 }}>✅</div>
-          <p style={{ fontFamily: "Georgia, serif", fontSize: 17, color: "#2D3B2E", margin: "0 0 6px" }}>
-            You've checked in today
-          </p>
-          <p style={{ fontSize: 13, color: "#6b7b6b", margin: 0 }}>
-            Mood: <b>{saved.mood != null ? MOOD_OPTIONS[saved.mood].label : "—"}</b> &nbsp;·&nbsp;
-            Energy: <b>{saved.energy != null ? ENERGY_OPTIONS[saved.energy].label : "—"}</b>
-          </p>
-          {saved.symptoms?.length > 0 && (
-            <p style={{ fontSize: 13, color: "#6b7b6b", marginTop: 8 }}>
-              Symptoms: <b>{saved.symptoms.join(", ")}</b>
-            </p>
-          )}
-          <button onClick={() => setSaved(null)} style={{ ...s.btn, marginTop: 16, background: "#C5D9C5", color: "#2D3B2E" }}>
-            Edit Today's Check-In
-          </button>
-        </div>
+  const flowOptions  = ["none","spotting","light","medium","heavy"];
+  const ratingEmojis = ["😔","😕","😐","🙂","😊"];
+
+  if (saved) return (
+    <div style={{ padding: "24px 16px 90px", textAlign: "center" }}>
+      <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+      <h3 style={s.title}>Today's check-in saved!</h3>
+      <p style={{ ...s.label, marginBottom: 24 }}>Come back tomorrow 🌿</p>
+      <div style={{ ...s.card, textAlign: "left" }}>
+        <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>⚡ Energy: {ratingEmojis[saved.energy - 1]}</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💭 Mood: {ratingEmojis[saved.mood - 1]}</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🩸 Flow: {saved.flow}</p>
+        {saved.notes && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: 0 }}>📝 {saved.notes}</p>}
       </div>
-    );
-  }
+      <button onClick={() => setSaved(null)} style={{ ...s.btn, background: "#EAF2EA", color: "#5C7F60", marginTop: 12 }}>Edit Check-in</button>
+    </div>
+  );
 
   return (
     <div style={{ padding: "16px 16px 90px" }}>
       <h3 style={s.title}>Daily Check-In</h3>
-      <p style={{ fontSize: 13, color: "#6b7b6b", marginBottom: 16, marginTop: -8 }}>
-        How are you feeling today?
-      </p>
+      <p style={{ ...s.label, marginBottom: 20 }}>How are you feeling today?</p>
 
       <div style={s.card}>
-        <p style={{ ...s.label, marginBottom: 12, textAlign: "left" }}>😊 Mood</p>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          {MOOD_OPTIONS.map((m, i) => (
-            <div key={i} onClick={() => setMood(i)}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, cursor: "pointer" }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: "50%",
-                background: mood === i ? m.color : "#eee",
-                border: mood === i ? `3px solid ${m.color}` : "3px solid transparent",
-                boxShadow: mood === i ? `0 0 0 3px ${m.color}44` : "none",
-                transition: "all 0.2s",
-              }} />
-              <span style={{ fontSize: 10, color: mood === i ? m.color : "#aaa", textAlign: "center", lineHeight: 1.2 }}>
-                {m.label}
-              </span>
-            </div>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>⚡ Energy</p>
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          {ratingEmojis.map((e, i) => (
+            <button key={i} onClick={() => setEnergy(i + 1)} style={{ fontSize: 28, background: "none", border: "none", cursor: "pointer", opacity: energy === i + 1 ? 1 : 0.35, transition: "opacity 0.15s" }}>{e}</button>
           ))}
         </div>
       </div>
 
       <div style={s.card}>
-        <p style={{ ...s.label, marginBottom: 12, textAlign: "left" }}>⚡ Energy</p>
-        <div style={{ display: "flex", gap: 8 }}>
-          {ENERGY_OPTIONS.map((e, i) => (
-            <button key={i} onClick={() => setEnergy(i)} style={{
-              flex: 1, padding: "10px 0", borderRadius: 12, border: "none",
-              background: energy === i ? e.color : "#F4F8F4",
-              color: energy === i ? "#fff" : "#6b7b6b",
-              fontWeight: energy === i ? 700 : 400,
-              fontSize: 14, cursor: "pointer", transition: "all 0.2s",
-            }}>
-              {e.label}
-            </button>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>💭 Mood</p>
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          {ratingEmojis.map((e, i) => (
+            <button key={i} onClick={() => setMood(i + 1)} style={{ fontSize: 28, background: "none", border: "none", cursor: "pointer", opacity: mood === i + 1 ? 1 : 0.35, transition: "opacity 0.15s" }}>{e}</button>
           ))}
         </div>
       </div>
 
       <div style={s.card}>
-        <p style={{ ...s.label, marginBottom: 12, textAlign: "left" }}>🩺 Symptoms</p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {SYMPTOM_TAGS.map(tag => (
-            <button key={tag} onClick={() => toggleSymptom(tag)} style={{
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🩸 Flow</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {flowOptions.map(f => (
+            <button key={f} onClick={() => setFlow(f)} style={{
               padding: "7px 14px", borderRadius: 100, border: "none",
-              background: symptoms.includes(tag) ? "#8FAF8F" : "#F4F8F4",
-              color: symptoms.includes(tag) ? "#fff" : "#6b7b6b",
-              fontSize: 13, cursor: "pointer", transition: "all 0.2s",
-            }}>
-              {tag}
-            </button>
+              background: flow === f ? "#C97B7B" : "#EAF2EA",
+              color: flow === f ? "#fff" : "#6b7b6b",
+              fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", textTransform: "capitalize",
+            }}>{f}</button>
           ))}
         </div>
       </div>
 
       <div style={s.card}>
-        <p style={{ ...s.label, marginBottom: 8, textAlign: "left" }}>📝 Notes (optional)</p>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>📝 Notes</p>
         <textarea
           value={notes}
           onChange={e => setNotes(e.target.value)}
-          placeholder="How are you feeling? Anything to note today..."
-          style={{
-            width: "100%", minHeight: 80, padding: "10px 12px",
-            borderRadius: 12, border: "1.5px solid #C5D9C5",
-            fontFamily: "sans-serif", fontSize: 14, color: "#2D3B2E",
-            background: "#F4F8F4", boxSizing: "border-box",
-            outline: "none", resize: "vertical",
-          }}
+          placeholder="How are you feeling? Any symptoms?"
+          style={{ ...s.input, height: 80, resize: "none", fontFamily: "sans-serif" }}
         />
       </div>
 
-      <button
-        onClick={saveCheckIn}
-        disabled={mood === null || energy === null}
-        style={{
-          ...s.btn,
-          background: mood !== null && energy !== null ? "#8FAF8F" : "#C5D9C5",
-          cursor: mood !== null && energy !== null ? "pointer" : "default",
-        }}
-      >
-        Save Today's Check-In ✓
-      </button>
+      <button onClick={save} style={s.btn}>Save Check-In ✅</button>
     </div>
   );
 }
@@ -466,98 +331,74 @@ function CheckInScreen() {
 // ─────────────────────────────────────────────
 //  CALENDAR SCREEN
 // ─────────────────────────────────────────────
-
 function CalendarScreen({ lastPeriod }) {
-  const today = new Date();
+  const today   = new Date();
+  const [month, setMonth] = useState(today.getMonth());
+  const [year,  setYear]  = useState(today.getFullYear());
   const [selDay, setSelDay] = useState(today.getDate());
-  const [month, setMonth]   = useState(today.getMonth());
-  const [year, setYear]     = useState(today.getFullYear());
 
-  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  const DAYS   = ["Su","Mo","Tu","We","Th","Fr","Sa"];
-
-  const firstDay    = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDow    = new Date(year, month, 1).getDay();
 
-  function getPhaseForDay(d) {
+  const getCycleDayFor = (d) => {
+    if (!lastPeriod) return 1;
     const date = new Date(year, month, d);
-    const base = new Date(lastPeriod || date);
-    const diff = Math.floor((date - base) / 86400000);
-    const day  = ((diff % 28) + 28) % 28 + 1;
-    return getPhase(day);
-  }
-
-  function getCycleDayFor(d) {
-    const date = new Date(year, month, d);
-    const base = new Date(lastPeriod || date);
-    const diff = Math.floor((date - base) / 86400000);
+    const diff = Math.floor((date - new Date(lastPeriod)) / 86400000);
     return ((diff % 28) + 28) % 28 + 1;
-  }
+  };
 
-  const prevMonth = () => { if (month === 0) { setMonth(11); setYear(y => y-1); } else setMonth(m => m-1); };
-  const nextMonth = () => { if (month === 11) { setMonth(0); setYear(y => y+1); } else setMonth(m => m+1); };
-
-  const selPhase = getPhaseForDay(selDay);
+  const selPhase = getPhase(getCycleDayFor(selDay));
   const selInfo  = PHASE_INFO[selPhase];
 
   return (
     <div style={{ padding: "16px 16px 90px" }}>
-      <h3 style={s.title}>Cycle Calendar</h3>
+      {/* Month nav */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <button onClick={() => { if (month === 0) { setMonth(11); setYear(y => y-1); } else setMonth(m => m-1); }}
+          style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#8FAF8F" }}>‹</button>
+        <h3 style={{ ...s.title, margin: 0 }}>{MONTHS[month]} {year}</h3>
+        <button onClick={() => { if (month === 11) { setMonth(0); setYear(y => y+1); } else setMonth(m => m+1); }}
+          style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#8FAF8F" }}>›</button>
+      </div>
 
-      <div style={s.card}>
-        {/* Month navigation */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <button onClick={prevMonth} style={{ background: "#EAF2EA", border: "none", borderRadius: 10, width: 36, height: 36, fontSize: 18, cursor: "pointer", color: "#5C7F60" }}>‹</button>
-          <p style={{ fontFamily: "Georgia, serif", fontSize: 17, color: "#2D3B2E", margin: 0 }}>{MONTHS[month]} {year}</p>
-          <button onClick={nextMonth} style={{ background: "#EAF2EA", border: "none", borderRadius: 10, width: 36, height: 36, fontSize: 18, cursor: "pointer", color: "#5C7F60" }}>›</button>
-        </div>
+      {/* Day of week headers */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 8 }}>
+        {["S","M","T","W","T","F","S"].map((d,i) => (
+          <div key={i} style={{ textAlign: "center", fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", fontWeight: 600 }}>{d}</div>
+        ))}
+      </div>
 
-        {/* Day headers */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 6 }}>
-          {DAYS.map(d => (
-            <div key={d} style={{ textAlign: "center", fontSize: 11, color: "#8FA090", padding: "2px 0", fontFamily: "sans-serif" }}>{d}</div>
-          ))}
-        </div>
+      {/* Calendar grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
+        {Array.from({ length: firstDow }).map((_, i) => <div key={`e${i}`} />)}
+        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(d => {
+          const cycDay  = getCycleDayFor(d);
+          const phase   = getPhase(cycDay);
+          const info    = PHASE_INFO[phase];
+          const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+          const isSel   = d === selDay;
+          return (
+            <button key={d} onClick={() => setSelDay(d)} style={{
+              aspectRatio: "1", borderRadius: "50%",
+              border: isToday ? `2px solid #8FAF8F` : "none",
+              background: isSel ? info.color : info.bg,
+              cursor: "pointer", fontFamily: "sans-serif", fontSize: 13,
+              color: isSel ? "#fff" : info.color,
+              fontWeight: isToday ? 700 : 400,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>{d}</button>
+          );
+        })}
+      </div>
 
-        {/* Day grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3 }}>
-          {Array(firstDay).fill(null).map((_, i) => <div key={"e"+i} />)}
-          {Array(daysInMonth).fill(null).map((_, i) => {
-            const d     = i + 1;
-            const phase = getPhaseForDay(d);
-            const info  = PHASE_INFO[phase];
-            const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-            const isSel   = d === selDay;
-            return (
-              <button key={d} onClick={() => setSelDay(d)} style={{
-                aspectRatio: "1",
-                borderRadius: "50%",
-                border: isToday ? `2px solid #8FAF8F` : "none",
-                background: isSel ? info.color : info.bg,
-                cursor: "pointer",
-                fontFamily: "sans-serif",
-                fontSize: 13,
-                color: isSel ? "#fff" : info.color,
-                fontWeight: isToday ? 700 : 400,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}>
-                {d}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Legend */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16, paddingTop: 12, borderTop: "1px solid #EAF2EA" }}>
-          {Object.entries(PHASE_INFO).map(([name, info]) => (
-            <div key={name} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <div style={{ width: 10, height: 10, borderRadius: "50%", background: info.color }} />
-              <span style={{ fontFamily: "sans-serif", fontSize: 11, color: "#6b7b6b" }}>{name}</span>
-            </div>
-          ))}
-        </div>
+      {/* Legend */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16, paddingTop: 12, borderTop: "1px solid #EAF2EA" }}>
+        {Object.entries(PHASE_INFO).map(([name, info]) => (
+          <div key={name} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: info.color }} />
+            <span style={{ fontFamily: "sans-serif", fontSize: 11, color: "#6b7b6b" }}>{name}</span>
+          </div>
+        ))}
       </div>
 
       {/* Selected day detail */}
@@ -583,26 +424,24 @@ function CalendarScreen({ lastPeriod }) {
 // ─────────────────────────────────────────────
 //  LEARN SCREEN
 // ─────────────────────────────────────────────
-
 function LearnScreen() {
   const [tab, setTab] = useState("Phases");
-
   const tabs = ["Phases", "Fasting", "Workouts", "Nutrition", "Blood Color", "Cravings"];
 
   const BLOOD_COLORS = [
-    { color: "#B22222", label: "Bright Red",   note: "Fresh flow. Healthy and normal at peak flow." },
-    { color: "#8B0000", label: "Dark Red",      note: "Older blood. Common at start or end of period." },
-    { color: "#3D1C02", label: "Brown",         note: "Very old blood. Normal at the very start or end." },
-    { color: "#E8A090", label: "Light Pink",    note: "Diluted blood. May indicate low estrogen or light flow." },
-    { color: "#1C0202", label: "Black",         note: "Very old blood. Usually normal but worth noting." },
-    { color: "#C4A882", label: "Orange-tinged", note: "Could indicate infection if paired with unusual odor. See your provider." },
+    { color: "#B22222", label: "Bright Red",    note: "Fresh flow. Healthy and normal at peak flow." },
+    { color: "#8B0000", label: "Dark Red",       note: "Older blood. Common at start or end of period." },
+    { color: "#3D1C02", label: "Brown",          note: "Very old blood. Normal at the very start or end." },
+    { color: "#E8A090", label: "Light Pink",     note: "Diluted blood. May indicate low estrogen or light flow." },
+    { color: "#1C0202", label: "Black",          note: "Very old blood. Usually normal but worth noting." },
+    { color: "#C4A882", label: "Orange-tinged",  note: "Could indicate infection if paired with unusual odor. See your provider." },
   ];
 
   const CRAVINGS = [
-    { craving: "🍫 Chocolate",    why: "Magnesium deficiency. Your body needs this mineral for mood and muscle function." },
+    { craving: "🍫 Chocolate",       why: "Magnesium deficiency. Your body needs this mineral for mood and muscle function." },
     { craving: "🧂 Salty / Crunchy", why: "Aldosterone fluctuates before your period, triggering salt cravings." },
     { craving: "🍬 Sugar / Sweets",  why: "Falling hormones affect serotonin and blood sugar regulation." },
-    { craving: "🍞 Carbs / Bread",   why: "Rising progesterone increases your metabolic rate — you need more energy." },
+    { craving: "🍞 Carbs / Bread",   why: "Rising progesterone increases your metabolic rate – you need more energy." },
     { craving: "🥩 Red Meat",        why: "Iron and zinc are depleted through blood loss. Your body seeks them instinctively." },
     { craving: "🥑 Fatty Foods",     why: "Prostaglandins are high. Healthy fats support pain modulation." },
     { craving: "😶 No Appetite",     why: "Peak estrogen at ovulation naturally suppresses appetite. Totally normal." },
@@ -619,7 +458,7 @@ function LearnScreen() {
     { phase: "Menstrual 🌑",  tip: "Gentle yoga, slow walks, or full rest. Listen above all else." },
     { phase: "Follicular 🌒", tip: "Strength training, cardio, and HIIT workouts thrive now." },
     { phase: "Ovulation 🌕",  tip: "Your absolute peak. Lift heavy, go fast, compete." },
-    { phase: "Luteal 🌗",     tip: "Moderate cardio and pilates. Late luteal — slow right down." },
+    { phase: "Luteal 🌗",     tip: "Moderate cardio and pilates. Late luteal – slow right down." },
   ];
 
   const NUTRITION_INFO = [
@@ -636,27 +475,18 @@ function LearnScreen() {
         <p style={{ ...s.label, marginBottom: 0 }}>Knowledge synced to your cycle</p>
       </div>
 
-      {/* Tab chips */}
       <div style={{ display: "flex", overflowX: "auto", gap: 8, padding: "0 16px 14px", scrollbarWidth: "none" }}>
         {tabs.map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
-            flexShrink: 0,
-            padding: "7px 16px",
-            borderRadius: 100,
-            border: "none",
+            flexShrink: 0, padding: "7px 16px", borderRadius: 100, border: "none",
             background: tab === t ? "#8FAF8F" : "#EAF2EA",
             color: tab === t ? "#fff" : "#6b7b6b",
-            fontFamily: "sans-serif",
-            fontSize: 13,
-            fontWeight: tab === t ? 700 : 400,
-            cursor: "pointer",
+            fontFamily: "sans-serif", fontSize: 13, fontWeight: tab === t ? 700 : 400, cursor: "pointer",
           }}>{t}</button>
         ))}
       </div>
 
       <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 12 }}>
-
-        {/* PHASES */}
         {tab === "Phases" && Object.entries(PHASE_INFO).map(([name, info]) => (
           <div key={name} style={{ ...s.card, background: info.bg, border: `1px solid ${info.color}22`, textAlign: "left" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
@@ -668,7 +498,6 @@ function LearnScreen() {
           </div>
         ))}
 
-        {/* FASTING */}
         {tab === "Fasting" && FASTING_INFO.map((f, i) => (
           <div key={i} style={{ ...s.card, textAlign: "left" }}>
             <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 6px" }}>{f.phase}</p>
@@ -676,7 +505,6 @@ function LearnScreen() {
           </div>
         ))}
 
-        {/* WORKOUTS */}
         {tab === "Workouts" && WORKOUT_INFO.map((w, i) => (
           <div key={i} style={{ ...s.card, textAlign: "left" }}>
             <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 6px" }}>{w.phase}</p>
@@ -684,7 +512,6 @@ function LearnScreen() {
           </div>
         ))}
 
-        {/* NUTRITION */}
         {tab === "Nutrition" && NUTRITION_INFO.map((n, i) => (
           <div key={i} style={{ ...s.card, textAlign: "left" }}>
             <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 6px" }}>{n.phase}</p>
@@ -692,7 +519,6 @@ function LearnScreen() {
           </div>
         ))}
 
-        {/* BLOOD COLOR */}
         {tab === "Blood Color" && (
           <>
             <div style={{ ...s.card, background: "#EAF2EA", textAlign: "left" }}>
@@ -713,12 +539,11 @@ function LearnScreen() {
           </>
         )}
 
-        {/* CRAVINGS */}
         {tab === "Cravings" && (
           <>
             <div style={{ ...s.card, background: "#EAF2EA", textAlign: "left" }}>
               <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 6px" }}>Why you crave what you crave</p>
-              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>Cravings aren't weakness — they're your body communicating a real need.</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>Cravings aren't weakness – they're your body communicating a real need.</p>
             </div>
             {CRAVINGS.map((cr, i) => (
               <div key={i} style={{ ...s.card, textAlign: "left" }}>
@@ -728,7 +553,6 @@ function LearnScreen() {
             ))}
           </>
         )}
-
       </div>
     </div>
   );
@@ -737,36 +561,85 @@ function LearnScreen() {
 // ─────────────────────────────────────────────
 //  SETTINGS SCREEN
 // ─────────────────────────────────────────────
+function SettingsScreen({ settings, onSave }) {
+  const [subScreen,    setSubScreen]    = useState(null);
+  const [name,         setName]         = useState(settings.name || "");
+  const [lastPeriod,   setLastPeriod]   = useState(settings.lastPeriod || "");
+  const [cycleLength,  setCycleLength]  = useState(settings.cycleLength || 28);
+  const [saved,        setSaved]        = useState(false);
 
+  if (subScreen === "privacy") return <PrivacyScreen onBack={() => setSubScreen(null)} />;
+  if (subScreen === "terms")   return <TermsScreen   onBack={() => setSubScreen(null)} />;
+
+  const handleSave = () => {
+    onSave({ ...settings, name, lastPeriod, cycleLength: Number(cycleLength) });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <div style={{ padding: "16px 16px 90px" }}>
+      <h3 style={s.title}>Settings</h3>
+
+      <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 14px" }}>Profile</p>
+        <label style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b" }}>Your name</label>
+        <input value={name} onChange={e => setName(e.target.value)} style={{ ...s.input, marginTop: 6, marginBottom: 14 }} />
+        <label style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b" }}>Last period start date</label>
+        <input type="date" value={lastPeriod} onChange={e => setLastPeriod(e.target.value)} style={{ ...s.input, marginTop: 6, marginBottom: 14 }} />
+        <label style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b" }}>Average cycle length (days)</label>
+        <input type="number" min={21} max={45} value={cycleLength} onChange={e => setCycleLength(e.target.value)} style={{ ...s.input, marginTop: 6, marginBottom: 0 }} />
+      </div>
+
+      <button onClick={handleSave} style={{ ...s.btn, marginBottom: 16 }}>
+        {saved ? "✓ Saved!" : "Save Changes"}
+      </button>
+
+      <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 12px" }}>Legal</p>
+        <button onClick={() => setSubScreen("privacy")} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EAF2EA", border: "none", borderRadius: 12, padding: "12px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#2D3B2E", cursor: "pointer", marginBottom: 8 }}>
+          <span>🔒 Privacy Policy</span><span style={{ color: "#C5D9C5", fontSize: 18 }}>›</span>
+        </button>
+        <button onClick={() => setSubScreen("terms")} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EAF2EA", border: "none", borderRadius: 12, padding: "12px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#2D3B2E", cursor: "pointer" }}>
+          <span>📄 Terms of Service</span><span style={{ color: "#C5D9C5", fontSize: 18 }}>›</span>
+        </button>
+      </div>
+
+      <div style={{ ...s.card, textAlign: "center" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>🌿 Lumen Flow</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: 0 }}>Version 1.0.0 · Made with care</p>
+      </div>
+    </div>
+  );
+}
 
 // ─────────────────────────────────────────────
 //  RECIPES SCREEN
 // ─────────────────────────────────────────────
-
 const RECIPES = [
-  { id: 1,  name: "Zucchini Noodle Bowl",      diet: "Low Carb",    time: 20, phases: ["Follicular","Ovulation"], tip: "Supports estrogen metabolism.", ingredients: ["2 zucchinis, spiralized","200g grilled chicken","2 tbsp pesto","Cherry tomatoes","Parmesan"], steps: ["Spiralize zucchinis into noodles.","Grill chicken until cooked through, slice.","Toss zucchini noodles with pesto.","Top with chicken, tomatoes, and parmesan.","Serve immediately."] },
-  { id: 2,  name: "Egg & Avocado Salad",        diet: "Low Carb",    time: 15, phases: ["Menstrual","Luteal"],     tip: "Healthy fats support progesterone.", ingredients: ["3 boiled eggs","1 avocado","Dijon mustard","Lemon juice","Mixed greens"], steps: ["Halve and cube avocado.","Slice boiled eggs.","Mix mustard and lemon for dressing.","Toss greens, eggs, and avocado.","Drizzle with dressing."] },
-  { id: 3,  name: "Sweet Potato Tacos",         diet: "High Carb",   time: 30, phases: ["Follicular","Ovulation"], tip: "Complex carbs fuel your peak phase.", ingredients: ["2 sweet potatoes, cubed","1 can black beans","Corn tortillas","Avocado","Lime","Cilantro"], steps: ["Roast sweet potatoes at 200°C for 20 min.","Warm black beans with cumin.","Warm tortillas in a dry pan.","Layer beans and potato in tortillas.","Top with avocado, lime, and cilantro."] },
-  { id: 4,  name: "Brown Rice Power Bowl",      diet: "High Carb",   time: 40, phases: ["Luteal"],                tip: "Complex carbs stabilise blood sugar.", ingredients: ["1 cup brown rice","1 can chickpeas","Roasted broccoli","Tahini","Lemon","Sesame seeds"], steps: ["Cook brown rice per package.","Roast broccoli and chickpeas at 200°C for 20 min.","Whisk tahini, lemon, and water for dressing.","Assemble bowl with rice as base.","Top with vegetables and drizzle dressing."] },
-  { id: 5,  name: "Bacon & Brie Omelette",      diet: "Keto",        time: 15, phases: ["Follicular","Ovulation"], tip: "High fat supports energy in your active phase.", ingredients: ["3 eggs","2 bacon rashers","30g brie","Chives","Butter"], steps: ["Cook bacon until crispy.","Whisk eggs with salt and pepper.","Melt butter in pan, pour in eggs.","Cook until edges set.","Add brie and bacon, fold and serve."] },
-  { id: 6,  name: "Keto Cauliflower Rice",      diet: "Keto",        time: 25, phases: ["Luteal","Menstrual"],    tip: "Cauliflower provides vitamin C to ease bloating.", ingredients: ["1 head cauliflower, riced","2 eggs","Tamari","Sesame oil","Spring onions","Ginger"], steps: ["Pulse cauliflower until rice-sized.","Sauté garlic and ginger in sesame oil.","Add cauliflower rice, cook 5 min.","Push aside, scramble eggs in pan.","Combine and add tamari and spring onions."] },
-  { id: 7,  name: "Ribeye & Bone Marrow",       diet: "Carnivore",   time: 20, phases: ["Follicular","Ovulation"], tip: "High iron and zinc fuel your peak phase.", ingredients: ["1 ribeye steak","Bone marrow","Butter","Sea salt","Black pepper","Fresh thyme"], steps: ["Season steak with salt and pepper.","Roast bone marrow at 220°C for 15 min.","Sear steak 3-4 min per side.","Rest steak for 5 minutes.","Top with scooped bone marrow and butter."] },
-  { id: 8,  name: "Lamb Liver with Bacon",      diet: "Carnivore",   time: 15, phases: ["Menstrual"],             tip: "Liver is one of the richest sources of iron.", ingredients: ["300g lamb liver, sliced","4 bacon rashers","Butter","Sea salt","Black pepper"], steps: ["Cook bacon until crispy, remove.","Season liver with salt and pepper.","Cook liver in bacon fat 2 min per side.","Slight pink centre is ideal.","Serve liver topped with bacon."] },
-  { id: 9,  name: "Lentil & Spinach Dal",       diet: "Vegan",       time: 35, phases: ["Menstrual","Follicular"], tip: "Lentils provide plant-based iron.", ingredients: ["1 cup red lentils","1 can coconut milk","2 cups spinach","Curry powder","Turmeric","Ginger","Tomatoes"], steps: ["Sauté garlic and ginger.","Add curry powder and turmeric.","Add lentils, tomatoes, and coconut milk.","Simmer 20 min until soft.","Stir in spinach until wilted."] },
-  { id: 10, name: "Roasted Beet Salad",         diet: "Vegan",       time: 40, phases: ["Follicular","Ovulation"], tip: "Beets support detox pathways.", ingredients: ["3 beets, cubed","Walnuts","Mixed greens","Balsamic glaze","Olive oil","Orange zest"], steps: ["Toss beets in olive oil, roast 200°C 30 min.","Toast walnuts in a dry pan.","Arrange greens on a plate.","Top with warm beets and walnuts.","Drizzle with balsamic and orange zest."] },
-  { id: 11, name: "Shakshuka",                  diet: "Vegetarian",  time: 25, phases: ["Follicular","Ovulation"], tip: "Eggs provide choline for liver health.", ingredients: ["4 eggs","1 can crushed tomatoes","1 bell pepper","Onion","Cumin, paprika","Feta","Parsley"], steps: ["Sauté onion and pepper.","Add spices and tomatoes, simmer 10 min.","Make wells in sauce, crack in eggs.","Cover and cook until eggs just set.","Top with feta and parsley."] },
-  { id: 12, name: "Butternut Squash Soup",      diet: "Vegetarian",  time: 40, phases: ["Luteal","Menstrual"],    tip: "Beta-carotene supports progesterone.", ingredients: ["1 butternut squash","1 onion","Vegetable stock","Coconut milk","Nutmeg","Ginger"], steps: ["Roast squash at 200°C for 30 min.","Scoop flesh and blend with stock.","Sauté onion and ginger, add to blender.","Blend until smooth, add coconut milk.","Season with nutmeg and serve."] },
-  { id: 13, name: "Greek Baked Fish",           diet: "Mediterranean",time: 30, phases: ["Follicular","Ovulation"], tip: "Omega-3s and olive oil support estrogen balance.", ingredients: ["2 white fish fillets","Cherry tomatoes","Kalamata olives","Capers","Olive oil","Lemon","Feta"], steps: ["Place fish in baking dish.","Scatter tomatoes, olives, and capers.","Drizzle with olive oil.","Add lemon slices.","Bake at 190°C for 20 min, top with feta."] },
-  { id: 14, name: "Lemon Herb Chicken Orzo",    diet: "Mediterranean",time: 35, phases: ["Luteal"],                tip: "B6 in chicken supports serotonin.", ingredients: ["2 chicken thighs","1 cup orzo","Chicken stock","Lemon","Spinach","Garlic","Fresh dill"], steps: ["Sear chicken thighs until golden.","Add garlic, orzo, stock, and lemon.","Simmer 12 min until orzo is cooked.","Stir in spinach until wilted.","Finish with fresh dill."] },
-  { id: 15, name: "Paleo Bison Burgers",        diet: "Paleo",       time: 25, phases: ["Follicular","Ovulation"], tip: "Bison is lean and packed with iron.", ingredients: ["400g ground bison","Garlic powder","Onion powder","Lettuce wraps","Avocado","Tomato"], steps: ["Mix bison with garlic and onion powder.","Form into patties.","Grill 4-5 min per side.","Rest patties 3 minutes.","Serve in lettuce wraps with avocado."] },
-  { id: 16, name: "Sweet Potato Hash",          diet: "Paleo",       time: 30, phases: ["Menstrual","Luteal"],    tip: "Vitamin B6 is a natural mood supporter.", ingredients: ["2 sweet potatoes, diced","1 onion","Bell pepper","2 eggs","Paprika","Olive oil"], steps: ["Pan-fry sweet potato covered for 15 min.","Add onion and pepper, cook until soft.","Season with paprika.","Make wells, crack in eggs.","Cover and cook until eggs are set."] },
-  { id: 17, name: "Quinoa Stuffed Tomatoes",    diet: "Gluten-Free", time: 35, phases: ["Follicular","Ovulation"], tip: "Quinoa is a complete protein.", ingredients: ["4 large tomatoes","1 cup quinoa","Feta","Olives","Cucumber","Mint","Lemon"], steps: ["Cook quinoa per package.","Hollow out tomatoes.","Mix quinoa with feta, olives, cucumber, mint.","Fill tomatoes with mixture.","Bake at 180°C for 15 min."] },
-  { id: 18, name: "Mango Chia Pudding",         diet: "Gluten-Free", time: 10, phases: ["Follicular","Ovulation"], tip: "Omega-3s in chia support anti-inflammation.", ingredients: ["4 tbsp chia seeds","1.5 cups coconut milk","1 mango, diced","Lime zest","Honey","Mint"], steps: ["Mix chia seeds with coconut milk.","Stir well and refrigerate 4+ hours.","Stir again before serving.","Top with fresh mango.","Add lime zest, honey, and mint."] },
-  { id: 19, name: "Turmeric Golden Soup",       diet: "Vegan",       time: 30, phases: ["Menstrual","Luteal"],    tip: "Curcumin in turmeric eases period pain.", ingredients: ["1 head cauliflower","1 can coconut milk","Vegetable stock","2 tsp turmeric","Ginger","Garlic","Black pepper"], steps: ["Roast cauliflower at 200°C for 25 min.","Blend with stock, coconut milk, and spices.","Heat in pot with garlic and ginger.","Simmer 10 min.","Finish with lemon juice and black pepper."] },
-  { id: 20, name: "Walnut & Date Energy Bites", diet: "Vegan",       time: 15, phases: ["Luteal"],                tip: "Magnesium in walnuts eases PMS.", ingredients: ["1 cup walnuts","1 cup medjool dates, pitted","3 tbsp cacao powder","Pinch of sea salt","Desiccated coconut"], steps: ["Blend walnuts in food processor.","Add dates, cacao, and salt.","Blend until mixture sticks together.","Roll into small balls.","Coat in coconut. Refrigerate 30 min."] },
+  { id: 1,  name: "Zucchini Noodle Bowl",      diet: "Low Carb",     time: 20, phases: ["Follicular","Ovulation"], tip: "Supports estrogen metabolism.",                    ingredients: ["2 zucchinis, spiralized","200g grilled chicken","2 tbsp pesto","Cherry tomatoes","Parmesan"],                          steps: ["Spiralize zucchinis into noodles.","Grill chicken until cooked through, slice.","Toss zucchini noodles with pesto.","Top with chicken, tomatoes, and parmesan.","Serve immediately."] },
+  { id: 2,  name: "Egg & Avocado Salad",        diet: "Low Carb",     time: 15, phases: ["Menstrual","Luteal"],     tip: "Healthy fats support progesterone.",               ingredients: ["3 boiled eggs","1 avocado","Dijon mustard","Lemon juice","Mixed greens"],                                           steps: ["Halve and cube avocado.","Slice boiled eggs.","Mix mustard and lemon for dressing.","Toss greens, eggs, and avocado.","Drizzle with dressing."] },
+  { id: 3,  name: "Sweet Potato Tacos",         diet: "High Carb",    time: 30, phases: ["Follicular","Ovulation"], tip: "Complex carbs fuel your peak phase.",              ingredients: ["2 sweet potatoes, cubed","1 can black beans","Corn tortillas","Avocado","Lime","Cilantro"],                        steps: ["Roast sweet potatoes at 200°C for 20 min.","Warm black beans with cumin.","Warm tortillas in a dry pan.","Layer beans and potato in tortillas.","Top with avocado, lime, and cilantro."] },
+  { id: 4,  name: "Brown Rice Power Bowl",      diet: "High Carb",    time: 40, phases: ["Luteal"],                 tip: "Complex carbs stabilise blood sugar.",             ingredients: ["1 cup brown rice","1 can chickpeas","Roasted broccoli","Tahini","Lemon","Sesame seeds"],                          steps: ["Cook brown rice per package.","Roast broccoli and chickpeas at 200°C for 20 min.","Whisk tahini, lemon, and water for dressing.","Assemble bowl with rice as base.","Top with vegetables and drizzle dressing."] },
+  { id: 5,  name: "Bacon & Brie Omelette",      diet: "Keto",         time: 15, phases: ["Follicular","Ovulation"], tip: "High fat supports energy in your active phase.",   ingredients: ["3 eggs","2 bacon rashers","30g brie","Chives","Butter"],                                                        steps: ["Cook bacon until crispy.","Whisk eggs with salt and pepper.","Melt butter in pan, pour in eggs.","Cook until edges set.","Add brie and bacon, fold and serve."] },
+  { id: 6,  name: "Keto Cauliflower Rice",      diet: "Keto",         time: 25, phases: ["Luteal","Menstrual"],     tip: "Cauliflower provides vitamin C to ease bloating.", ingredients: ["1 head cauliflower, riced","2 eggs","Tamari","Sesame oil","Spring onions","Ginger"],                            steps: ["Pulse cauliflower until rice-sized.","Sauté garlic and ginger in sesame oil.","Add cauliflower rice, cook 5 min.","Push aside, scramble eggs in pan.","Combine and add tamari and spring onions."] },
+  { id: 7,  name: "Ribeye & Bone Marrow",       diet: "Carnivore",    time: 20, phases: ["Follicular","Ovulation"], tip: "High iron and zinc fuel your peak phase.",         ingredients: ["1 ribeye steak","Bone marrow","Butter","Sea salt","Black pepper","Fresh thyme"],                               steps: ["Season steak with salt and pepper.","Roast bone marrow at 220°C for 15 min.","Sear steak 3-4 min per side.","Rest steak for 5 minutes.","Top with scooped bone marrow and butter."] },
+  { id: 8,  name: "Lamb Liver with Bacon",      diet: "Carnivore",    time: 15, phases: ["Menstrual"],              tip: "Liver is one of the richest sources of iron.",     ingredients: ["300g lamb liver, sliced","4 bacon rashers","Butter","Sea salt","Black pepper"],                                steps: ["Cook bacon until crispy, remove.","Season liver with salt and pepper.","Cook liver in bacon fat 2 min per side.","Slight pink centre is ideal.","Serve liver topped with bacon."] },
+  { id: 9,  name: "Lentil & Spinach Dal",       diet: "Vegan",        time: 35, phases: ["Menstrual","Follicular"], tip: "Lentils provide plant-based iron.",                ingredients: ["1 cup red lentils","1 can coconut milk","2 cups spinach","Curry powder","Turmeric","Ginger","Tomatoes"],      steps: ["Sauté garlic and ginger.","Add curry powder and turmeric.","Add lentils, tomatoes, and coconut milk.","Simmer 20 min until soft.","Stir in spinach until wilted."] },
+  { id: 10, name: "Roasted Beet Salad",         diet: "Vegan",        time: 40, phases: ["Follicular","Ovulation"], tip: "Beets support detox pathways.",                    ingredients: ["3 beets, cubed","Walnuts","Mixed greens","Balsamic glaze","Olive oil","Orange zest"],                        steps: ["Toss beets in olive oil, roast 200°C 30 min.","Toast walnuts in a dry pan.","Arrange greens on a plate.","Top with warm beets and walnuts.","Drizzle with balsamic and orange zest."] },
+  { id: 11, name: "Shakshuka",                  diet: "Vegetarian",   time: 25, phases: ["Follicular","Ovulation"], tip: "Eggs provide choline for liver health.",           ingredients: ["4 eggs","1 can crushed tomatoes","1 bell pepper","Onion","Cumin, paprika","Feta","Parsley"],                  steps: ["Sauté onion and pepper.","Add spices and tomatoes, simmer 10 min.","Make wells in sauce, crack in eggs.","Cover and cook until eggs just set.","Top with feta and parsley."] },
+  { id: 12, name: "Butternut Squash Soup",      diet: "Vegetarian",   time: 40, phases: ["Luteal","Menstrual"],     tip: "Beta-carotene supports progesterone.",             ingredients: ["1 butternut squash","1 onion","Vegetable stock","Coconut milk","Nutmeg","Ginger"],                            steps: ["Roast squash at 200°C for 30 min.","Scoop flesh and blend with stock.","Sauté onion and ginger, add to blender.","Blend until smooth, add coconut milk.","Season with nutmeg and serve."] },
+  { id: 13, name: "Greek Baked Fish",           diet: "Mediterranean",time: 30, phases: ["Follicular","Ovulation"], tip: "Omega-3s and olive oil support estrogen balance.", ingredients: ["2 white fish fillets","Cherry tomatoes","Kalamata olives","Capers","Olive oil","Lemon","Feta"],               steps: ["Place fish in baking dish.","Scatter tomatoes, olives, and capers.","Drizzle with olive oil.","Add lemon slices.","Bake at 190°C for 20 min, top with feta."] },
+  { id: 14, name: "Lemon Herb Chicken Orzo",    diet: "Mediterranean",time: 35, phases: ["Luteal"],                 tip: "B6 in chicken supports serotonin.",                ingredients: ["2 chicken thighs","1 cup orzo","Chicken stock","Lemon","Spinach","Garlic","Fresh dill"],                    steps: ["Sear chicken thighs until golden.","Add garlic, orzo, stock, and lemon.","Simmer 12 min until orzo is cooked.","Stir in spinach until wilted.","Finish with fresh dill."] },
+  { id: 15, name: "Paleo Bison Burgers",        diet: "Paleo",        time: 25, phases: ["Follicular","Ovulation"], tip: "Bison is lean and packed with iron.",              ingredients: ["400g ground bison","Garlic powder","Onion powder","Lettuce wraps","Avocado","Tomato"],                      steps: ["Mix bison with garlic and onion powder.","Form into patties.","Grill 4-5 min per side.","Rest patties 3 minutes.","Serve in lettuce wraps with avocado."] },
+  { id: 16, name: "Sweet Potato Hash",          diet: "Paleo",        time: 30, phases: ["Menstrual","Luteal"],     tip: "Vitamin B6 is a natural mood supporter.",         ingredients: ["2 sweet potatoes, diced","1 onion","Bell pepper","2 eggs","Paprika","Olive oil"],                            steps: ["Pan-fry sweet potato covered for 15 min.","Add onion and pepper, cook until soft.","Season with paprika.","Make wells, crack in eggs.","Cover and cook until eggs are set."] },
+  { id: 17, name: "Quinoa Stuffed Tomatoes",    diet: "Gluten-Free",  time: 35, phases: ["Follicular","Ovulation"], tip: "Quinoa is a complete protein.",                    ingredients: ["4 large tomatoes","1 cup quinoa","Feta","Olives","Cucumber","Mint","Lemon"],                                steps: ["Cook quinoa per package.","Hollow out tomatoes.","Mix quinoa with feta, olives, cucumber, mint.","Fill tomatoes with mixture.","Bake at 180°C for 15 min."] },
+  { id: 18, name: "Mango Chia Pudding",         diet: "Gluten-Free",  time: 10, phases: ["Follicular","Ovulation"], tip: "Omega-3s in chia support anti-inflammation.",      ingredients: ["4 tbsp chia seeds","1.5 cups coconut milk","1 mango, diced","Lime zest","Honey","Mint"],                    steps: ["Mix chia seeds with coconut milk.","Stir well and refrigerate 4+ hours.","Stir again before serving.","Top with fresh mango.","Add lime zest, honey, and mint."] },
+  { id: 19, name: "Turmeric Golden Soup",       diet: "Vegan",        time: 30, phases: ["Menstrual","Luteal"],     tip: "Curcumin in turmeric eases period pain.",         ingredients: ["1 head cauliflower","1 can coconut milk","Vegetable stock","2 tsp turmeric","Ginger","Garlic","Black pepper"],steps: ["Roast cauliflower at 200°C for 25 min.","Blend with stock, coconut milk, and spices.","Heat in pot with garlic and ginger.","Simmer 10 min.","Finish with lemon juice and black pepper."] },
+  { id: 20, name: "Walnut & Date Energy Bites", diet: "Vegan",        time: 15, phases: ["Luteal"],                 tip: "Magnesium in walnuts eases PMS.",                 ingredients: ["1 cup walnuts","1 cup medjool dates, pitted","3 tbsp cacao powder","Pinch of sea salt","Desiccated coconut"],steps: ["Blend walnuts in food processor.","Add dates, cacao, and salt.","Blend until mixture sticks together.","Roll into small balls.","Coat in coconut. Refrigerate 30 min."] },
 ];
 
-const DIET_TYPES = ["All","Low Carb","High Carb","Keto","Carnivore","Vegan","Vegetarian","Mediterranean","Paleo","Gluten-Free"];
+const DIET_TYPES    = ["All","Low Carb","High Carb","Keto","Carnivore","Vegan","Vegetarian","Mediterranean","Paleo","Gluten-Free"];
 const PHASE_FILTERS = ["All","Menstrual","Follicular","Ovulation","Luteal"];
 
 function RecipesScreen({ phase }) {
@@ -775,7 +648,7 @@ function RecipesScreen({ phase }) {
   const [selected,    setSelected]    = useState(null);
 
   const filtered = RECIPES.filter(r => {
-    const dOk = dietFilter  === "All" || r.diet === dietFilter;
+    const dOk = dietFilter  === "All" || r.diet   === dietFilter;
     const pOk = phaseFilter === "All" || r.phases.includes(phaseFilter);
     return dOk && pOk;
   });
@@ -824,7 +697,6 @@ function RecipesScreen({ phase }) {
         <h3 style={s.title}>Recipes</h3>
       </div>
 
-      {/* Best for your phase */}
       <div style={{ marginBottom: 12 }}>
         <p style={{ ...s.label, padding: "0 16px", marginBottom: 10 }}>✨ Best for your phase now</p>
         <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "0 16px 4px", scrollbarWidth: "none" }}>
@@ -838,21 +710,18 @@ function RecipesScreen({ phase }) {
         </div>
       </div>
 
-      {/* Phase filter */}
       <div style={{ display: "flex", gap: 6, overflowX: "auto", padding: "0 16px 8px", scrollbarWidth: "none" }}>
         {PHASE_FILTERS.map(p => (
           <button key={p} onClick={() => setPhaseFilter(p)} style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 100, border: "none", background: phaseFilter === p ? "#8FAF8F" : "#EAF2EA", color: phaseFilter === p ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{p}</button>
         ))}
       </div>
 
-      {/* Diet filter */}
       <div style={{ display: "flex", gap: 6, overflowX: "auto", padding: "0 16px 12px", scrollbarWidth: "none" }}>
         {DIET_TYPES.map(d => (
           <button key={d} onClick={() => setDietFilter(d)} style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 100, border: "none", background: dietFilter === d ? "#5C7F60" : "#EAF2EA", color: dietFilter === d ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{d}</button>
         ))}
       </div>
 
-      {/* Recipe list */}
       <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 10 }}>
         {filtered.map(r => (
           <button key={r.id} onClick={() => setSelected(r)} style={{ ...s.card, textAlign: "left", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -876,35 +745,55 @@ function RecipesScreen({ phase }) {
     </div>
   );
 }
-function SettingsScreen({ settings, onSave }) {
-  const [name, setName]       = useState(settings.name);
-  const [lastPeriod, setLast] = useState(settings.lastPeriod);
-  const [saved, setSaved]     = useState(false);
-  const today = new Date().toISOString().split("T")[0];
 
-  const save = () => {
-    onSave({ name, lastPeriod });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  };
-
+// ─────────────────────────────────────────────
+//  LEGAL SCREENS
+// ─────────────────────────────────────────────
+function PrivacyScreen({ onBack }) {
   return (
-    <div style={{ padding: 16 }}>
-      <h3 style={s.title}>Settings</h3>
-      <div style={{ ...s.card, textAlign: "left" }}>
-        <label style={s.label}>Your name</label>
-        <input style={{ ...s.input, marginTop: 6 }} value={name} onChange={e => setName(e.target.value)} placeholder="Name" />
-        <label style={{ ...s.label, marginTop: 14, display: "block" }}>First day of last period</label>
-        <input type="date" max={today} style={{ ...s.input, marginTop: 6 }} value={lastPeriod} onChange={e => setLast(e.target.value)} />
-        <button onClick={save} style={{ ...s.btn, marginTop: 16, background: saved ? "#5C7F60" : "#8FAF8F" }}>
-          {saved ? "✓ Saved!" : "Save Changes"}
-        </button>
-      </div>
-      <div style={{ ...s.card, background: "#F4F8F4", marginTop: 12 }}>
-        <p style={{ fontSize: 12, color: "#8FA090", textAlign: "center", margin: 0 }}>
-          Lumen Flow is a wellness tool for education only. Not a medical device.
-        </p>
-      </div>
+    <div style={{ padding: "16px 16px 90px" }}>
+      <button onClick={onBack} style={{ background: "#EAF2EA", border: "none", borderRadius: 10, padding: "8px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#5C7F60", cursor: "pointer", marginBottom: 16 }}>← Back</button>
+      <h3 style={s.title}>Privacy Policy</h3>
+      <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", marginBottom: 16 }}>Last updated: April 2026</p>
+      {[
+        { title: "1. Information We Collect",  body: "Lumen Flow does not collect, transmit, or store any personal data on external servers. All information you enter – including your name, last period date, fasting history, and daily check-ins – is stored locally on your device only." },
+        { title: "2. How Your Data Is Used",   body: "Your data is used solely to provide app functionality such as cycle phase calculations, fasting timer tracking, and personalised recommendations. This data never leaves your device." },
+        { title: "3. Third Party Services",    body: "Lumen Flow does not share your data with any third parties. We do not use advertising networks, analytics services, or any external data processors." },
+        { title: "4. Data Security",           body: "Since all data is stored locally on your device, your information is protected by your device's own security measures. We recommend keeping your device secure with a passcode or biometric lock." },
+        { title: "5. Children's Privacy",      body: "Lumen Flow is intended for users aged 13 and over. We do not knowingly collect data from children under 13." },
+        { title: "6. Changes to This Policy",  body: "We may update this Privacy Policy from time to time. Any changes will be reflected in the app with an updated date." },
+        { title: "7. Contact Us",              body: "If you have any questions about this Privacy Policy, please contact us at: lumenfuxbiz@gmail.com" },
+      ].map((item, i) => (
+        <div key={i} style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 6px" }}>{item.title}</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.7 }}>{item.body}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TermsScreen({ onBack }) {
+  return (
+    <div style={{ padding: "16px 16px 90px" }}>
+      <button onClick={onBack} style={{ background: "#EAF2EA", border: "none", borderRadius: 10, padding: "8px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#5C7F60", cursor: "pointer", marginBottom: 16 }}>← Back</button>
+      <h3 style={s.title}>Terms of Service</h3>
+      <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", marginBottom: 16 }}>Last updated: April 2026</p>
+      {[
+        { title: "1. Acceptance of Terms",            body: "By using Lumen Flow, you agree to these Terms of Service. If you do not agree, please do not use the app." },
+        { title: "2. Medical Disclaimer",             body: "Lumen Flow is a wellness tool for informational and educational purposes only. It is NOT a medical device and does NOT provide medical advice. Always consult a qualified healthcare provider before making decisions about your health, diet, or fasting practices." },
+        { title: "3. Not a Substitute for Medical Care", body: "The content in Lumen Flow – including cycle phase information, fasting recommendations, and nutritional guidance – is general in nature and not tailored to your individual medical needs. Never disregard professional medical advice because of something you read in this app." },
+        { title: "4. User Responsibilities",          body: "You are responsible for how you use the information provided in Lumen Flow. Listen to your body, and always prioritise your health and wellbeing over any app recommendation." },
+        { title: "5. Intellectual Property",          body: "© 2026 Lumen Flow. All content, design, and code within this app is the intellectual property of Lumen Flow. Unauthorised reproduction or distribution is prohibited." },
+        { title: "6. Limitation of Liability",        body: "Lumen Flow and its creators shall not be liable for any health outcomes, injuries, or damages arising from use of the app or reliance on its content." },
+        { title: "7. Changes to Terms",               body: "We reserve the right to modify these Terms at any time. Continued use of the app after changes constitutes acceptance of the new Terms." },
+        { title: "8. Contact Us",                     body: "For questions about these Terms, contact us at: lumenfuxbiz@gmail.com" },
+      ].map((item, i) => (
+        <div key={i} style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 6px" }}>{item.title}</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.7 }}>{item.body}</p>
+        </div>
+      ))}
     </div>
   );
 }
@@ -912,13 +801,12 @@ function SettingsScreen({ settings, onSave }) {
 // ─────────────────────────────────────────────
 //  BOTTOM NAV
 // ─────────────────────────────────────────────
-
 function BottomNav({ current, onChange }) {
   const items = [
     { id: "home",     icon: "🏠", label: "Home" },
     { id: "calendar", icon: "📅", label: "Calendar" },
     { id: "checkin",  icon: "✅", label: "Check-In" },
-    { id: "recipes", icon: "🥗", label: "Recipes" },
+    { id: "recipes",  icon: "🥗", label: "Recipes" },
     { id: "learn",    icon: "📖", label: "Learn" },
     { id: "settings", icon: "⚙️", label: "Settings" },
   ];
@@ -942,7 +830,6 @@ function BottomNav({ current, onChange }) {
 // ─────────────────────────────────────────────
 //  HELPER
 // ─────────────────────────────────────────────
-
 function getGreeting() {
   const h = new Date().getHours();
   if (h < 12) return "Morning";
@@ -953,7 +840,6 @@ function getGreeting() {
 // ─────────────────────────────────────────────
 //  ROOT APP
 // ─────────────────────────────────────────────
-
 export default function App() {
   const [settings, setSettings] = useState(() => {
     try {
@@ -976,9 +862,9 @@ export default function App() {
   return (
     <div style={s.app}>
       <div style={s.container}>
-        {screen === "home"     && <HomeScreen name={settings.name} lastPeriod={settings.lastPeriod} />}
+        {screen === "home"     && <HomeScreen     name={settings.name} lastPeriod={settings.lastPeriod} />}
         {screen === "calendar" && <CalendarScreen lastPeriod={settings.lastPeriod} />}
-        {screen === "recipes"  && <RecipesScreen phase={getPhase(getCycleDay(settings.lastPeriod))} />}
+        {screen === "recipes"  && <RecipesScreen  phase={getPhase(getCycleDay(settings.lastPeriod))} />}
         {screen === "checkin"  && <CheckInScreen />}
         {screen === "learn"    && <LearnScreen />}
         {screen === "settings" && <SettingsScreen settings={settings} onSave={saveSettings} />}
@@ -991,7 +877,6 @@ export default function App() {
 // ─────────────────────────────────────────────
 //  STYLES
 // ─────────────────────────────────────────────
-
 const s = {
   app:        { minHeight: "100vh", background: "#F4F8F4", display: "flex", justifyContent: "center", fontFamily: "sans-serif" },
   container:  { width: "100%", maxWidth: 480, background: "#fff", minHeight: "100vh", position: "relative", boxShadow: "0 0 40px rgba(0,0,0,0.08)" },
