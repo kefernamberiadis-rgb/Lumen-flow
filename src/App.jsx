@@ -8,9 +8,6 @@ function getCycleDay(lastPeriod) {
   const diff = Math.floor((Date.now() - new Date(lastPeriod).getTime()) / 86400000);
   return (diff % 28) + 1;
 }
-function getCycleDayFor(d) {
-  return d;
-}
 function getPhase(day) {
   if (day <= 5)  return "Menstrual";
   if (day <= 13) return "Follicular";
@@ -34,12 +31,13 @@ function Onboarding({ onDone }) {
   const [name, setName]       = useState("");
   const [lastPeriod, setLast] = useState("");
   const [agreed, setAgreed]   = useState(false);
+  const [mode, setMode]       = useState(null);
   const today = new Date().toISOString().split("T")[0];
 
   return (
     <div style={s.screen}>
       <div style={{ display: "flex", gap: 8, marginBottom: 40 }}>
-        {[1, 2, 3].map(i => (
+        {[1, 2, 3, 4, 5].map(i => (
           <div key={i} style={{
             height: 8, borderRadius: 100,
             background: i <= step ? "#8FAF8F" : "#D9E8D9",
@@ -51,56 +49,110 @@ function Onboarding({ onDone }) {
       {step === 1 && (
         <div style={s.onboardBox}>
           <div style={{ fontSize: 56, marginBottom: 16 }}>🌿</div>
-          <h1 style={s.heading}>Welcome to<br />Lumen Flow</h1>
-          <p style={{ ...s.sub, marginBottom: 32 }}>Cycle-synced fasting & wellness,<br />designed for women.</p>
+          <h1 style={{ fontFamily: "Georgia, serif", fontSize: 24, fontWeight: 400, color: "#2D3B2E", letterSpacing: "0.06em", marginBottom: 4 }}>Lumen Flow</h1>
+          <div style={{ width: 36, height: 1, background: "#C5D9C5", margin: "8px auto 16px" }} />
+          <p style={{ ...s.sub, marginBottom: 32, letterSpacing: "0.04em" }}>Know your body's rhythm.</p>
           <button style={s.btn} onClick={() => setStep(2)}>Get Started</button>
         </div>
       )}
 
       {step === 2 && (
         <div style={s.onboardBox}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🌸</div>
-          <h2 style={s.heading}>What's your name?</h2>
-          <p style={{ ...s.sub, marginBottom: 24 }}>We'll personalise your experience.</p>
-          <input
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="Your first name"
-            style={{ ...s.input, textAlign: "center", marginBottom: 20 }}
-          />
-          <button style={s.btn} onClick={() => name.trim() && setStep(3)}>Continue</button>
+          <div style={{ fontSize: 36, marginBottom: 16 }}>✨</div>
+          <h2 style={s.heading}>How would you like<br />to use Lumen Flow?</h2>
+          <div style={{ width: 36, height: 1, background: "#C5D9C5", margin: "8px auto 20px" }} />
+          <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+            <button onClick={() => { setMode("cycle"); setStep(3); }} style={{ width: "100%", padding: "16px 18px", borderRadius: 18, border: "0.5px solid #dce8dc", background: "#fff", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 20 }}>🌸</span>
+              <div>
+                <div style={{ fontFamily: "sans-serif", fontSize: 14, fontWeight: 600, color: "#2D3B2E" }}>I track a cycle</div>
+                <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", marginTop: 2 }}>Phase-synced fasting + cycle tracking</div>
+              </div>
+            </button>
+            <button onClick={() => { setMode("fast"); setStep(3); }} style={{ width: "100%", padding: "16px 18px", borderRadius: 18, border: "0.5px solid #dce8dc", background: "#fff", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 20 }}>⚡</span>
+              <div>
+                <div style={{ fontFamily: "sans-serif", fontSize: 14, fontWeight: 600, color: "#2D3B2E" }}>Fasting focus only</div>
+                <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", marginTop: 2 }}>Timer, streaks and fasting tools</div>
+              </div>
+            </button>
+          </div>
           <button style={s.backBtn} onClick={() => setStep(1)}>← Back</button>
         </div>
       )}
 
       {step === 3 && (
         <div style={s.onboardBox}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🌸</div>
+          <h2 style={s.heading}>What's your name?</h2>
+          <p style={{ ...s.sub, marginBottom: 24 }}>We'll personalise your experience.</p>
+          <input value={name} onChange={e => setName(e.target.value)} placeholder="Your first name" style={{ ...s.input, textAlign: "center", marginBottom: 20 }} />
+          <button style={s.btn} onClick={() => name.trim() && setStep(mode === "cycle" ? 4 : 5)}>Continue</button>
+          <button style={s.backBtn} onClick={() => setStep(2)}>← Back</button>
+        </div>
+      )}
+
+      {step === 4 && mode === "cycle" && (
+        <div style={s.onboardBox}>
+          <div style={{ fontSize: 44, marginBottom: 16 }}>💚</div>
+          <h2 style={s.heading}>Any health conditions?</h2>
+          <div style={{ width: 36, height: 1, background: "#C5D9C5", margin: "8px auto 16px" }} />
+          <p style={{ ...s.sub, marginBottom: 20 }}>Optional — helps personalise your tips.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", marginBottom: 20 }}>
+            {[
+              { dot: "#4A90D9", label: "PCOS" },
+              { dot: "#C97B7B", label: "Endometriosis" },
+              { dot: "#E0904A", label: "Perimenopause" },
+              { dot: "#C9A030", label: "Menopause" },
+              { dot: "#5C9E6E", label: "Thyroid" },
+              { dot: "#9B7BC9", label: "Fibroids" },
+            ].map((c, i) => (
+              <button key={i} onClick={e => e.currentTarget.classList.toggle("selected")} style={{ padding: "12px 10px", borderRadius: 14, border: "0.5px solid #dce8dc", background: "#fff", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", color: "#4a5a4b", display: "flex", alignItems: "center", gap: 8, transition: "all 0.2s" }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: c.dot, display: "inline-block", flexShrink: 0 }}></span>
+                {c.label}
+              </button>
+            ))}
+          </div>
+          <button style={s.btn} onClick={() => setStep(5)}>Continue</button>
+          <button style={{ ...s.btn, background: "transparent", color: "#8FA090", border: "none", fontSize: 13, marginTop: 8 }} onClick={() => setStep(5)}>Skip for now</button>
+          <button style={s.backBtn} onClick={() => setStep(3)}>← Back</button>
+        </div>
+      )}
+
+      {step === 5 && mode === "cycle" && (
+        <div style={s.onboardBox}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>🌙</div>
           <h2 style={s.heading}>When did your<br />last period start?</h2>
           <p style={{ ...s.sub, marginBottom: 24 }}>This helps us calculate your cycle phase.</p>
-          <input
-            type="date"
-            value={lastPeriod}
-            max={today}
-            onChange={e => setLast(e.target.value)}
-            style={{ ...s.input, textAlign: "center", marginBottom: 20 }}
-          />
+          <input type="date" value={lastPeriod} max={today} onChange={e => setLast(e.target.value)} style={{ ...s.input, textAlign: "center", marginBottom: 20 }} />
           <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20, textAlign: "left" }}>
-            <input
-              type="checkbox"
-              id="agree"
-              checked={agreed}
-              onChange={e => setAgreed(e.target.checked)}
-              style={{ marginTop: 3, accentColor: "#8FAF8F", width: 18, height: 18, flexShrink: 0, cursor: "pointer" }}
-            />
+            <input type="checkbox" id="agree" checked={agreed} onChange={e => setAgreed(e.target.checked)} style={{ marginTop: 3, accentColor: "#8FAF8F", width: 18, height: 18, flexShrink: 0, cursor: "pointer" }} />
             <label htmlFor="agree" style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", lineHeight: 1.6, cursor: "pointer" }}>
               I agree to the <span style={{ color: "#8FAF8F", fontWeight: 600 }}>Terms of Service</span> and <span style={{ color: "#8FAF8F", fontWeight: 600 }}>Privacy Policy</span>
             </label>
           </div>
-          <button style={{ ...s.btn, opacity: agreed ? 1 : 0.4, cursor: agreed ? "pointer" : "not-allowed" }} onClick={() => lastPeriod && agreed && onDone({ name, lastPeriod, cycleLength: 28 })}>
+          <button style={{ ...s.btn, opacity: agreed ? 1 : 0.4, cursor: agreed ? "pointer" : "not-allowed" }} onClick={() => lastPeriod && agreed && onDone({ name, lastPeriod, cycleLength: 28, mode })}>
             Start My Journey 🌿
           </button>
-          <button style={s.backBtn} onClick={() => setStep(2)}>← Back</button>
+          <button style={s.backBtn} onClick={() => setStep(3)}>← Back</button>
+        </div>
+      )}
+
+      {step === 5 && mode === "fast" && (
+        <div style={s.onboardBox}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>⚡</div>
+          <h2 style={s.heading}>Almost there!</h2>
+          <p style={{ ...s.sub, marginBottom: 24 }}>Just one last thing.</p>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20, textAlign: "left" }}>
+            <input type="checkbox" id="agree2" checked={agreed} onChange={e => setAgreed(e.target.checked)} style={{ marginTop: 3, accentColor: "#8FAF8F", width: 18, height: 18, flexShrink: 0, cursor: "pointer" }} />
+            <label htmlFor="agree2" style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", lineHeight: 1.6, cursor: "pointer" }}>
+              I agree to the <span style={{ color: "#8FAF8F", fontWeight: 600 }}>Terms of Service</span> and <span style={{ color: "#8FAF8F", fontWeight: 600 }}>Privacy Policy</span>
+            </label>
+          </div>
+          <button style={{ ...s.btn, opacity: agreed ? 1 : 0.4, cursor: agreed ? "pointer" : "not-allowed" }} onClick={() => agreed && onDone({ name, lastPeriod: "", cycleLength: 28, mode })}>
+            Start My Journey 🌿
+          </button>
+          <button style={s.backBtn} onClick={() => setStep(3)}>← Back</button>
         </div>
       )}
     </div>
@@ -137,6 +189,11 @@ function HomeScreen({ name, lastPeriod }) {
     localStorage.setItem("lf_fast_start", now);
   };
   const stopFast = () => {
+    const today = new Date().toISOString().split("T")[0];
+    const existing = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
+    if (!existing.includes(today)) {
+      localStorage.setItem("lf_fast_days", JSON.stringify([...existing, today]));
+    }
     setFastStart(null);
     setElapsed(0);
     localStorage.removeItem("lf_fast_start");
@@ -152,7 +209,22 @@ function HomeScreen({ name, lastPeriod }) {
 
   const progress  = fastStart ? Math.min(elapsed / (goalHours * 3600000), 1) : 0;
   const circumference = 2 * Math.PI * 54;
-  const goalOptions = [12, 14, 16, 18, 20, 24];
+
+  const getFastStreak = () => {
+    const days = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
+    if (days.length === 0) return 0;
+    let streak = 0;
+    const today = new Date();
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = d.toISOString().split("T")[0];
+      if (days.includes(key)) { streak++; } else if (i > 0) { break; }
+    }
+    return streak;
+  };
+  const streak = getFastStreak();
+  
 
   return (
     <div style={{ padding: "0 0 90px" }}>
@@ -192,46 +264,64 @@ function HomeScreen({ name, lastPeriod }) {
               {fastStart ? fmtTime(elapsed) : "00:00:00"}
             </p>
             <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: 0 }}>
-              {fastStart ? `Goal: ${goalHours}h` : "ready"}
+              {fastStart ? (() => { const end = new Date(fastStart + goalHours * 3600000); const h = end.getHours() % 12 || 12; const m = end.getMinutes(); const ap = end.getHours() >= 12 ? "pm" : "am"; return `ends ${h}:${m < 10 ? "0" : ""}${m}${ap}`; })() : "ready"}
             </p>
           </div>
         </div>
 
         {/* Goal selector */}
-        <button onClick={() => setShowGoals(!showGoals)} style={{ background: "#EAF2EA", border: "none", borderRadius: 10, padding: "6px 14px", fontFamily: "sans-serif", fontSize: 13, color: "#5C7F60", cursor: "pointer", marginBottom: 12 }}>
-          Goal: {goalHours}h ▾
-        </button>
-        {showGoals && (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginBottom: 12 }}>
-            {goalOptions.map(h => (
-              <button key={h} onClick={() => { setGoalHours(h); setShowGoals(false); }} style={{
-                padding: "6px 14px", borderRadius: 100, border: "none",
-                background: goalHours === h ? info.color : "#EAF2EA",
-                color: goalHours === h ? "#fff" : "#6b7b6b",
-                fontFamily: "sans-serif", fontSize: 13, cursor: "pointer",
-              }}>{h}h</button>
-            ))}
-          </div>
-        )}
+        
 
         {fastStart ? (
           <button onClick={stopFast} style={{ ...s.btn, background: "#C97B7B" }}>End Fast</button>
         ) : (
-          <button onClick={startFast} style={s.btn}>Begin Fast 🌙</button>
+          <button onClick={startFast} style={{ ...s.btn, opacity: goalHours ? 1 : 0.4 }}>Begin Fast 🌙</button>
         )}
       </div>
 
-      {/* Phase card */}
-      <div style={{ ...s.card, margin: "0 16px", background: info.bg, border: `1px solid ${info.color}33`, textAlign: "left" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-          <span style={{ fontSize: 28 }}>{info.emoji}</span>
-          <div>
-            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: info.color, margin: 0 }}>{phase} Phase</p>
-            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0 }}>Day {cycleDay} of your cycle</p>
+      {/* Level cards */}
+      <div style={{ display: "flex", gap: 8, margin: "0 16px 12px" }}>
+        {[{ h: 12, icon: "🌱", label: "Beginner" }, { h: 16, icon: "🌿", label: "Intermediate" }, { h: 18, icon: "🔥", label: "Advanced" }].map(({ h, icon, label }) => (
+          <div key={h} onClick={() => setGoalHours(h)} style={{
+            flex: 1, background: goalHours === h ? "#F0F6F0" : "#fff",
+            border: goalHours === h ? "1.5px solid #7A9E7E" : "1px solid #dce8dc",
+            borderRadius: 16, padding: "12px 8px", textAlign: "center", cursor: "pointer",
+          }}>
+            <div style={{ fontSize: 20, marginBottom: 4 }}>{icon}</div>
+            <div style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 600, color: goalHours === h ? "#5C7F60" : "#4a5a4b", letterSpacing: "0.02em" }}>{label}</div>
+            <div style={{ fontFamily: "sans-serif", fontSize: 10, color: "#A8BEA8", marginTop: 2 }}>{h}h</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Streak + Badges */}
+      <div style={{ padding: "4px 16px 8px" }}>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+          <div style={{ background: "#F0F6F0", border: "0.5px solid #C5D9C5", borderRadius: 50, padding: "6px 18px", display: "flex", alignItems: "center", gap: 6, fontFamily: "sans-serif", fontSize: 12, color: "#5C7F60" }}>
+            <span style={{ fontSize: 14 }}>🔥</span> {streak} day{streak !== 1 ? "s" : ""} fasting streak
           </div>
         </div>
-        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: "0 0 6px" }}>💧 <b>Fast:</b> {info.fast}</p>
-        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: 0 }}>🏋️ <b>Move:</b> {info.move}</p>
+        <div style={{ fontFamily: "sans-serif", fontSize: 10, color: "#A8BEA8", letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 10 }}>Your badges</div>
+        <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4 }}>
+          {[
+            { icon: "🗓️", name: "Streak", prog: `${streak} day${streak !== 1 ? "s" : ""}`, earned: streak > 0 },
+            { icon: "⚡", name: "3 Fasts", prog: "1 / 3", earned: false },
+            { icon: "🌙", name: "Cycle Mo.", prog: "0 / 1", earned: false },
+            { icon: "💚", name: "Recovery", prog: "Earned", earned: true },
+            { icon: "⏰", name: "On Time", prog: "Locked", earned: false },
+            { icon: "🧘", name: "Listen", prog: "Locked", earned: false },
+          ].map((b, i) => (
+            <div key={i} style={{
+              flexShrink: 0, background: b.earned ? "#F0F6F0" : "#fff",
+              border: b.earned ? "0.5px solid #C5D9C5" : "0.5px solid #dce8dc",
+              borderRadius: 14, padding: "11px 12px", textAlign: "center", minWidth: 76,
+            }}>
+              <div style={{ fontSize: 19, marginBottom: 4, opacity: b.earned ? 1 : 0.3 }}>{b.icon}</div>
+              <div style={{ fontFamily: "sans-serif", fontSize: 9, color: b.earned ? "#5C7F60" : "#A8BEA8", fontWeight: 500, letterSpacing: "0.03em", textTransform: "uppercase" }}>{b.name}</div>
+              <div style={{ fontFamily: "sans-serif", fontSize: 9, color: "#A8BEA8", marginTop: 2 }}>{b.prog}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -426,7 +516,7 @@ function CalendarScreen({ lastPeriod }) {
 // ─────────────────────────────────────────────
 function LearnScreen() {
   const [tab, setTab] = useState("Phases");
-  const tabs = ["Phases", "Fasting", "Workouts", "Nutrition", "Blood Color", "Cravings"];
+  const tabs = ["Fasting", "Phases", "Conditions", "Men", "Glossary", "Workouts", "Nutrition", "Blood Color", "Cravings"];
 
   const BLOOD_COLORS = [
     { color: "#B22222", label: "Bright Red",    note: "Fresh flow. Healthy and normal at peak flow." },
@@ -539,6 +629,68 @@ function LearnScreen() {
           </>
         )}
 
+        {tab === "Conditions" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {[
+              { dot: "#4A90D9", title: "PCOS", body: "Polycystic ovary syndrome affects insulin and androgen levels. Many people with PCOS have insulin resistance.\n\nHow fasting helps: Improves insulin sensitivity, helps regulate cycles and reduce androgens. Start with gentle 12–14h windows and build slowly." },
+              { dot: "#C97B7B", title: "Endometriosis", body: "An inflammatory condition where tissue similar to the uterine lining grows outside the uterus.\n\nHow fasting helps: Anti-inflammatory effects may reduce estrogen dominance. Avoid aggressive fasting during flares — gentle 12–14h windows work best." },
+              { dot: "#E0904A", title: "Perimenopause", body: "The transition before menopause, often beginning in the 40s, when hormones become irregular.\n\nTips: 12–14h windows support metabolic health without stressing shifting hormones. Prioritise protein and strength training." },
+              { dot: "#C9A030", title: "Menopause", body: "After 12 months without a period. Estrogen is consistently low, metabolism slows and body composition shifts.\n\nTips: 12–16h windows improve insulin sensitivity and support weight management. Combine with resistance training." },
+              { dot: "#5C9E6E", title: "Thyroid condition", body: "Affects metabolism and energy regulation significantly.\n\nImportant: Fasting can affect T3 levels. Always consult your doctor first. If you do fast, keep to 12–13h maximum and monitor how you feel closely." },
+              { dot: "#9B7BC9", title: "Fibroids", body: "Non-cancerous growths in the uterus, often linked to estrogen dominance.\n\nTips: Reducing excess estrogen through diet and fasting may help. Focus on anti-inflammatory foods. 12–14h windows in the follicular phase are a gentle start." },
+            ].map((item, i) => (
+              <div key={i} style={{ background: "#F8FAF8", borderRadius: 16, padding: "14px 16px", border: "0.5px solid #dce8dc" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: item.dot, flexShrink: 0 }} />
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: 0 }}>{item.title}</p>
+                </div>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0, lineHeight: 1.8, whiteSpace: "pre-line" }}>{item.body}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "Men" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {[
+              { title: "🧬 Testosterone + fasting", body: "Short-term fasting increases testosterone by reducing insulin, which suppresses sex hormone binding globulin (SHBG). Lower SHBG means more free testosterone available to your cells.\n\nPractical tip: 16h fasts 3–4 times a week can meaningfully improve free testosterone levels over time." },
+              { title: "📈 Growth hormone spike", body: "Growth hormone can increase up to 5x baseline after extended fasting. Even 16–18h fasts produce a significant spike.\n\nWhy it matters for muscle: GH stimulates muscle protein synthesis and accelerates fat burning. It is your body's natural anabolic hormone — fasting amplifies it." },
+              { title: "💪 Fasting + muscle growth", body: "Will fasting eat my muscle? The research says no — if you do it right.\n\nKey rules: Hit your daily protein target (1.6–2.2g per kg bodyweight). Break your fast with a protein-rich meal post-workout. Keep fasting windows at 16–18h. Resistance train 3–4x per week." },
+              { title: "🏋️ Fasting + lifting performance", body: "Fasted training: Higher fat oxidation, good for lower intensity sessions. Performance may dip slightly on heavy compound lifts.\n\nFed training: Better peak performance for max lifts. Train 1–2h after breaking your fast with carbs and protein." },
+              { title: "⚖️ Insulin sensitivity + body composition", body: "Fasting dramatically improves insulin sensitivity. This means less fat storage, better energy use and a leaner body composition over time.\n\nThe result: Lower visceral fat, improved metabolic health markers, and a better muscle-to-fat ratio without crash dieting." },
+              { title: "😴 Sleep, recovery + fasting", body: "Finishing your last meal 3–4h before sleep reduces insulin spikes that disrupt deep sleep stages.\n\nWhy this matters for gains: Deep sleep is when GH peaks naturally. Better sleep means more GH which means better muscle recovery." },
+              { title: "🧠 Mental clarity + focus", body: "Ketones produced during fasting are a more efficient brain fuel than glucose. Many men report their sharpest thinking 14–18h into a fast.\n\nFasting increases BDNF which supports neuroplasticity, learning and mood regulation." },
+              { title: "🔄 Autophagy + cellular repair", body: "Autophagy is your body's cellular clean-up process — damaged proteins get recycled and rebuilt. Kicks in around 16–18h of fasting.\n\nSupports joint health, reduces inflammation from heavy training, and is associated with slower cellular ageing." },
+            ].map((item, i) => (
+              <div key={i} style={{ background: "#F8FAF8", borderRadius: 16, padding: "14px 16px", border: "0.5px solid #dce8dc" }}>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 6px" }}>{item.title}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0, lineHeight: 1.8, whiteSpace: "pre-line" }}>{item.body}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "Glossary" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {[
+              { title: "Insulin", body: "A hormone that lets cells absorb glucose for energy. High insulin blocks fat burning — fasting lowers it and resets your metabolic baseline." },
+              { title: "Cortisol", body: "Your stress hormone. Rises naturally in the morning. Extended fasting can spike it — which is why being gentle matters." },
+              { title: "Estrogen", body: "The primary hormone in the first half of the cycle. Boosts energy, mood and metabolic flexibility. Present in all bodies." },
+              { title: "Progesterone", body: "Rises in the second half of the cycle. Increases metabolism slightly and can affect mood and blood sugar stability." },
+              { title: "Testosterone", body: "Key hormone for muscle, energy and drive. Present in all bodies. Fasting, strength training and quality sleep all support healthy levels." },
+              { title: "Growth Hormone", body: "Spikes during fasting and deep sleep. Supports muscle repair, fat burning and anti-ageing processes." },
+              { title: "Ketosis", body: "When your body exhausts glucose stores and switches to burning fat, producing ketones as a byproduct. Activated around 16–18h of fasting." },
+              { title: "Autophagy", body: "Your body's cellular recycling system. Damaged cells get broken down and rebuilt. Activated around 16–18h of fasting. Linked to longevity and reduced inflammation." },
+              { title: "BDNF", body: "Brain-derived neurotrophic factor. Supports brain cell growth, learning and mood. Fasting increases BDNF — which is why mental clarity often improves during a fast." },
+            ].map((item, i) => (
+              <div key={i} style={{ background: "#F8FAF8", borderRadius: 16, padding: "14px 16px", border: "0.5px solid #dce8dc" }}>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 6px" }}>{item.title}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0, lineHeight: 1.8 }}>{item.body}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
         {tab === "Cravings" && (
           <>
             <div style={{ ...s.card, background: "#EAF2EA", textAlign: "left" }}>
@@ -564,15 +716,13 @@ function LearnScreen() {
 function SettingsScreen({ settings, onSave }) {
   const [subScreen,    setSubScreen]    = useState(null);
   const [name,         setName]         = useState(settings.name || "");
-  const [lastPeriod,   setLastPeriod]   = useState(settings.lastPeriod || "");
-  const [cycleLength,  setCycleLength]  = useState(settings.cycleLength || 28);
   const [saved,        setSaved]        = useState(false);
 
   if (subScreen === "privacy") return <PrivacyScreen onBack={() => setSubScreen(null)} />;
   if (subScreen === "terms")   return <TermsScreen   onBack={() => setSubScreen(null)} />;
 
   const handleSave = () => {
-    onSave({ ...settings, name, lastPeriod, cycleLength: Number(cycleLength) });
+    onSave({ ...settings, name });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -584,11 +734,7 @@ function SettingsScreen({ settings, onSave }) {
       <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 14px" }}>Profile</p>
         <label style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b" }}>Your name</label>
-        <input value={name} onChange={e => setName(e.target.value)} style={{ ...s.input, marginTop: 6, marginBottom: 14 }} />
-        <label style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b" }}>Last period start date</label>
-        <input type="date" value={lastPeriod} onChange={e => setLastPeriod(e.target.value)} style={{ ...s.input, marginTop: 6, marginBottom: 14 }} />
-        <label style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b" }}>Average cycle length (days)</label>
-        <input type="number" min={21} max={45} value={cycleLength} onChange={e => setCycleLength(e.target.value)} style={{ ...s.input, marginTop: 6, marginBottom: 0 }} />
+        <input value={name} onChange={e => setName(e.target.value)} style={{ ...s.input, marginTop: 6, marginBottom: 0 }} />
       </div>
 
       <button onClick={handleSave} style={{ ...s.btn, marginBottom: 16 }}>
@@ -636,10 +782,22 @@ const RECIPES = [
   { id: 17, name: "Quinoa Stuffed Tomatoes",    diet: "Gluten-Free",  time: 35, phases: ["Follicular","Ovulation"], tip: "Quinoa is a complete protein.",                    ingredients: ["4 large tomatoes","1 cup quinoa","Feta","Olives","Cucumber","Mint","Lemon"],                                steps: ["Cook quinoa per package.","Hollow out tomatoes.","Mix quinoa with feta, olives, cucumber, mint.","Fill tomatoes with mixture.","Bake at 180°C for 15 min."] },
   { id: 18, name: "Mango Chia Pudding",         diet: "Gluten-Free",  time: 10, phases: ["Follicular","Ovulation"], tip: "Omega-3s in chia support anti-inflammation.",      ingredients: ["4 tbsp chia seeds","1.5 cups coconut milk","1 mango, diced","Lime zest","Honey","Mint"],                    steps: ["Mix chia seeds with coconut milk.","Stir well and refrigerate 4+ hours.","Stir again before serving.","Top with fresh mango.","Add lime zest, honey, and mint."] },
   { id: 19, name: "Turmeric Golden Soup",       diet: "Vegan",        time: 30, phases: ["Menstrual","Luteal"],     tip: "Curcumin in turmeric eases period pain.",         ingredients: ["1 head cauliflower","1 can coconut milk","Vegetable stock","2 tsp turmeric","Ginger","Garlic","Black pepper"],steps: ["Roast cauliflower at 200°C for 25 min.","Blend with stock, coconut milk, and spices.","Heat in pot with garlic and ginger.","Simmer 10 min.","Finish with lemon juice and black pepper."] },
-  { id: 20, name: "Walnut & Date Energy Bites", diet: "Vegan",        time: 15, phases: ["Luteal"],                 tip: "Magnesium in walnuts eases PMS.",                 ingredients: ["1 cup walnuts","1 cup medjool dates, pitted","3 tbsp cacao powder","Pinch of sea salt","Desiccated coconut"],steps: ["Blend walnuts in food processor.","Add dates, cacao, and salt.","Blend until mixture sticks together.","Roll into small balls.","Coat in coconut. Refrigerate 30 min."] },
+  { id: 20, name: "Walnut & Date Energy Bites", diet: "Vegan", time: 15, phases: ["Luteal"], tip: "Magnesium in walnuts eases PMS.", ingredients: ["1 cup walnuts","1 cup medjool dates, pitted","3 tbsp cacao powder","Pinch of sea salt","Desiccated coconut"], steps: ["Blend walnuts in food processor.","Add dates, cacao, and salt.","Blend until mixture sticks together.","Roll into small balls.","Coat in coconut. Refrigerate 30 min."] },
+  { id: 21, name: "Pesto Chicken Bake", diet: "High Protein", time: 30, phases: ["Follicular","Ovulation"], tip: "Protein and healthy fats support peak phase energy.", ingredients: ["2 chicken breasts","4 tbsp basil pesto","2 large tomatoes, sliced","150g fresh mozzarella, sliced","Olive oil","Salt and pepper","Fresh basil to serve"], steps: ["Preheat oven to 200C.","Season chicken breasts with salt and pepper.","Place in a baking dish and bake for 15 minutes.","Remove and spread pesto generously over each breast.","Layer tomato slices and mozzarella on top.","Return to oven for 10-12 minutes until cheese is melted and bubbly.","Finish with fresh basil and a drizzle of olive oil."] },
+  { id: 22, name: "Jar Butter Chicken", diet: "High Protein", time: 25, phases: ["Luteal","Menstrual"], tip: "Warming spices support comfort and reduce inflammation.", ingredients: ["500g chicken breast or thighs, cubed","1 jar butter chicken sauce","2 tbsp butter or ghee","1 onion, diced","Salt to taste","Basmati rice to serve","Fresh coriander to serve"], steps: ["Heat butter in a large pan over medium heat.","Saute onion until soft and golden, about 5 minutes.","Add chicken pieces and cook until sealed on all sides.","Pour the entire jar of butter chicken sauce over the chicken.","Stir well, reduce heat and simmer for 15 minutes until cooked through.","Taste and season with salt.","Serve over basmati rice topped with fresh coriander."] },
+  { id: 23, name: "Honey Garlic Chicken Wings", diet: "High Protein", time: 45, phases: ["Follicular","Ovulation"], tip: "High protein fuel for your peak performance phase.", ingredients: ["1kg chicken wings","4 tbsp honey","4 cloves garlic, minced","3 tbsp soy sauce","1 tbsp butter","1 tsp sesame oil","Salt and pepper","Sesame seeds and spring onions to serve"], steps: ["Preheat oven to 220C.","Season wings with salt and pepper.","Bake on a rack for 25 minutes, flipping halfway.","Melt butter in a pan, add garlic and cook 1 minute.","Add honey, soy sauce and sesame oil, stir and simmer 3 minutes.","Toss baked wings in the sauce until fully coated.","Return to oven for 8-10 minutes until sticky and caramelised.","Top with sesame seeds and spring onions."] },
+  { id: 24, name: "Hot Chicken Wings", diet: "High Protein", time: 45, phases: ["Follicular","Ovulation"], tip: "Capsaicin in hot sauce boosts metabolism naturally.", ingredients: ["1kg chicken wings","4 tbsp hot sauce","2 tbsp butter, melted","1 tsp garlic powder","1 tsp paprika","Salt and pepper","Blue cheese or ranch dip to serve","Celery sticks to serve"], steps: ["Preheat oven to 220C.","Pat wings dry for crispy skin.","Season with garlic powder, paprika, salt and pepper.","Bake on a rack for 30 minutes, flipping halfway.","Mix hot sauce with melted butter.","Toss wings in hot sauce mixture until coated.","Return to oven for 10 minutes until crispy and glazed.","Serve with blue cheese dip and celery."] },
+  { id: 25, name: "Parmesan Garlic Wings", diet: "High Protein", time: 40, phases: ["Follicular","Ovulation"], tip: "Calcium and protein make this a muscle-supporting meal.", ingredients: ["1kg chicken wings","4 tbsp butter, melted","4 cloves garlic, minced","100g parmesan, freshly grated","1 tsp Italian seasoning","Salt and pepper","Fresh parsley to serve"], steps: ["Preheat oven to 220C.","Season wings with salt, pepper and Italian seasoning.","Bake on a rack for 30 minutes, flipping halfway.","Mix melted butter with minced garlic.","Toss hot wings in garlic butter until coated.","Immediately toss in grated parmesan.","Return to oven for 5 minutes to set the coating.","Serve topped with fresh parsley and extra parmesan."] },
+  { id: 26, name: "Italian Herb Baked Chicken", diet: "High Protein", time: 35, phases: ["Follicular","Ovulation"], tip: "Lean protein supports muscle and sustained energy.", ingredients: ["4 chicken breasts","2 tsp Italian seasoning","1 tsp garlic powder","1 tsp onion powder","1 tsp paprika","2 tbsp olive oil","Salt and pepper","Lemon wedges to serve"], steps: ["Preheat oven to 200C.","Mix Italian seasoning, garlic powder, onion powder, paprika, salt and pepper.","Coat chicken in olive oil then rub seasoning all over.","Place in a baking dish.","Bake for 22-25 minutes until cooked through.","Rest for 5 minutes before slicing.","Serve with lemon wedges and fresh herbs."] },
+  { id: 27, name: "Jamaican Rice & Red Beans", diet: "Caribbean", time: 40, phases: ["Luteal","Menstrual"], tip: "Complex carbs and plant protein stabilise blood sugar.", ingredients: ["2 cups long grain white rice","1 can red kidney beans, drained","1 can coconut milk","2 cups water","3 cloves garlic, minced","2 spring onions","1 sprig fresh thyme","1 whole scotch bonnet pepper","Salt to taste"], steps: ["Combine coconut milk and water in a large pot and bring to a simmer.","Add garlic, spring onions, thyme and whole scotch bonnet - do not pierce it.","Add kidney beans and stir.","Add rice and season generously with salt.","Stir once, bring to a boil then reduce to lowest heat.","Cover tightly and cook for 20-25 minutes until rice is fluffy.","Remove scotch bonnet, thyme and spring onions before serving.","Fluff with a fork and serve."] },
+  { id: 28, name: "Jamaican Oxtail Stew", diet: "Caribbean", time: 180, phases: ["Menstrual","Luteal"], tip: "Iron-rich oxtail replenishes what is lost during your period.", ingredients: ["1.5kg oxtail pieces","1 can butter beans","2 onions, diced","4 cloves garlic, minced","2 tbsp browning sauce","2 tbsp soy sauce","1 tbsp allspice","1 scotch bonnet pepper","2 sprigs thyme","2 spring onions","Salt and pepper","2 tbsp oil"], steps: ["Season oxtail with browning sauce, soy sauce, allspice, salt, pepper and half the garlic. Marinate 1 hour or overnight.","Heat oil and brown oxtail pieces in batches.","Remove oxtail. Saute onions and remaining garlic until soft.","Return oxtail to pot. Cover with water and bring to a boil.","Add thyme, spring onions and whole scotch bonnet.","Reduce heat, cover and simmer for 2-2.5 hours until tender.","Add butter beans in the last 20 minutes.","Serve with white rice."] },
+  { id: 29, name: "Jamaican Curry Chicken", diet: "Caribbean", time: 60, phases: ["Follicular","Luteal"], tip: "Turmeric in curry powder is powerfully anti-inflammatory.", ingredients: ["1kg chicken pieces, bone-in","3 tbsp Jamaican curry powder","1 onion, diced","4 cloves garlic, minced","1 tsp fresh ginger, grated","2 potatoes, cubed","1 scotch bonnet pepper","2 sprigs thyme","2 tbsp oil","Salt to taste","White rice to serve"], steps: ["Season chicken with curry powder, salt and half the garlic. Marinate 30 minutes.","Heat oil in a pot. Add remaining garlic, onion and ginger. Cook 3 minutes.","Add chicken and brown on all sides.","Add enough water to cover halfway. Add thyme and whole scotch bonnet.","Cover and simmer 30 minutes.","Add potatoes and cook 15-20 minutes until tender.","Taste and adjust seasoning.","Serve over white rice."] },
+  { id: 30, name: "Caribbean Stew Chicken", diet: "Caribbean", time: 60, phases: ["Follicular","Ovulation"], tip: "Bone-in chicken provides collagen for joint health.", ingredients: ["1kg chicken pieces, bone-in","2 tbsp browning sauce","1 tbsp soy sauce","1 onion, diced","4 cloves garlic, minced","1 bell pepper, diced","2 tomatoes, diced","2 sprigs thyme","1 scotch bonnet pepper","2 tbsp oil","Salt and pepper"], steps: ["Season chicken with browning sauce, soy sauce, garlic, salt and pepper. Marinate 30 minutes.","Heat oil and brown chicken pieces well on all sides.","Remove chicken. Saute onion, bell pepper and garlic 3 minutes.","Add tomatoes and cook until soft.","Return chicken to pot. Add thyme and whole scotch bonnet.","Add a splash of water, cover and simmer on low for 35-40 minutes.","Taste and adjust seasoning.","Serve with white rice or rice and peas."] },
+  { id: 31, name: "Fried Sweet Plantain", diet: "Caribbean", time: 15, phases: ["Luteal","Menstrual"], tip: "Natural sugars in ripe plantain give gentle energy during your period.", ingredients: ["2 very ripe plantains, skin mostly black","Oil for frying","Pinch of salt"], steps: ["Peel plantains and cut on a diagonal into 1cm slices.","Heat about 1cm of oil in a pan over medium heat.","Fry plantain slices for 2-3 minutes per side until golden and caramelised.","They should be soft inside and slightly crispy outside.","Remove and drain on paper towel.","Season with a pinch of salt.","Serve immediately as a side or snack."] },
+  { id: 32, name: "Crispy Roasted Potatoes", diet: "Vegan", time: 45, phases: ["Luteal","Follicular"], tip: "Complex carbs from potatoes provide sustained energy.", ingredients: ["800g potatoes, cubed","3 tbsp olive oil","1 tsp garlic powder","1 tsp paprika","1 tsp dried rosemary","Salt and pepper"], steps: ["Preheat oven to 220C.","Cube potatoes into even pieces and pat dry.","Toss with olive oil, garlic powder, paprika, rosemary, salt and pepper.","Spread in a single layer on a baking tray - do not crowd them.","Roast for 35-40 minutes, turning halfway, until golden and crispy.","Season with extra salt immediately out of the oven."] },
 ];
 
-const DIET_TYPES    = ["All","Low Carb","High Carb","Keto","Carnivore","Vegan","Vegetarian","Mediterranean","Paleo","Gluten-Free"];
+const DIET_TYPES    = ["All","High Protein","Low Carb","High Carb","Keto","Carnivore","Vegan","Vegetarian","Mediterranean","Paleo","Gluten-Free","Caribbean"];
 const PHASE_FILTERS = ["All","Menstrual","Follicular","Ovulation","Luteal"];
 
 function RecipesScreen({ phase }) {
@@ -806,7 +964,7 @@ function BottomNav({ current, onChange }) {
     { id: "home",     icon: "🏠", label: "Home" },
     { id: "calendar", icon: "📅", label: "Calendar" },
     { id: "checkin",  icon: "✅", label: "Check-In" },
-    { id: "recipes",  icon: "🥗", label: "Recipes" },
+    { id: "recipes",  icon: "🌿", label: "Nourish" },
     { id: "learn",    icon: "📖", label: "Learn" },
     { id: "settings", icon: "⚙️", label: "Settings" },
   ];
@@ -887,10 +1045,8 @@ const s = {
   chip:       { borderRadius: 100, padding: "5px 14px", fontSize: 13, fontWeight: 600 },
   header:     { display: "flex", alignItems: "center", gap: 8, padding: "14px 16px" },
   title:      { fontFamily: "Georgia, serif", fontWeight: 400, fontSize: 20, color: "#2D3B2E", margin: "0 0 12px" },
-  phaseCard:  { padding: "10px 14px", borderRadius: 12, marginBottom: 12, fontWeight: 600, fontSize: 14 },
   card:       { background: "#F8FAF8", padding: 16, borderRadius: 18, textAlign: "center", marginBottom: 12 },
   label:      { margin: 0, fontSize: 13, color: "#6b7b6b" },
-  fastOption: { padding: "12px 14px", borderRadius: 12, marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", transition: "all 0.15s" },
   btn:        { width: "100%", padding: 14, borderRadius: 16, border: "none", background: "#8FAF8F", color: "#fff", fontWeight: "bold", fontSize: 15, cursor: "pointer" },
   backBtn:    { marginTop: 10, background: "none", border: "none", color: "#8FA090", fontSize: 14, cursor: "pointer", padding: 8 },
   input:      { width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #C5D9C5", fontFamily: "sans-serif", fontSize: 15, color: "#2D3B2E", background: "#F4F8F4", boxSizing: "border-box", outline: "none", marginBottom: 4 },
