@@ -772,8 +772,10 @@ function CheckInScreen({ mode, onNavigate }) {
 // ─────────────────────────────────────────────
 function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, periodLength = 7, mode }) {
   const [showMenu, setShowMenu] = useState(false);
+  const [calendarKey, setCalendarKey] = useState(0);
   const [periodMsg, setPeriodMsg] = useState(null);
   const [showEditCycle, setShowEditCycle] = useState(false);
+  const [periodRangesState, setPeriodRangesState] = useState(() => JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"));
   const [editDateInput, setEditDateInput] = useState("");
   const [editCycleLength, setEditCycleLength] = useState(cycleLength);
   const [editPeriodLength, setEditPeriodLength] = useState(periodLength);
@@ -857,18 +859,21 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
       </div>
 
       {/* Calendar grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
+      <div key={calendarKey} style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
         {Array.from({ length: firstDow }).map((_, i) => <div key={`e${i}`} />)}
-        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(d => {
+        {(() => {
+          const allPeriodRanges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]");
+          const allFastDays = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
+          return Array.from({ length: daysInMonth }, (_, i) => i + 1).map(d => {
           const cycDay  = getCycleDayFor(d);
           const phase   = getPhase(cycDay);
           const info    = PHASE_INFO[phase];
           const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
           const isSel   = d === selDay;
-          const fastDays = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
+          const fastDays = allFastDays;
           const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
           const isFasted = fastDays.includes(dateStr);
-          const periodRanges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]");
+          const periodRanges = allPeriodRanges;
           const isPeriodDay = periodRanges.some(r => {
             if (!r.start) return false;
             const start = r.start;
@@ -895,7 +900,8 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>{d}</button>
           );
-        })}
+        });
+        })()}
       </div>
 
       {/* Legend */}
@@ -1006,11 +1012,11 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
           <div style={{ background: "#fff", borderRadius: 18, padding: "8px 0", boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "0.5px solid #dce8dc", minWidth: 200 }}>
             {mode !== "fast" ? (
               <>
-                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); ranges.push({ start: selectedDate, end: null, predicted: false }); localStorage.setItem("lf_period_ranges", JSON.stringify(ranges)); onSave && onSave(selectedDate); setShowMenu(false); setPeriodMsg(`🩸 Period started ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#C97B7B", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); ranges.push({ start: selectedDate, end: null, predicted: false }); localStorage.setItem("lf_period_ranges", JSON.stringify(ranges)); setPeriodRangesState(ranges); setCalendarKey(k => k + 1); onSave && onSave(selectedDate); setShowMenu(false); setPeriodMsg(`🩸 Period started ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#C97B7B", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 18 }}>🩸</span> Period started today
                 </button>
                 <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
-                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); if (ranges.length > 0 && !ranges[ranges.length-1].end) { ranges[ranges.length-1].end = selectedDate; localStorage.setItem("lf_period_ranges", JSON.stringify(ranges)); } setShowMenu(false); setPeriodMsg(`✅ Period ended ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#7A9E7E", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); if (ranges.length > 0 && !ranges[ranges.length-1].end) { ranges[ranges.length-1].end = selectedDate; localStorage.setItem("lf_period_ranges", JSON.stringify(ranges)); setPeriodRangesState([...ranges]); } setShowMenu(false); setPeriodMsg(`✅ Period ended ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#7A9E7E", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 18 }}>✅</span> Period ended today
                 </button>
                 <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />

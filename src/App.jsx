@@ -427,7 +427,7 @@ function CheckInScreen({ mode, onNavigate }) {
   const [notes,  setNotes]  = useState("");
 
   const save = () => {
-    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, bodyCheck, namedMood };
+    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, bodyCheck, namedMood, symptoms };
     localStorage.setItem(key, JSON.stringify(data));
     setSaved(data);
   };
@@ -441,6 +441,7 @@ function CheckInScreen({ mode, onNavigate }) {
   const [water, setWater] = useState(0);
   const [movement, setMovement] = useState("none");
   const [bodyCheck, setBodyCheck] = useState("");
+  const [symptoms, setSymptoms] = useState([]);
   const ratingEmojis = ["😔","😕","😐","🙂","😊"];
   const [namedMood, setNamedMood] = useState(null);
 
@@ -497,6 +498,7 @@ function CheckInScreen({ mode, onNavigate }) {
         {saved.water > 0 && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💧 Water: {saved.water} glasses</p>}
         {saved.bodyCheck && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🌿 Body check: {saved.bodyCheck} lbs</p>}
         {saved.namedMood && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💭 Feeling: {saved.namedMood}</p>}
+        {saved.symptoms && saved.symptoms.length > 0 && saved.symptoms[0] !== "none" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🩺 Symptoms: {Array.isArray(saved.symptoms) ? saved.symptoms.join(", ") : saved.symptoms}</p>}
         {saved.notes && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: 0 }}>📝 {saved.notes}</p>}
       </div>
       <button onClick={() => setSaved(null)} style={{ ...s.btn, background: "#EAF2EA", color: "#5C7F60", marginTop: 12 }}>Edit Check-in</button>
@@ -695,6 +697,23 @@ function CheckInScreen({ mode, onNavigate }) {
         <div style={{ display: "flex", justifyContent: "space-around" }}>
           {ratingEmojis.map((e, i) => (
             <button key={i} onClick={() => setWorkout(i + 1)} style={{ fontSize: 28, background: "none", border: "none", cursor: "pointer", opacity: workout === i + 1 ? 1 : 0.35, transition: "opacity 0.15s" }}>{e}</button>
+          ))}
+        </div>
+      </div>
+      )}
+
+      {mode !== "fast" && (
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🩺 Symptoms</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Select all that apply today</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {["none","cramps","headache","breast tenderness","back pain","acne","bloating","insomnia","fatigue","nausea","hot flashes","irritability","brain fog"].map(sym => (
+            <button key={sym} onClick={() => setSymptoms(prev => prev.includes(sym) ? prev.filter(x => x !== sym) : [...prev, sym])} style={{
+              padding: "7px 14px", borderRadius: 100, border: "none",
+              background: symptoms.includes(sym) ? "#C97B7B" : "#FDEAEA",
+              color: symptoms.includes(sym) ? "#fff" : "#C97B7B",
+              fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", textTransform: "capitalize",
+            }}>{sym}</button>
           ))}
         </div>
       </div>
