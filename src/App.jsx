@@ -1047,7 +1047,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
 function LearnScreen({ mode }) {
   const [tab, setTab] = useState("Phases");
   const tabs = mode === "fast" 
-    ? ["Fasting", "Men", "Glossary", "Workouts", "Nutrition", "Cravings"]
+    ? ["Fasting", "Men", "Glossary", "Workouts", "Nutrition", "Cravings", "Grooming", "Gut Health"]
     : ["Fasting", "Phases", "Conditions", "Men", "Glossary", "Workouts", "Nutrition", "Blood Color", "Cravings"];
 
   const BLOOD_COLORS = [
@@ -1250,6 +1250,50 @@ function LearnScreen({ mode }) {
               <div key={i} style={{ ...s.card, textAlign: "left" }}>
                 <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 6px" }}>{cr.craving}</p>
                 <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{cr.why}</p>
+              </div>
+            ))}
+          </>
+        )}
+
+        {tab === "Grooming" && (
+          <>
+            {[
+              { icon: "🧴", title: "Skincare basics", tip: "Cleanse morning and night. Use SPF daily — UV damage is the number one cause of premature aging. Moisturiser is not optional. Start simple: cleanser, moisturiser, SPF." },
+              { icon: "💧", title: "Hydration and skin", tip: "Fasting can dehydrate skin. Drink 2-3 litres of water daily. Your skin reflects your hydration — dull skin often means dehydration not ageing." },
+              { icon: "😴", title: "Sleep and recovery", tip: "Growth hormone peaks during deep sleep. 7-9 hours is not optional for men who fast and train. Poor sleep raises cortisol, reduces testosterone, and shows on your face." },
+              { icon: "🧖", title: "Cold and heat therapy", tip: "Cold showers after training reduce inflammation and boost alertness. Sauna use 2-3 times weekly has been linked to improved cardiovascular health and testosterone levels." },
+              { icon: "✂️", title: "Grooming routine", tip: "A consistent grooming routine takes 5 minutes. Trim, moisturise, and stay clean. How you present yourself affects how you feel — and how you perform." },
+              { icon: "🦷", title: "Oral health", tip: "Fasting can cause dry mouth and bad breath. Brush twice daily, floss, and use mouthwash. Oral health is directly linked to heart health and testosterone levels." },
+              { icon: "🧠", title: "Mental grooming", tip: "Journaling, meditation, and breathwork are not soft — they are performance tools. Stress management directly protects testosterone and supports fasting results." },
+            ].map((item, i) => (
+              <div key={i} style={{ ...s.card, textAlign: "left" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 22 }}>{item.icon}</span>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: 0 }}>{item.title}</p>
+                </div>
+                <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{item.tip}</p>
+              </div>
+            ))}
+          </>
+        )}
+
+        {tab === "Gut Health" && (
+          <>
+            {[
+              { icon: "🦠", title: "The gut-hormone connection", tip: "Your gut microbiome directly influences testosterone and estrogen levels. A healthy gut produces neurotransmitters that affect mood, energy, and hormonal balance." },
+              { icon: "⏰", title: "Fasting and gut health", tip: "Intermittent fasting gives your gut time to rest and repair. The fasting window allows the migrating motor complex to clean the intestinal tract — reducing bloating and improving nutrient absorption." },
+              { icon: "🥦", title: "Foods that support gut health", tip: "Fermented foods like yogurt, kimchi, and sauerkraut feed good bacteria. Fibre from vegetables, legumes, and whole grains feeds the microbiome. Diversity matters — eat a variety of plants." },
+              { icon: "💧", title: "Hydration and digestion", tip: "Water is essential for digestion. Dehydration slows the gut, causes constipation, and increases inflammation. Drink water consistently throughout your eating window." },
+              { icon: "🚫", title: "What disrupts gut health", tip: "Ultra-processed foods, excessive alcohol, antibiotics without probiotics, chronic stress, and poor sleep all damage the gut microbiome. Consistency in diet and sleep matters more than any supplement." },
+              { icon: "😤", title: "Stress and the gut", tip: "The gut-brain axis means stress directly affects digestion. Chronic stress increases gut permeability — known as leaky gut — which triggers inflammation and hormonal disruption." },
+              { icon: "💊", title: "Supplements worth considering", tip: "Probiotics, prebiotics, and digestive enzymes can support gut health. Magnesium glycinate supports both gut motility and sleep. Always consult a healthcare provider before starting supplements." },
+            ].map((item, i) => (
+              <div key={i} style={{ ...s.card, textAlign: "left" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 22 }}>{item.icon}</span>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: 0 }}>{item.title}</p>
+                </div>
+                <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{item.tip}</p>
               </div>
             ))}
           </>
