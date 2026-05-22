@@ -1140,7 +1140,7 @@ function LearnScreen({ mode }) {
   const [tab, setTab] = useState(mode === "fast" ? "Fasting" : "Phases");
   const tabs = mode === "fast" 
     ? ["Fasting", "Men", "Glossary", "Workouts", "Nutrition", "Cravings", "Grooming", "Gut Health"]
-    : ["Fasting", "Phases", "Conditions", "Men", "Glossary", "Workouts", "Nutrition", "Blood Color", "Cravings", "Cycle Guide", "Gut Health"];
+    : ["Fasting", "Phases", "Conditions", "Glossary", "Workouts", "Nutrition", "Blood Color", "Cravings", "Cycle Guide", "Gut Health"];
 
   const BLOOD_COLORS = [
     { color: "#B22222", label: "Bright Red",    note: "Fresh flow. Healthy and normal at peak flow." },
@@ -1550,6 +1550,16 @@ function SettingsScreen({ settings, onSave }) {
         <button onClick={() => setSubScreen("terms")} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EAF2EA", border: "none", borderRadius: 12, padding: "12px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#2D3B2E", cursor: "pointer" }}>
           <span>📄 Terms of Service</span><span style={{ color: "#C5D9C5", fontSize: 18 }}>›</span>
         </button>
+      </div>
+
+      {/* Switch mode */}
+      <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>⚡ Switch experience</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 12px" }}>Currently using: {settings.mode === "fast" ? "Fasting focus" : "Cycle tracking"}</p>
+        <button onClick={() => { const newMode = settings.mode === "fast" ? "cycle" : "fast"; onSave({...settings, mode: newMode}); }} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "0.5px solid #dce8dc", background: "#F8FAF8", color: "#4a5a4b", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>
+          Switch to {settings.mode === "fast" ? "🌸 Cycle tracking" : "⚡ Fasting focus"}
+        </button>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: "8px 0 0", textAlign: "center" }}>Your data is saved — you can switch back anytime</p>
       </div>
 
       <div style={{ ...s.card, textAlign: "center" }}>

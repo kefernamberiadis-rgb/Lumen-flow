@@ -489,7 +489,7 @@ function CheckInScreen({ mode, onNavigate }) {
   const [notes,  setNotes]  = useState("");
 
   const save = () => {
-    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, bodyCheck, weightUnit, namedMood, symptoms };
+    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, bodyCheck, weightUnit, namedMood, symptoms, workoutType, workoutArea, workoutKm, workoutMins, workoutLbs, workoutReps };
     localStorage.setItem(key, JSON.stringify(data));
     setSaved(data);
   };
@@ -504,6 +504,12 @@ function CheckInScreen({ mode, onNavigate }) {
   const [movement, setMovement] = useState("none");
   const [bodyCheck, setBodyCheck] = useState("");
   const [symptoms, setSymptoms] = useState([]);
+  const [workoutType, setWorkoutType] = useState("");
+  const [workoutArea, setWorkoutArea] = useState("");
+  const [workoutKm, setWorkoutKm] = useState("");
+  const [workoutMins, setWorkoutMins] = useState("");
+  const [workoutLbs, setWorkoutLbs] = useState("");
+  const [workoutReps, setWorkoutReps] = useState("");
   const [weightUnit, setWeightUnit] = useState("lbs");
   const ratingEmojis = ["😞","😔","😐","🙂","😄"];
   const [namedMood, setNamedMood] = useState(null);
@@ -562,6 +568,7 @@ function CheckInScreen({ mode, onNavigate }) {
         {saved.bodyCheck && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🌿 Body check: {saved.bodyCheck} {saved.weightUnit || "lbs"}</p>}
         {saved.namedMood && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💭 Feeling: {saved.namedMood}</p>}
         {saved.symptoms && saved.symptoms.length > 0 && saved.symptoms[0] !== "none" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🩺 Symptoms: {Array.isArray(saved.symptoms) ? saved.symptoms.join(", ") : saved.symptoms}</p>}
+        {saved.workoutType && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🏋️ Workout: {saved.workoutType}{saved.workoutArea ? ` · ${saved.workoutArea}` : ""}{saved.workoutKm ? ` · ${saved.workoutKm}km` : ""}{saved.workoutMins ? ` · ${saved.workoutMins}min` : ""}{saved.workoutLbs ? ` · ${saved.workoutLbs}lbs` : ""}{saved.workoutReps ? ` · ${saved.workoutReps}` : ""}</p>}
         {saved.notes && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: 0 }}>📝 {saved.notes}</p>}
       </div>
       <button onClick={() => setSaved(null)} style={{ ...s.btn, background: "#EAF2EA", color: "#5C7F60", marginTop: 12 }}>Edit Check-in</button>
@@ -798,7 +805,7 @@ function CheckInScreen({ mode, onNavigate }) {
 
       <div style={s.card}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🏃 Movement</p>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
           {["none","gentle","moderate","intense","rest day"].map(m => (
             <button key={m} onClick={() => setMovement(m)} style={{
               padding: "7px 14px", borderRadius: 100, border: "none",
@@ -808,6 +815,65 @@ function CheckInScreen({ mode, onNavigate }) {
             }}>{m}</button>
           ))}
         </div>
+        {movement !== "none" && movement !== "rest day" && (
+          <div>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Workout type</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+              {["weights","run","walk","yoga","HIIT","cycling","swimming","sport"].map(w => (
+                <button key={w} onClick={() => setWorkoutType(workoutType === w ? "" : w)} style={{
+                  padding: "6px 12px", borderRadius: 100, border: "none",
+                  background: workoutType === w ? "#5C7F60" : "#F0F6F0",
+                  color: workoutType === w ? "#fff" : "#4a5a4b",
+                  fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", textTransform: "capitalize",
+                }}>{w}</button>
+              ))}
+            </div>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Body area</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+              {["upper body","lower body","full body","core","cardio","flexibility"].map(a => (
+                <button key={a} onClick={() => setWorkoutArea(workoutArea === a ? "" : a)} style={{
+                  padding: "6px 12px", borderRadius: 100, border: "none",
+                  background: workoutArea === a ? "#5C7F60" : "#F0F6F0",
+                  color: workoutArea === a ? "#fff" : "#4a5a4b",
+                  fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", textTransform: "capitalize",
+                }}>{a}</button>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+              {(workoutType === "run" || workoutType === "walk" || workoutType === "cycling") && (
+                <div style={{ flex: 1, minWidth: 120 }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Distance</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <input type="number" value={workoutKm} onChange={e => setWorkoutKm(e.target.value)} placeholder="0.0" style={{ ...s.input, width: 70, marginBottom: 0, textAlign: "center" }} />
+                    <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b" }}>km</span>
+                  </div>
+                </div>
+              )}
+              <div style={{ flex: 1, minWidth: 120 }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Duration</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <input type="number" value={workoutMins} onChange={e => setWorkoutMins(e.target.value)} placeholder="0" style={{ ...s.input, width: 70, marginBottom: 0, textAlign: "center" }} />
+                  <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b" }}>min</span>
+                </div>
+              </div>
+              {workoutType === "weights" && (
+                <div style={{ flex: 1, minWidth: 120 }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Weight used</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <input type="number" value={workoutLbs} onChange={e => setWorkoutLbs(e.target.value)} placeholder="0" style={{ ...s.input, width: 70, marginBottom: 0, textAlign: "center" }} />
+                    <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b" }}>lbs</span>
+                  </div>
+                </div>
+              )}
+              {workoutType === "weights" && (
+                <div style={{ flex: 1, minWidth: 120 }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Reps/Sets</p>
+                  <input type="text" value={workoutReps} onChange={e => setWorkoutReps(e.target.value)} placeholder="e.g. 3x10" style={{ ...s.input, marginBottom: 0, textAlign: "center" }} />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={s.card}>
