@@ -1660,6 +1660,26 @@ function RecipesScreen({ phase, onNavigate, mode }) {
         </div>
       )}
 
+      {/* Hunger checker - fasting mode */}
+      {nourishTab === "fasting" && mode === "fast" && (
+        <div style={{ marginTop: 16 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>🧠 Hunger checker</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 12px" }}>Is this real hunger or fasting hunger?</p>
+          {[
+            { q: "When did you last eat?", type: "info", tip: "If it has been less than 3 hours your body is likely adjusting not truly hungry." },
+            { q: "Drink a full glass of water and wait 10 minutes.", type: "action", tip: "Thirst and hunger feel the same. Most fasting hunger disappears after water." },
+            { q: "Where do you feel it?", type: "info", tip: "Real hunger is felt in the stomach. Head hunger or cravings are felt in the mind — you are thinking about food not feeling physical hunger." },
+            { q: "Is it getting stronger or staying the same?", type: "info", tip: "Fasting hunger comes in waves and passes. Real hunger builds steadily over time." },
+            { q: "Rate your hunger 1-10", type: "info", tip: "Below 4 — likely fasting adjustment. Above 7 — your body may genuinely need fuel. Listen to it." },
+          ].map((item, i) => (
+            <div key={i} style={{ background: item.type === "action" ? "#F0F6F0" : "#fff", borderRadius: 16, padding: "14px 16px", border: `0.5px solid ${item.type === "action" ? "#C5D9C5" : "#dce8dc"}`, marginBottom: 10 }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: "0 0 6px" }}>{item.type === "action" ? "💧 " : "❓ "}{item.q}</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{item.tip}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
       {nourishTab === "cravings" && mode !== "fast" && (
       <div onClick={() => onNavigate && onNavigate("calendar")} style={{ background: "#F8F0FF", borderRadius: 18, padding: "16px", border: "0.5px solid #D4C5E9", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
