@@ -10,7 +10,7 @@ function getCycleDay(lastPeriod, cycleLength = 28) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const diff = Math.floor((today - start) / 86400000);
-  return (diff % cycleLength) === 0 ? 1 : (diff % cycleLength) + 1;
+  return (diff % cycleLength) + 1;
 }
 
 function getPeriodPhase(lastPeriod, periodEnded, cycleLength = 28) {
@@ -150,7 +150,7 @@ function Onboarding({ onDone }) {
 // ─────────────────────────────────────────────
 249
 function HomeScreen({ name, lastPeriod, mode }) {
-  const cycleDay = getCycleDay(lastPeriod) - 1 || 1;
+  const cycleDay = Math.max(1, getCycleDay(lastPeriod) - 1);
   const phase    = getPhase(cycleDay);
   const info     = PHASE_INFO[phase];
 
@@ -384,7 +384,7 @@ function HomeScreen({ name, lastPeriod, mode }) {
 // ─────────────────────────────────────────────
 //  CHECK-IN SCREEN
 // ─────────────────────────────────────────────
-function CheckInScreen({ mode }) {
+function CheckInScreen({ mode, onNavigate }) {
   const today = new Date().toISOString().split("T")[0];
   const key   = `lf_checkin_${today}`;
 
@@ -408,6 +408,43 @@ function CheckInScreen({ mode }) {
   const [clarity, setClarity] = useState(3);
   const [workout, setWorkout] = useState(3);
   const ratingEmojis = ["😔","😕","😐","🙂","😊"];
+  const [namedMood, setNamedMood] = useState(null);
+
+  const NAMED_MOODS = {
+    "Happy":       { emoji: "😊", color: "#7A9E7E", bg: "#F0F6F0", message: "You're glowing today. Let that energy carry you gently through the day.", actions: ["Open Nourish", "Log a fast", "Add Note"] },
+    "Calm":        { emoji: "😌", color: "#7BA8C9", bg: "#EAF2F9", message: "You're in a peaceful place. This is a good time to rest into yourself.", actions: ["Open Nourish", "Add Note"] },
+    "Energized":   { emoji: "⚡", color: "#C9A87B", bg: "#FDF6EA", message: "Your energy is high. Use it with intention — move, create, or connect.", actions: ["Log a fast", "Add Note"] },
+    "Tired":       { emoji: "😴", color: "#8FA090", bg: "#F0F6F0", message: "Your body is asking for rest. One small gentle choice is enough today.", actions: ["Open Nourish", "Ground Me", "Add Note"] },
+    "Sad":         { emoji: "🥺", color: "#C97B7B", bg: "#FDEAEA", message: "You're feeling tender today. Start with one small supportive choice.", actions: ["Open Nourish", "Ground Me", "Journal Prompt", "Add Note"] },
+    "Anxious":     { emoji: "😰", color: "#9B7BC9", bg: "#F5F0FF", message: "Your nervous system needs softness right now. You are safe and you are okay.", actions: ["Ground Me", "Open Nourish", "Add Note"] },
+    "Irritated":   { emoji: "😤", color: "#C97B7B", bg: "#FDEAEA", message: "Something is asking for your attention. Be gentle with yourself first.", actions: ["Ground Me", "Open Nourish", "Add Note"] },
+    "Emotional":   { emoji: "🥹", color: "#9B7BC9", bg: "#F5F0FF", message: "Feeling deeply is not a weakness. Let yourself feel without judgment.", actions: ["Journal Prompt", "Open Nourish", "Ground Me", "Add Note"] },
+    "Unmotivated": { emoji: "😶", color: "#8FA090", bg: "#F0F6F0", message: "Low motivation is often your body asking for something. Rest counts too.", actions: ["Open Nourish", "Ground Me", "Add Note"] },
+    "Overwhelmed": { emoji: "😵", color: "#C9A87B", bg: "#FDF6EA", message: "One thing at a time. You don't have to do everything today.", actions: ["Ground Me", "Journal Prompt", "Add Note"] },
+  };
+
+  const GROUND_ME = [
+    "Take 5 slow deep breaths — in for 4, hold for 4, out for 4.",
+    "Put both feet flat on the floor. Feel the ground beneath you.",
+    "Name 5 things you can see right now.",
+    "Place your hand on your heart and breathe slowly.",
+    "Drink a glass of cold water slowly and mindfully.",
+    "Step outside for 2 minutes and feel the air.",
+    "Unclench your jaw, drop your shoulders, and exhale.",
+  ];
+
+  const JOURNAL_PROMPTS = [
+    "What is one thing that felt heavy today?",
+    "What do you need most right now that you haven't given yourself?",
+    "What would you say to a friend feeling the way you feel today?",
+    "What is one small thing that brought you comfort today?",
+    "What are you carrying that you could put down, even just for today?",
+  ];
+
+  const [groundPrompt] = useState(() => GROUND_ME[Math.floor(Math.random() * GROUND_ME.length)]);
+  const [journalPrompt] = useState(() => JOURNAL_PROMPTS[Math.floor(Math.random() * JOURNAL_PROMPTS.length)]);
+  const [showGround, setShowGround] = useState(false);
+  const [showJournal, setShowJournal] = useState(false);
 
   if (saved) return (
     <div style={{ padding: "24px 16px 90px", textAlign: "center" }}>
@@ -477,12 +514,42 @@ function CheckInScreen({ mode }) {
       </div>
 
       <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>💭 Mood</p>
-        <div style={{ display: "flex", justifyContent: "space-around" }}>
-          {ratingEmojis.map((e, i) => (
-            <button key={i} onClick={() => setMood(i + 1)} style={{ fontSize: 28, background: "none", border: "none", cursor: "pointer", opacity: mood === i + 1 ? 1 : 0.35, transition: "opacity 0.15s" }}>{e}</button>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>💭 How are you feeling?</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: namedMood ? 12 : 0 }}>
+          {Object.entries(NAMED_MOODS).map(([name, m]) => (
+            <button key={name} onClick={() => setNamedMood(namedMood === name ? null : name)} style={{
+              padding: "7px 12px", borderRadius: 50, border: "none",
+              background: namedMood === name ? m.color : m.bg,
+              color: namedMood === name ? "#fff" : m.color,
+              fontFamily: "sans-serif", fontSize: 12, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 5,
+            }}><span>{m.emoji}</span>{name}</button>
           ))}
         </div>
+        {namedMood && (
+          <div style={{ background: NAMED_MOODS[namedMood].bg, borderRadius: 12, padding: "12px 14px", marginTop: 8 }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: NAMED_MOODS[namedMood].color, margin: "0 0 10px", lineHeight: 1.6 }}>{NAMED_MOODS[namedMood].message}</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {NAMED_MOODS[namedMood].actions.map((action, i) => (
+                <button key={i} onClick={() => {
+                  if (action === "Ground Me") setShowGround(!showGround);
+                  else if (action === "Journal Prompt") setShowJournal(!showJournal);
+                  else if (action === "Open Nourish" && onNavigate) onNavigate("recipes");
+                }} style={{ padding: "6px 12px", borderRadius: 50, border: `0.5px solid ${NAMED_MOODS[namedMood].color}`, background: "#fff", color: NAMED_MOODS[namedMood].color, fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{action}</button>
+              ))}
+            </div>
+            {showGround && (
+              <div style={{ marginTop: 10, background: "#fff", borderRadius: 10, padding: "10px 12px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>🌿 {groundPrompt}</p>
+              </div>
+            )}
+            {showJournal && (
+              <div style={{ marginTop: 10, background: "#fff", borderRadius: 10, padding: "10px 12px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>📝 {journalPrompt}</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {mode !== "fast" && (
@@ -591,7 +658,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
             <div style={{ background: "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
               <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Last period</p>
-              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: 0 }}>{new Date(lastPeriod).toLocaleDateString("en-CA", { month: "short", day: "numeric" })}</p>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: 0 }}>{new Date(lastPeriod + "T12:00:00").toLocaleDateString("en-CA", { month: "short", day: "numeric" })}</p>
             </div>
             <div style={{ background: "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
               <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Next period</p>
@@ -655,11 +722,27 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
           const fastDays = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
           const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
           const isFasted = fastDays.includes(dateStr);
+          const periodRanges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]");
+          const isPeriodDay = periodRanges.some(r => {
+            if (!r.start) return false;
+            const start = r.start;
+            const end = r.end || r.start;
+            return dateStr >= start && dateStr <= end;
+          });
+          const isPredictedPeriod = !isPeriodDay && lastPeriod && (() => {
+            const next = new Date(lastPeriod + "T12:00:00");
+            next.setDate(next.getDate() + cycleLength);
+            const nextStr = next.toISOString().split("T")[0];
+            const nextEnd = new Date(lastPeriod + "T12:00:00");
+            nextEnd.setDate(nextEnd.getDate() + cycleLength + (periodLength - 1));
+            const nextEndStr = nextEnd.toISOString().split("T")[0];
+            return dateStr >= nextStr && dateStr <= nextEndStr;
+          })();
           return (
             <button key={d} onClick={() => setSelDay(d)} style={{
               aspectRatio: "1", borderRadius: "50%",
               border: isToday ? `2px solid #8FAF8F` : isFasted ? "2px solid #7A9E7E" : "none",
-              background: mode === "fast" ? (isSel ? "#7A9E7E" : "#F0F6F0") : (isSel ? info.color : info.bg),
+              background: mode === "fast" ? (isSel ? "#7A9E7E" : "#F0F6F0") : isPeriodDay ? (isSel ? "#C97B7B" : "#FDEAEA") : isPredictedPeriod ? (isSel ? "#E8B4B4" : "#FDF0F0") : (isSel ? info.color : info.bg),
               cursor: "pointer", fontFamily: "sans-serif", fontSize: 13,
               color: mode === "fast" ? (isSel ? "#fff" : "#5C7F60") : (isSel ? "#fff" : info.color),
               fontWeight: isToday ? 700 : 400,
@@ -744,16 +827,16 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
       {showMenu && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 998 }} onClick={() => setShowMenu(false)} />
       )}
-      <div style={{ position: "fixed", bottom: 90, right: 20, zIndex: 999, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+      <div style={{ position: "fixed", bottom: 140, right: 20, zIndex: 999, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
         {showMenu && (
           <div style={{ background: "#fff", borderRadius: 18, padding: "8px 0", boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "0.5px solid #dce8dc", minWidth: 200 }}>
             {mode !== "fast" ? (
               <>
-                <button onClick={() => { const today = new Date().toISOString().split("T")[0]; onSave && onSave(today); setShowMenu(false); setPeriodMsg("🩸 Period start logged!"); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#C97B7B", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); ranges.push({ start: selectedDate, end: null, predicted: false }); localStorage.setItem("lf_period_ranges", JSON.stringify(ranges)); onSave && onSave(selectedDate); setShowMenu(false); setPeriodMsg(`🩸 Period started ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#C97B7B", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 18 }}>🩸</span> Period started today
                 </button>
                 <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
-                <button onClick={() => { setShowMenu(false); setPeriodMsg("✅ Period end noted!"); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#7A9E7E", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); if (ranges.length > 0 && !ranges[ranges.length-1].end) { ranges[ranges.length-1].end = selectedDate; localStorage.setItem("lf_period_ranges", JSON.stringify(ranges)); } setShowMenu(false); setPeriodMsg(`✅ Period ended ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#7A9E7E", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 18 }}>✅</span> Period ended today
                 </button>
                 <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
@@ -1504,7 +1587,7 @@ export default function App() {
         {screen === "home"     && <HomeScreen     name={settings.name} lastPeriod={settings.lastPeriod} mode={settings.mode} />}
         {screen === "calendar" && <CalendarScreen lastPeriod={settings.lastPeriod} cycleLength={settings.cycleLength || 28} periodLength={settings.periodLength || 7} mode={settings.mode} onSave={(date, cycleLen, periodLen) => saveSettings({...settings, lastPeriod: date, cycleLength: cycleLen || settings.cycleLength || 28, periodLength: periodLen || settings.periodLength || 7})} onNavigate={setScreen} />}
        {screen === "recipes"  && <RecipesScreen phase={getPhase(getCycleDay(settings.lastPeriod))} onNavigate={setScreen} mode={settings.mode} />}
-        {screen === "checkin"  && <CheckInScreen mode={settings.mode} />}
+        {screen === "checkin"  && <CheckInScreen mode={settings.mode} onNavigate={setScreen} />}
         {screen === "learn"    && <LearnScreen mode={settings.mode} />}
         {screen === "settings" && <SettingsScreen settings={settings} onSave={saveSettings} />}
 
