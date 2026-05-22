@@ -151,6 +151,13 @@ function Onboarding({ onDone }) {
 249
 function HomeScreen({ name, lastPeriod, mode }) {
   const cycleDay = Math.max(1, getCycleDay(lastPeriod) - 1);
+
+  useEffect(() => {
+    if (localStorage.getItem("lf_auto_start_fast") === "true") {
+      localStorage.removeItem("lf_auto_start_fast");
+      if (!fastStart) startFast();
+    }
+  }, []);
   const phase    = getPhase(cycleDay);
   const info     = PHASE_INFO[phase];
 
@@ -1010,7 +1017,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
               </>
             ) : (
               <>
-                <button onClick={() => { setShowMenu(false); onNavigate && onNavigate("home"); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#5C7F60", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                <button onClick={() => { setShowMenu(false); localStorage.setItem("lf_auto_start_fast", "true"); onNavigate && onNavigate("home"); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#5C7F60", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 18 }}>🔥</span> Start a fast
                 </button>
                 <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
