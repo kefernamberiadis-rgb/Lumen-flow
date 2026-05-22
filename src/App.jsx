@@ -149,7 +149,7 @@ function Onboarding({ onDone }) {
 //  HOME SCREEN
 // ─────────────────────────────────────────────
 249
-function HomeScreen({ name, lastPeriod, mode }) {
+function HomeScreen({ name, lastPeriod, mode, settings }) {
   const cycleDay = Math.max(1, getCycleDay(lastPeriod) - 1);
 
   useEffect(() => {
@@ -377,6 +377,21 @@ function HomeScreen({ name, lastPeriod, mode }) {
           </div>
         ))}
       </div>
+
+      {/* Partner rhythm card */}
+      {settings && settings.partnerConnected && (
+        <div style={{ margin: "0 16px 12px", background: "#F5F0FF", borderRadius: 18, padding: "14px 16px", border: "0.5px solid #D4C5E9" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <p style={{ fontFamily: "sans-serif", fontSize: 10, letterSpacing: "2px", color: "#9B7BC9", margin: 0, textTransform: "uppercase" }}>🤝 Partner rhythm</p>
+            <span style={{ fontSize: 10, color: "#9B7BC9", fontFamily: "sans-serif" }}>Connected</span>
+          </div>
+          {mode === "cycle" ? (
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0 }}>Your partner can see your cycle phase and fasting window. Share Lumen Flow with them to sync.</p>
+          ) : (
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0 }}>Your partner can see your fasting progress and testosterone window. You are fasting together! 🔥</p>
+          )}
+        </div>
+      )}
 
       {/* Streak + Badges */}
       <div style={{ padding: "4px 16px 8px" }}>
@@ -1990,7 +2005,7 @@ export default function App() {
         </button>
       </div>
       <div style={s.container}>
-        {screen === "home"     && <HomeScreen     name={settings.name} lastPeriod={settings.lastPeriod} mode={settings.mode} />}
+        {screen === "home"     && <HomeScreen     name={settings.name} lastPeriod={settings.lastPeriod} mode={settings.mode} settings={settings} />}
         {screen === "calendar" && <CalendarScreen lastPeriod={settings.lastPeriod} cycleLength={settings.cycleLength || 28} periodLength={settings.periodLength || 7} mode={settings.mode} onSave={(date, cycleLen, periodLen) => saveSettings({...settings, lastPeriod: date, cycleLength: cycleLen || settings.cycleLength || 28, periodLength: periodLen || settings.periodLength || 7})} onNavigate={setScreen} />}
        {screen === "recipes"  && <RecipesScreen phase={getPhase(getCycleDay(settings.lastPeriod))} onNavigate={setScreen} mode={settings.mode} />}
         {screen === "checkin"  && <CheckInScreen mode={settings.mode} onNavigate={setScreen} />}
