@@ -427,7 +427,7 @@ function CheckInScreen({ mode, onNavigate }) {
   const [notes,  setNotes]  = useState("");
 
   const save = () => {
-    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, bodyCheck, namedMood, symptoms };
+    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, bodyCheck, weightUnit, namedMood, symptoms };
     localStorage.setItem(key, JSON.stringify(data));
     setSaved(data);
   };
@@ -442,6 +442,7 @@ function CheckInScreen({ mode, onNavigate }) {
   const [movement, setMovement] = useState("none");
   const [bodyCheck, setBodyCheck] = useState("");
   const [symptoms, setSymptoms] = useState([]);
+  const [weightUnit, setWeightUnit] = useState("lbs");
   const ratingEmojis = ["😔","😕","😐","🙂","😊"];
   const [namedMood, setNamedMood] = useState(null);
 
@@ -496,7 +497,7 @@ function CheckInScreen({ mode, onNavigate }) {
         {saved.sleep && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🌙 Sleep: {["Poor","Light","Fair","Good","Great"][saved.sleep - 1]}</p>}
         {saved.movement && saved.movement !== "none" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🏃 Movement: {saved.movement}</p>}
         {saved.water > 0 && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💧 Water: {saved.water} glasses</p>}
-        {saved.bodyCheck && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🌿 Body check: {saved.bodyCheck} lbs</p>}
+        {saved.bodyCheck && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🌿 Body check: {saved.bodyCheck} {saved.weightUnit || "lbs"}</p>}
         {saved.namedMood && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💭 Feeling: {saved.namedMood}</p>}
         {saved.symptoms && saved.symptoms.length > 0 && saved.symptoms[0] !== "none" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🩺 Symptoms: {Array.isArray(saved.symptoms) ? saved.symptoms.join(", ") : saved.symptoms}</p>}
         {saved.notes && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: 0 }}>📝 {saved.notes}</p>}
@@ -762,11 +763,15 @@ function CheckInScreen({ mode, onNavigate }) {
       <div style={s.card}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 4px" }}>🌿 Body check</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Your body changes throughout your cycle and fasting journey. This is just a snapshot — not a score.</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+          <button onClick={() => setWeightUnit("lbs")} style={{ padding: "6px 14px", borderRadius: 50, border: "none", background: weightUnit === "lbs" ? "#7A9E7E" : "#EAF2EA", color: weightUnit === "lbs" ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>lbs</button>
+          <button onClick={() => setWeightUnit("kg")} style={{ padding: "6px 14px", borderRadius: 50, border: "none", background: weightUnit === "kg" ? "#7A9E7E" : "#EAF2EA", color: weightUnit === "kg" ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>kg</button>
+        </div>
         <input
           type="number"
           value={bodyCheck}
           onChange={e => setBodyCheck(e.target.value)}
-          placeholder="Optional — your body snapshot today"
+          placeholder={`Optional — your body snapshot today (${weightUnit})`}
           style={{ ...s.input, marginBottom: 0 }}
         />
       </div>
