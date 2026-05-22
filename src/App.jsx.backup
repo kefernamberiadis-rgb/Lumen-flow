@@ -471,6 +471,61 @@ function CheckInScreen({ mode, onNavigate }) {
       </div>
       <button onClick={() => setSaved(null)} style={{ ...s.btn, background: "#EAF2EA", color: "#5C7F60", marginTop: 12 }}>Edit Check-in</button>
 
+      {/* Body Trend Graph */}
+      <div style={{ marginTop: 20, textAlign: "left" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>📊 Your trends</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Last 7 days</p>
+        {(() => {
+          const days = [];
+          for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateKey = d.toISOString().split("T")[0];
+            const entry = localStorage.getItem(`lf_checkin_${dateKey}`);
+            const data = entry ? JSON.parse(entry) : null;
+            days.push({ dateKey, data, label: d.toLocaleDateString("en-CA", { weekday: "short" }) });
+          }
+          const metrics = [
+            { key: "energy", label: "⚡ Energy", color: "#7A9E7E" },
+            { key: "sleep", label: "🌙 Sleep", color: "#7BA8C9" },
+            { key: "water", label: "💧 Water", color: "#63b3ed", max: 10 },
+          ];
+          return (
+            <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 16 }}>
+              {metrics.map(metric => (
+                <div key={metric.key} style={{ marginBottom: 14 }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 11, color: metric.color, margin: "0 0 6px", fontWeight: 600 }}>{metric.label}</p>
+                  <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 40 }}>
+                    {days.map((day, i) => {
+                      const val = day.data ? (day.data[metric.key] || 0) : 0;
+                      const max = metric.max || 5;
+                      const height = val ? Math.max(4, (val / max) * 36) : 4;
+                      return (
+                        <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                          <div style={{ width: "100%", height: `${height}px`, background: val ? metric.color : "#EAF2EA", borderRadius: 4, opacity: val ? 1 : 0.3, transition: "height 0.3s" }} />
+                          <span style={{ fontSize: 8, color: "#A8BEA8", fontFamily: "sans-serif" }}>{day.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              <div style={{ marginTop: 8, paddingTop: 10, borderTop: "0.5px solid #EAF2EA" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 6px", fontWeight: 600 }}>💭 Mood this week</p>
+                <div style={{ display: "flex", gap: 4 }}>
+                  {days.map((day, i) => (
+                    <div key={i} style={{ flex: 1, textAlign: "center" }}>
+                      <div style={{ fontSize: 16 }}>{day.data?.namedMood ? "🌿" : day.data?.energy ? "😐" : "·"}</div>
+                      <span style={{ fontSize: 8, color: "#A8BEA8", fontFamily: "sans-serif" }}>{day.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+
       {/* Mood History */}
       <div style={{ marginTop: 20, textAlign: "left" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 12px" }}>Recent check-ins</p>
