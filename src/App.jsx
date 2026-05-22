@@ -278,7 +278,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
 
         {fastStart ? (
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={stopFast} style={{ ...s.btn, background: "#C97B7B", flex: 1 }}>End Fast</button>
+            <button onClick={stopFast} style={{ ...s.btn, background: mode === "fast" ? "#2D5A3D" : "#C97B7B", flex: 1 }}>End Fast</button>
             <button onClick={() => setShowEditFast(!showEditFast)} style={{ background: "#F0F6F0", border: "0.5px solid #C5D9C5", borderRadius: 50, padding: "0 16px", fontFamily: "sans-serif", fontSize: 13, color: "#5C7F60", cursor: "pointer" }}>✏️</button>
           </div>
         ) : (
@@ -329,14 +329,39 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
 
       {/* Hormone card — changes based on mode */}
       {mode === "fast" ? (
-        <div style={{ margin: "0 16px 12px", background: "linear-gradient(135deg, #1a3a2a, #0f2a1a)", borderRadius: 18, padding: "16px", border: "1px solid rgba(99,179,237,0.2)" }}>
-          <p style={{ fontFamily: "sans-serif", fontSize: 9, letterSpacing: "2px", color: "#7A9E7E", margin: "0 0 6px", textTransform: "uppercase" }}>Testosterone Window</p>
-          <p style={{ fontFamily: "sans-serif", fontSize: 22, fontWeight: 700, color: "#fff", margin: "0 0 4px" }}>
-            {new Date().getHours() < 10 ? "Peak" : new Date().getHours() < 14 ? "High" : new Date().getHours() < 18 ? "Moderate" : "Low"}
-          </p>
-          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#A8BEA8", margin: 0 }}>
-            {new Date().getHours() < 10 ? "Best time to train and tackle hard tasks" : new Date().getHours() < 14 ? "Focus work and key decisions" : new Date().getHours() < 18 ? "Meetings and collaborative work" : "Wind down and recover"}
-          </p>
+        <div style={{ margin: "0 16px 12px", background: "linear-gradient(135deg, #1a3a2a, #0f2a1a)", borderRadius: 18, padding: "16px", border: "1px solid rgba(122,158,126,0.3)" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 9, letterSpacing: "2px", color: "#7A9E7E", margin: "0 0 6px", textTransform: "uppercase" }}>⚡ Testosterone Window</p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+            <div>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 24, fontWeight: 700, color: "#fff", margin: "0 0 2px" }}>
+                {new Date().getHours() < 10 ? "Peak 🔥" : new Date().getHours() < 14 ? "High ⚡" : new Date().getHours() < 18 ? "Moderate 🌿" : "Low 🌙"}
+              </p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#A8BEA8", margin: 0 }}>
+                {new Date().getHours() < 10 ? "Best time to train and tackle hard tasks" : new Date().getHours() < 14 ? "Focus work and key decisions" : new Date().getHours() < 18 ? "Meetings and collaborative work" : "Wind down and recover"}
+              </p>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 4, marginTop: 10 }}>
+            {[
+              { label: "Peak", time: "6-10am", active: new Date().getHours() < 10 },
+              { label: "High", time: "10-2pm", active: new Date().getHours() >= 10 && new Date().getHours() < 14 },
+              { label: "Mod", time: "2-6pm", active: new Date().getHours() >= 14 && new Date().getHours() < 18 },
+              { label: "Low", time: "6pm+", active: new Date().getHours() >= 18 },
+            ].map((w, i) => (
+              <div key={i} style={{ flex: 1, textAlign: "center" }}>
+                <div style={{ height: 4, borderRadius: 2, background: w.active ? "#7A9E7E" : "rgba(122,158,126,0.2)", marginBottom: 4, boxShadow: w.active ? "0 0 6px #7A9E7E" : "none" }} />
+                <p style={{ fontFamily: "sans-serif", fontSize: 9, color: w.active ? "#7A9E7E" : "#4a6a4a", margin: 0 }}>{w.label}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 8, color: "#3a5a3a", margin: 0 }}>{w.time}</p>
+              </div>
+            ))}
+          </div>
+          {goalHours > 0 && fastStart && (
+            <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(122,158,126,0.2)" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#7A9E7E", margin: 0 }}>
+                🍽️ Eating window: {new Date(fastStart + goalHours * 3600000).toLocaleTimeString("en-CA", {hour: "numeric", minute: "2-digit"})} — {new Date(fastStart + (goalHours + 8) * 3600000).toLocaleTimeString("en-CA", {hour: "numeric", minute: "2-digit"})}
+              </p>
+            </div>
+          )}
         </div>
       ) : null}
 
@@ -405,7 +430,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
           {[
             { icon: "🗓️", name: "Streak", prog: `${streak} day${streak !== 1 ? "s" : ""}`, earned: streak > 0 },
             { icon: "⚡", name: "3 Fasts", prog: `${Math.min(totalFasts, 3)} / 3`, earned: totalFasts >= 3 },
-            { icon: "🌙", name: "Cycle Mo.", prog: `${Math.min(totalFasts, 1)} / 1`, earned: totalFasts >= 1 },
+            ...(mode !== "fast" ? [{ icon: "🌙", name: "Cycle Mo.", prog: `${Math.min(totalFasts, 1)} / 1`, earned: totalFasts >= 1 }] : []),
             { icon: "💚", name: "Recovery", prog: streak >= 2 ? "Earned" : "Locked", earned: streak >= 2 },
             { icon: "⏰", name: "On Time", prog: totalFasts >= 5 ? "Earned" : `${Math.min(totalFasts, 5)} / 5`, earned: totalFasts >= 5 },
             { icon: "🧘", name: "Listen", prog: streak >= 7 ? "Earned" : `${Math.min(streak, 7)} / 7`, earned: streak >= 7 },
