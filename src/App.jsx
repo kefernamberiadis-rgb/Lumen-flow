@@ -397,16 +397,20 @@ function CheckInScreen({ mode, onNavigate }) {
   const [notes,  setNotes]  = useState("");
 
   const save = () => {
-    const data = { energy, mood, flow, notes, date: today };
+    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, bodyCheck, namedMood };
     localStorage.setItem(key, JSON.stringify(data));
     setSaved(data);
   };
 
   const flowOptions  = ["none","spotting","light","medium","heavy"];
-  const gutOptions   = ["none","bloating","constipation","diarrhea","cramps","nausea"];
-  const [gut, setGut] = useState("none");
+  const gutOptions   = ["good","none","bloating","constipation","diarrhea","cramps","nausea","reflux","gas","sensitive"];
+  const [gut, setGut] = useState([]);
   const [clarity, setClarity] = useState(3);
   const [workout, setWorkout] = useState(3);
+  const [sleep, setSleep] = useState(3);
+  const [water, setWater] = useState(0);
+  const [movement, setMovement] = useState("none");
+  const [bodyCheck, setBodyCheck] = useState("");
   const ratingEmojis = ["😔","😕","😐","🙂","😊"];
   const [namedMood, setNamedMood] = useState(null);
 
@@ -455,9 +459,14 @@ function CheckInScreen({ mode, onNavigate }) {
         <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>⚡ Energy: {ratingEmojis[saved.energy - 1]}</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💭 Mood: {ratingEmojis[saved.mood - 1]}</p>
         {mode !== "fast" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🩸 Flow: {saved.flow}</p>}
-        {mode !== "fast" && saved.gut && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🦠 Gut: {saved.gut}</p>}
-        {mode === "fast" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🧠 Clarity: {ratingEmojis[saved.clarity - 1] || ratingEmojis[2]}</p>}
-        {mode === "fast" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💪 Workout: {ratingEmojis[saved.workout - 1] || ratingEmojis[2]}</p>}
+        {saved.gut && saved.gut.length > 0 && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🦠 Gut: {Array.isArray(saved.gut) ? saved.gut.join(", ") : saved.gut}</p>}
+        {mode === "fast" && saved.clarity && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🧠 Clarity: {ratingEmojis[saved.clarity - 1] || ratingEmojis[2]}</p>}
+        {mode === "fast" && saved.workout && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💪 Workout: {ratingEmojis[saved.workout - 1] || ratingEmojis[2]}</p>}
+        {saved.sleep && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🌙 Sleep: {["Poor","Light","Fair","Good","Great"][saved.sleep - 1]}</p>}
+        {saved.movement && saved.movement !== "none" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🏃 Movement: {saved.movement}</p>}
+        {saved.water > 0 && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💧 Water: {saved.water} glasses</p>}
+        {saved.bodyCheck && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🌿 Body check: {saved.bodyCheck} lbs</p>}
+        {saved.namedMood && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💭 Feeling: {saved.namedMood}</p>}
         {saved.notes && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: 0 }}>📝 {saved.notes}</p>}
       </div>
       <button onClick={() => setSaved(null)} style={{ ...s.btn, background: "#EAF2EA", color: "#5C7F60", marginTop: 12 }}>Edit Check-in</button>
@@ -573,10 +582,10 @@ function CheckInScreen({ mode, onNavigate }) {
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🦠 Gut health</p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {gutOptions.map(g => (
-            <button key={g} onClick={() => setGut(g)} style={{
+            <button key={g} onClick={() => setGut(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g])} style={{
               padding: "7px 14px", borderRadius: 100, border: "none",
-              background: gut === g ? "#7A9E7E" : "#EAF2EA",
-              color: gut === g ? "#fff" : "#6b7b6b",
+              background: gut.includes(g) ? "#7A9E7E" : "#EAF2EA",
+              color: gut.includes(g) ? "#fff" : "#6b7b6b",
               fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", textTransform: "capitalize",
             }}>{g}</button>
           ))}
@@ -605,6 +614,58 @@ function CheckInScreen({ mode, onNavigate }) {
         </div>
       </div>
       )}
+
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🌙 Sleep quality</p>
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          {["😴","😪","😐","🙂","✨"].map((e, i) => (
+            <button key={i} onClick={() => setSleep(i + 1)} style={{ fontSize: 28, background: "none", border: "none", cursor: "pointer", opacity: sleep === i + 1 ? 1 : 0.35, transition: "opacity 0.15s" }}>{e}</button>
+          ))}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-around", marginTop: 4 }}>
+          {["Poor","Light","Fair","Good","Great"].map((l, i) => (
+            <span key={i} style={{ fontSize: 9, color: sleep === i + 1 ? "#7A9E7E" : "#A8BEA8", fontFamily: "sans-serif" }}>{l}</span>
+          ))}
+        </div>
+      </div>
+
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🏃 Movement</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {["none","gentle","moderate","intense","rest day"].map(m => (
+            <button key={m} onClick={() => setMovement(m)} style={{
+              padding: "7px 14px", borderRadius: 100, border: "none",
+              background: movement === m ? "#7A9E7E" : "#EAF2EA",
+              color: movement === m ? "#fff" : "#6b7b6b",
+              fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", textTransform: "capitalize",
+            }}>{m}</button>
+          ))}
+        </div>
+      </div>
+
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>💧 Water intake</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "center" }}>
+          <button onClick={() => setWater(Math.max(0, water - 1))} style={{ width: 36, height: 36, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#F0F6F0", fontSize: 18, cursor: "pointer" }}>−</button>
+          <div style={{ textAlign: "center" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 28, color: "#7BA8C9", margin: 0 }}>{water}</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: 0 }}>glasses today</p>
+          </div>
+          <button onClick={() => setWater(Math.min(15, water + 1))} style={{ width: 36, height: 36, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#F0F6F0", fontSize: 18, cursor: "pointer" }}>+</button>
+        </div>
+      </div>
+
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 4px" }}>🌿 Body check</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Your body changes throughout your cycle and fasting journey. This is just a snapshot — not a score.</p>
+        <input
+          type="number"
+          value={bodyCheck}
+          onChange={e => setBodyCheck(e.target.value)}
+          placeholder="Optional — your body snapshot today"
+          style={{ ...s.input, marginBottom: 0 }}
+        />
+      </div>
 
       <div style={s.card}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>📝 Notes</p>
