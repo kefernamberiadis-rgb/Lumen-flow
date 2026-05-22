@@ -166,6 +166,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
   const [goalHours, setGoalHours]   = useState(16);
   const [showGoals, setShowGoals]   = useState(false);
   const [showEditFast, setShowEditFast] = useState(false);
+  const [waterToday, setWaterToday] = useState(() => parseInt(localStorage.getItem("lf_water_today") || "0"));
 
   useEffect(() => {
     const saved = localStorage.getItem("lf_fast_start");
@@ -365,24 +366,24 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
         </div>
       ) : null}
 
-      {/* Water tracker - fasting mode only */}
-      {mode === "fast" && (
+      {/* Water tracker - fasting mode only - now handled above for both */}
+      {false && (
         <div style={{ margin: "0 16px 12px", background: "#fff", borderRadius: 18, padding: "14px 16px", border: "0.5px solid #dce8dc" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <p style={{ fontFamily: "sans-serif", fontSize: 11, letterSpacing: "1px", color: "#7BA8C9", margin: 0, textTransform: "uppercase" }}>💧 Water today</p>
             <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: 0 }}>Goal: 8 glasses</p>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "center" }}>
-            <button onClick={() => { const w = Math.max(0, (parseInt(localStorage.getItem("lf_water_today") || "0")) - 1); localStorage.setItem("lf_water_today", w); window.dispatchEvent(new Event("storage")); }} style={{ width: 32, height: 32, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#EAF2F9", fontSize: 16, cursor: "pointer", color: "#7BA8C9" }}>−</button>
+            <button onClick={() => { const w = Math.max(0, waterToday - 1); localStorage.setItem("lf_water_today", w); setWaterToday(w); }} style={{ width: 32, height: 32, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#EAF2F9", fontSize: 16, cursor: "pointer", color: "#7BA8C9" }}>−</button>
             <div style={{ textAlign: "center" }}>
-              <p style={{ fontFamily: "Georgia, serif", fontSize: 26, color: "#7BA8C9", margin: 0 }}>{parseInt(localStorage.getItem("lf_water_today") || "0")}</p>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 26, color: "#7BA8C9", margin: 0 }}>{waterToday}</p>
               <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#A8BEA8", margin: 0 }}>glasses</p>
             </div>
-            <button onClick={() => { const w = Math.min(15, (parseInt(localStorage.getItem("lf_water_today") || "0")) + 1); localStorage.setItem("lf_water_today", w); window.dispatchEvent(new Event("storage")); }} style={{ width: 32, height: 32, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#EAF2F9", fontSize: 16, cursor: "pointer", color: "#7BA8C9" }}>+</button>
+            <button onClick={() => { const w = Math.min(15, waterToday + 1); localStorage.setItem("lf_water_today", w); setWaterToday(w); }} style={{ width: 32, height: 32, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#EAF2F9", fontSize: 16, cursor: "pointer", color: "#7BA8C9" }}>+</button>
           </div>
           <div style={{ display: "flex", gap: 4, marginTop: 10 }}>
             {[...Array(8)].map((_, i) => (
-              <div key={i} style={{ flex: 1, height: 6, borderRadius: 3, background: i < parseInt(localStorage.getItem("lf_water_today") || "0") ? "#7BA8C9" : "#EAF2F9" }} />
+              <div key={i} style={{ flex: 1, height: 6, borderRadius: 3, background: i < waterToday ? "#7BA8C9" : "#EAF2F9" }} />
             ))}
           </div>
         </div>
@@ -417,6 +418,27 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
           )}
         </div>
       )}
+
+      {/* Water tracker - both modes */}
+      <div style={{ margin: "0 16px 12px", background: "#fff", borderRadius: 18, padding: "14px 16px", border: "0.5px solid #dce8dc" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, letterSpacing: "1px", color: "#7BA8C9", margin: 0, textTransform: "uppercase" }}>💧 Water today</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: 0 }}>Goal: 8 glasses</p>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "center" }}>
+          <button onClick={() => { const w = Math.max(0, waterToday - 1); localStorage.setItem("lf_water_today", w); setWaterToday(w); }} style={{ width: 32, height: 32, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#EAF2F9", fontSize: 16, cursor: "pointer", color: "#7BA8C9" }}>−</button>
+          <div style={{ textAlign: "center" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 26, color: "#7BA8C9", margin: 0 }}>{waterToday}</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#A8BEA8", margin: 0 }}>glasses</p>
+          </div>
+          <button onClick={() => { const w = Math.min(15, waterToday + 1); localStorage.setItem("lf_water_today", w); setWaterToday(w); }} style={{ width: 32, height: 32, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#EAF2F9", fontSize: 16, cursor: "pointer", color: "#7BA8C9" }}>+</button>
+        </div>
+        <div style={{ display: "flex", gap: 4, marginTop: 10 }}>
+          {[...Array(8)].map((_, i) => (
+            <div key={i} style={{ flex: 1, height: 6, borderRadius: 3, background: i < waterToday ? "#7BA8C9" : "#EAF2F9" }} />
+          ))}
+        </div>
+      </div>
 
       {/* Streak + Badges */}
       <div style={{ padding: "4px 16px 8px" }}>

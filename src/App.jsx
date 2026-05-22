@@ -505,7 +505,7 @@ function CheckInScreen({ mode, onNavigate }) {
   const [bodyCheck, setBodyCheck] = useState("");
   const [symptoms, setSymptoms] = useState([]);
   const [weightUnit, setWeightUnit] = useState("lbs");
-  const ratingEmojis = ["😔","😕","😐","🙂","😊"];
+  const ratingEmojis = ["😞","😔","😐","🙂","😄"];
   const [namedMood, setNamedMood] = useState(null);
 
   const NAMED_MOODS = {
