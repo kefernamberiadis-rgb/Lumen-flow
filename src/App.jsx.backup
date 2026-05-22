@@ -1439,6 +1439,34 @@ function SettingsScreen({ settings, onSave }) {
         </button>
       </div>
 
+      {/* Partner Mode */}
+      <div style={{ ...s.card, textAlign: "left", marginBottom: 12, background: "#F5F0FF", border: "0.5px solid #D4C5E9" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#9B7BC9", margin: "0 0 4px" }}>🤝 Partner mode</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 14px" }}>Fast together and understand each other's rhythm</p>
+        {!settings.partnerCode ? (
+          <div>
+            <button onClick={() => { const code = Math.random().toString(36).substring(2,8).toUpperCase(); onSave({...settings, partnerCode: code}); }} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "#9B7BC9", color: "#fff", fontFamily: "sans-serif", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 8 }}>
+              Generate partner code
+            </button>
+            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: 0, textAlign: "center" }}>Share your code with your partner so they can connect</p>
+          </div>
+        ) : (
+          <div>
+            <div style={{ background: "#fff", borderRadius: 12, padding: "14px", textAlign: "center", marginBottom: 10, border: "0.5px solid #D4C5E9" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#9B7BC9", letterSpacing: "2px", margin: "0 0 6px", textTransform: "uppercase" }}>Your partner code</p>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 28, fontWeight: 700, letterSpacing: "8px", color: "#2D3B2E", margin: 0 }}>{settings.partnerCode}</p>
+            </div>
+            <input placeholder="Enter partner's code" style={{ ...s.input, marginBottom: 8 }} onChange={e => { if (e.target.value.length === 6) onSave({...settings, partnerConnected: e.target.value.toUpperCase()}); }} />
+            {settings.partnerConnected && (
+              <div style={{ background: "#F0F6F0", borderRadius: 10, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 18 }}>✅</span>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#5C7F60", margin: 0 }}>Partner connected! You can now see each other's rhythm.</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 12px" }}>Legal</p>
         <button onClick={() => setSubScreen("privacy")} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EAF2EA", border: "none", borderRadius: 12, padding: "12px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#2D3B2E", cursor: "pointer", marginBottom: 8 }}>
