@@ -922,9 +922,37 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
       </div>
 
       ) : (
-        <div style={{ ...s.card, marginTop: 12, textAlign: "center" }}>
-          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 4px" }}>🔥 {new Date().toLocaleDateString("en-CA", { month: "long", day: "numeric" })}</p>
-          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: 0 }}>Fasting day tracker</p>
+        <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "16px", marginTop: 12 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>⚡ Fasting overview</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {(() => {
+              const fastDays = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
+              const streak = (() => {
+                let s = 0;
+                const today = new Date();
+                while (true) {
+                  const d = new Date(today);
+                  d.setDate(d.getDate() - s);
+                  const str = d.toISOString().split("T")[0];
+                  if (fastDays.includes(str)) s++;
+                  else break;
+                }
+                return s;
+              })();
+              const stats = [
+                { label: "Total fasts", value: fastDays.length, icon: "🔥" },
+                { label: "Current streak", value: `${streak} days`, icon: "⚡" },
+                { label: "This month", value: fastDays.filter(d => d.startsWith(new Date().toISOString().slice(0,7))).length, icon: "📅" },
+                { label: "Best window", value: "16h", icon: "⏰" },
+              ];
+              return stats.map((stat, i) => (
+                <div key={i} style={{ background: "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{stat.icon} {stat.label}</p>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: 0, fontWeight: 600 }}>{stat.value}</p>
+                </div>
+              ));
+            })()}
+          </div>
         </div>
       )}
 

@@ -216,7 +216,7 @@ function HomeScreen({ name, lastPeriod, mode }) {
   
 
   return (
-    <div style={{ padding: "0 0 90px" }}>
+    <div style={{ padding: "0 0 90px", background: mode === "fast" ? "linear-gradient(180deg, #0d1f14 0%, #F7FAF7 30%)" : "transparent", minHeight: "100vh" }}>
       {/* Header */}
       <div style={{ ...s.header, justifyContent: "space-between", paddingTop: 20 }}>
         <div>
@@ -360,12 +360,12 @@ function HomeScreen({ name, lastPeriod, mode }) {
       <div style={{ display: "flex", gap: 8, margin: "0 16px 12px" }}>
         {[{ h: 12, icon: "🌱", label: "Beginner" }, { h: 16, icon: "🌿", label: "Intermediate" }, { h: 18, icon: "🔥", label: "Advanced" }].map(({ h, icon, label }) => (
           <div key={h} onClick={() => setGoalHours(h)} style={{
-            flex: 1, background: goalHours === h ? "#F0F6F0" : "#fff",
-            border: goalHours === h ? "1.5px solid #7A9E7E" : "1px solid #dce8dc",
+            flex: 1, background: goalHours === h ? (mode === "fast" ? "rgba(26,58,42,0.9)" : "#F0F6F0") : (mode === "fast" ? "rgba(255,255,255,0.05)" : "#fff"),
+            border: goalHours === h ? (mode === "fast" ? "1.5px solid #7A9E7E" : "1.5px solid #7A9E7E") : (mode === "fast" ? "1px solid rgba(122,158,126,0.2)" : "1px solid #dce8dc"),
             borderRadius: 16, padding: "12px 8px", textAlign: "center", cursor: "pointer",
           }}>
             <div style={{ fontSize: 20, marginBottom: 4 }}>{icon}</div>
-            <div style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 600, color: goalHours === h ? "#5C7F60" : "#4a5a4b", letterSpacing: "0.02em" }}>{label}</div>
+            <div style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 600, color: goalHours === h ? (mode === "fast" ? "#7A9E7E" : "#5C7F60") : (mode === "fast" ? "#A8BEA8" : "#4a5a4b"), letterSpacing: "0.02em" }}>{label}</div>
             <div style={{ fontFamily: "sans-serif", fontSize: 10, color: "#A8BEA8", marginTop: 2 }}>{h}h</div>
           </div>
         ))}
@@ -374,7 +374,7 @@ function HomeScreen({ name, lastPeriod, mode }) {
       {/* Streak + Badges */}
       <div style={{ padding: "4px 16px 8px" }}>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
-          <div style={{ background: "#F0F6F0", border: "0.5px solid #C5D9C5", borderRadius: 50, padding: "6px 18px", display: "flex", alignItems: "center", gap: 6, fontFamily: "sans-serif", fontSize: 12, color: "#5C7F60" }}>
+          <div style={{ background: mode === "fast" ? "rgba(26,58,42,0.9)" : "#F0F6F0", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.4)" : "0.5px solid #C5D9C5", borderRadius: 50, padding: "6px 18px", display: "flex", alignItems: "center", gap: 6, fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#5C7F60" }}>
             <span style={{ fontSize: 14 }}>🔥</span> {streak} day{streak !== 1 ? "s" : ""} fasting streak
           </div>
         </div>
