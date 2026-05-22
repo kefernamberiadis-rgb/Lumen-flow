@@ -1194,6 +1194,7 @@ const PHASE_FILTERS = ["All","Menstrual","Follicular","Ovulation","Luteal"];
 
 function RecipesScreen({ phase, onNavigate, mode }) {
   const [cravingType, setCravingType] = useState(null);
+  const [nourishTab, setNourishTab] = useState("cravings");
 
   const CRAVINGS = {
     "Sweet": {
@@ -1274,8 +1275,24 @@ function RecipesScreen({ phase, onNavigate, mode }) {
   return (
     <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif" }}>
       <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: "#2D3B2E", margin: "0 0 4px" }}>Nourish ✨</h2>
-      <p style={{ fontSize: 13, color: "#8FA090", margin: "0 0 20px" }}>Food craving or soul craving?</p>
-      <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 16 }}>
+      <p style={{ fontSize: 13, color: "#8FA090", margin: "0 0 16px" }}>Food craving or soul craving?</p>
+
+      {/* Two tappable sections */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+        <button onClick={() => setNourishTab("cravings")} style={{
+          flex: 1, padding: "12px 8px", borderRadius: 14, border: "none", cursor: "pointer",
+          background: nourishTab === "cravings" ? "#7A9E7E" : "#F0F6F0",
+          color: nourishTab === "cravings" ? "#fff" : "#4a5a4b",
+          fontFamily: "Georgia, serif", fontSize: 13, fontWeight: 600,
+        }}>🌿 Craving Decoder</button>
+        <button onClick={() => setNourishTab("fasting")} style={{
+          flex: 1, padding: "12px 8px", borderRadius: 14, border: "none", cursor: "pointer",
+          background: nourishTab === "fasting" ? "#7A9E7E" : "#F0F6F0",
+          color: nourishTab === "fasting" ? "#fff" : "#4a5a4b",
+          fontFamily: "Georgia, serif", fontSize: 13, fontWeight: 600,
+        }}>💧 Fasting Support</button>
+      </div>
+      {nourishTab === "cravings" && <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 16 }}>
         <p style={{ fontSize: 13, color: "#2D3B2E", fontWeight: 600, margin: "0 0 12px" }}>What are you craving right now?</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {cravingKeys.map(key => (
@@ -1290,8 +1307,8 @@ function RecipesScreen({ phase, onNavigate, mode }) {
             </button>
           ))}
         </div>
-      </div>
-      {craving && (
+      </div>}
+      {nourishTab === "cravings" && craving && (
         <div>
           <div style={{ background: "#F0F6F0", borderRadius: 18, padding: "16px", border: "0.5px solid #C5D9C5", marginBottom: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
@@ -1320,7 +1337,29 @@ function RecipesScreen({ phase, onNavigate, mode }) {
           </div>
         </div>
       )}
-      {mode !== "fast" && (
+      {nourishTab === "fasting" && (
+        <div>
+          {[
+            { icon: "💧", title: "What to drink while fasting", color: "#7BA8C9", bg: "#EAF2F9", tips: ["Water — drink at least 2-3 litres daily", "Black coffee — no milk, no sugar, does not break a fast", "Plain green or herbal tea — no sweeteners", "Sparkling water — fine during fasting", "Bone broth — breaks a fast but great for electrolytes"] },
+            { icon: "🧂", title: "Electrolytes during fasting", color: "#C9A87B", bg: "#FDF6EA", tips: ["Add a pinch of sea salt to your water", "Magnesium — helps with energy and sleep", "Potassium — found in coconut water (breaks fast) or supplement", "Sodium — especially important for longer fasts", "Signs you need electrolytes: headache, fatigue, dizziness"] },
+            { icon: "🍽️", title: "How to break your fast", color: "#7A9E7E", bg: "#F0F6F0", tips: ["Start with something light — bone broth, eggs, or yogurt", "Avoid heavy carbs as your first meal", "Protein first helps blood sugar stability", "Chew slowly — your digestion needs to wake up gently", "Wait 20 minutes before eating more"] },
+            { icon: "⏰", title: "Best fasting windows", color: "#9B7BC9", bg: "#F5F0FF", tips: ["12:12 — great for beginners, fast overnight", "16:8 — most popular, eat between 12pm and 8pm", "18:6 — more fat burning, eat between 2pm and 8pm", "20:4 — advanced, one main meal plus a small window", "Listen to your body — consistency beats perfection"] },
+            { icon: "🚫", title: "What breaks a fast", color: "#C97B7B", bg: "#FDEAEA", tips: ["Milk, cream, or sugar in coffee or tea", "Any food — even small amounts trigger insulin", "Juice, smoothies, or flavoured drinks", "Chewing gum with sugar", "BCAA supplements with calories"] },
+          ].map((section, i) => (
+            <div key={i} style={{ background: section.bg, borderRadius: 18, padding: "16px", border: `0.5px solid ${section.color}33`, marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                <span style={{ fontSize: 22 }}>{section.icon}</span>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: section.color, margin: 0 }}>{section.title}</p>
+              </div>
+              {section.tips.map((tip, j) => (
+                <p key={j} style={{ fontSize: 13, color: "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {tip}</p>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {nourishTab === "cravings" && mode !== "fast" && (
       <div onClick={() => onNavigate && onNavigate("calendar")} style={{ background: "#F8F0FF", borderRadius: 18, padding: "16px", border: "0.5px solid #D4C5E9", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 24 }}>🌙</span>
