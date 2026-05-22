@@ -772,8 +772,10 @@ function CheckInScreen({ mode, onNavigate }) {
 // ─────────────────────────────────────────────
 function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, periodLength = 7, mode }) {
   const [showMenu, setShowMenu] = useState(false);
+  const [calendarKey, setCalendarKey] = useState(0);
   const [periodMsg, setPeriodMsg] = useState(null);
   const [showEditCycle, setShowEditCycle] = useState(false);
+  const [periodRangesState, setPeriodRangesState] = useState(() => JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"));
   const [editDateInput, setEditDateInput] = useState("");
   const [editCycleLength, setEditCycleLength] = useState(cycleLength);
   const [editPeriodLength, setEditPeriodLength] = useState(periodLength);
@@ -857,18 +859,21 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
       </div>
 
       {/* Calendar grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
+      <div key={calendarKey} style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
         {Array.from({ length: firstDow }).map((_, i) => <div key={`e${i}`} />)}
-        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(d => {
+        {(() => {
+          const allPeriodRanges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]");
+          const allFastDays = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
+          return Array.from({ length: daysInMonth }, (_, i) => i + 1).map(d => {
           const cycDay  = getCycleDayFor(d);
           const phase   = getPhase(cycDay);
           const info    = PHASE_INFO[phase];
           const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
           const isSel   = d === selDay;
-          const fastDays = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
+          const fastDays = allFastDays;
           const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
           const isFasted = fastDays.includes(dateStr);
-          const periodRanges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]");
+          const periodRanges = allPeriodRanges;
           const isPeriodDay = periodRanges.some(r => {
             if (!r.start) return false;
             const start = r.start;
@@ -895,7 +900,8 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>{d}</button>
           );
-        })}
+        });
+        })()}
       </div>
 
       {/* Legend */}
@@ -1006,11 +1012,11 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
           <div style={{ background: "#fff", borderRadius: 18, padding: "8px 0", boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "0.5px solid #dce8dc", minWidth: 200 }}>
             {mode !== "fast" ? (
               <>
-                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); ranges.push({ start: selectedDate, end: null, predicted: false }); localStorage.setItem("lf_period_ranges", JSON.stringify(ranges)); onSave && onSave(selectedDate); setShowMenu(false); setPeriodMsg(`🩸 Period started ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#C97B7B", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); ranges.push({ start: selectedDate, end: null, predicted: false }); localStorage.setItem("lf_period_ranges", JSON.stringify(ranges)); setPeriodRangesState(ranges); setCalendarKey(k => k + 1); onSave && onSave(selectedDate); setShowMenu(false); setPeriodMsg(`🩸 Period started ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#C97B7B", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 18 }}>🩸</span> Period started today
                 </button>
                 <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
-                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); if (ranges.length > 0 && !ranges[ranges.length-1].end) { ranges[ranges.length-1].end = selectedDate; localStorage.setItem("lf_period_ranges", JSON.stringify(ranges)); } setShowMenu(false); setPeriodMsg(`✅ Period ended ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#7A9E7E", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); if (ranges.length > 0 && !ranges[ranges.length-1].end) { ranges[ranges.length-1].end = selectedDate; localStorage.setItem("lf_period_ranges", JSON.stringify(ranges)); setPeriodRangesState([...ranges]); } setShowMenu(false); setPeriodMsg(`✅ Period ended ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#7A9E7E", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 18 }}>✅</span> Period ended today
                 </button>
                 <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
@@ -1045,10 +1051,10 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
 //  LEARN SCREEN
 // ─────────────────────────────────────────────
 function LearnScreen({ mode }) {
-  const [tab, setTab] = useState("Phases");
+  const [tab, setTab] = useState(mode === "fast" ? "Fasting" : "Phases");
   const tabs = mode === "fast" 
     ? ["Fasting", "Men", "Glossary", "Workouts", "Nutrition", "Cravings", "Grooming", "Gut Health"]
-    : ["Fasting", "Phases", "Conditions", "Men", "Glossary", "Workouts", "Nutrition", "Blood Color", "Cravings"];
+    : ["Fasting", "Phases", "Conditions", "Men", "Glossary", "Workouts", "Nutrition", "Blood Color", "Cravings", "Cycle Guide", "Gut Health"];
 
   const BLOOD_COLORS = [
     { color: "#B22222", label: "Bright Red",    note: "Fresh flow. Healthy and normal at peak flow." },
@@ -1255,6 +1261,64 @@ function LearnScreen({ mode }) {
           </>
         )}
 
+        {tab === "Cycle Guide" && (
+          <>
+            <div style={{ ...s.card, background: "#F0F6F0", textAlign: "left" }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 8px" }}>🌿 How to calculate your cycle length</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.7 }}>Count from the first day of one period to the day before your next period starts. That total number of days is your cycle length.</p>
+            </div>
+            <div style={{ ...s.card, textAlign: "left" }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 10px" }}>📅 Example</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: "0 0 6px", lineHeight: 1.7 }}>Period started: May 1</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: "0 0 6px", lineHeight: 1.7 }}>Next period started: May 29</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#7A9E7E", margin: 0, fontWeight: 600 }}>Cycle length = 28 days ✓</p>
+            </div>
+            {[
+              { length: "21–24 days", label: "Short cycle", color: "#7BA8C9", bg: "#EAF2F9", tip: "Completely normal for some women. Your phases are shorter — especially the follicular phase. Ovulation comes earlier in the month." },
+              { length: "25–30 days", label: "Average cycle", color: "#7A9E7E", bg: "#F0F6F0", tip: "The most common cycle length range. A 28-day cycle is the average but anywhere in this range is perfectly healthy." },
+              { length: "31–35 days", label: "Longer cycle", color: "#9B7BC9", bg: "#F5F0FF", tip: "Completely normal for many women. Your follicular phase tends to be longer. Ovulation happens later in the month." },
+              { length: "36+ days", label: "Extended cycle", color: "#C9A87B", bg: "#FDF6EA", tip: "Can be normal for some women, especially during perimenopause or with conditions like PCOS. Worth tracking patterns over several months." },
+              { length: "Irregular", label: "Irregular cycle", color: "#C97B7B", bg: "#FDEAEA", tip: "Cycles that vary by more than 7-9 days each month. Common causes include stress, thyroid issues, PCOS, perimenopause, and significant weight changes. Track your symptoms and speak to a healthcare provider if concerned." },
+            ].map((item, i) => (
+              <div key={i} style={{ ...s.card, background: item.bg, border: `0.5px solid ${item.color}33`, textAlign: "left" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: item.color, margin: 0 }}>{item.label}</p>
+                  <span style={{ fontFamily: "sans-serif", fontSize: 11, color: item.color, background: "#fff", borderRadius: 50, padding: "3px 10px" }}>{item.length}</span>
+                </div>
+                <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: 0, lineHeight: 1.6 }}>{item.tip}</p>
+              </div>
+            ))}
+            <div style={{ ...s.card, background: "#F8FAF8", textAlign: "left" }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 8px" }}>💡 Tips for tracking</p>
+              {["Track for at least 3 months to see your personal pattern", "Your cycle may change with age, stress, and life seasons", "Perimenopause can cause cycles to become shorter then longer then irregular", "Lumen Flow learns your pattern the more you log"].map((tip, i) => (
+                <p key={i} style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: "0 0 6px", lineHeight: 1.6 }}>🌿 {tip}</p>
+              ))}
+            </div>
+          </>
+        )}
+
+        {tab === "Gut Health" && mode !== "fast" && (
+          <>
+            {[
+              { icon: "🦠", title: "Your gut and your cycle", tip: "Hormones directly affect gut motility. Many women experience bloating, constipation, or diarrhea at specific points in their cycle. Progesterone in the luteal phase slows digestion — this is why bloating often peaks before your period." },
+              { icon: "🌑", title: "Menstrual phase gut tips", tip: "Prostaglandins that trigger menstruation also affect the bowel — diarrhea and cramping are common. Warm foods, ginger tea, and magnesium can help ease symptoms." },
+              { icon: "🌒", title: "Follicular phase gut tips", tip: "Rising estrogen supports a healthier gut environment. This is the best time to introduce new foods and support your microbiome with fermented foods and fibre." },
+              { icon: "🌕", title: "Ovulation gut tips", tip: "Some women notice mid-cycle bloating around ovulation due to estrogen peaks. Stay hydrated and eat light anti-inflammatory foods." },
+              { icon: "🌗", title: "Luteal phase gut tips", tip: "Progesterone slows gut motility — constipation and bloating are very common. Increase fibre, water, and magnesium. Reduce processed foods and excess salt." },
+              { icon: "🥦", title: "Best foods for gut health", tip: "Fermented foods — yogurt, kefir, kimchi, sauerkraut. High fibre foods — oats, legumes, vegetables. Prebiotic foods — garlic, onions, bananas, asparagus. Anti-inflammatory foods — ginger, turmeric, leafy greens." },
+              { icon: "🚫", title: "Foods that disrupt gut health", tip: "Ultra-processed foods, excess sugar, artificial sweeteners, alcohol, and low-fibre diets all negatively affect the gut microbiome and can worsen cycle symptoms." },
+            ].map((item, i) => (
+              <div key={i} style={{ ...s.card, textAlign: "left" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 22 }}>{item.icon}</span>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: 0 }}>{item.title}</p>
+                </div>
+                <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{item.tip}</p>
+              </div>
+            ))}
+          </>
+        )}
+
         {tab === "Grooming" && (
           <>
             {[
@@ -1277,7 +1341,7 @@ function LearnScreen({ mode }) {
           </>
         )}
 
-        {tab === "Gut Health" && (
+        {tab === "Gut Health" && mode === "fast" && (
           <>
             {[
               { icon: "🦠", title: "The gut-hormone connection", tip: "Your gut microbiome directly influences testosterone and estrogen levels. A healthy gut produces neurotransmitters that affect mood, energy, and hormonal balance." },
