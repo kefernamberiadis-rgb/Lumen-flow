@@ -3,15 +3,28 @@ import { useState, useEffect } from "react";
 // ─────────────────────────────────────────────
 //  CYCLE LOGIC
 // ─────────────────────────────────────────────
-function getCycleDay(lastPeriod) {
+function getCycleDay(lastPeriod, cycleLength = 28) {
   if (!lastPeriod) return 1;
-  const diff = Math.floor((Date.now() - new Date(lastPeriod).getTime()) / 86400000);
-  return (diff % 28) + 1;
+  const start = new Date(lastPeriod);
+  start.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff = Math.floor((today - start) / 86400000);
+  return (diff % cycleLength) === 0 ? 1 : (diff % cycleLength) + 1;
 }
-function getPhase(day) {
-  if (day <= 5)  return "Menstrual";
-  if (day <= 13) return "Follicular";
-  if (day <= 16) return "Ovulation";
+
+function getPeriodPhase(lastPeriod, periodEnded, cycleLength = 28) {
+  if (!lastPeriod) return null;
+  if (!periodEnded) return "Menstrual";
+  const day = getCycleDay(lastPeriod, cycleLength);
+  return getPhase(day);
+}
+
+
+function getPhase(day, periodLength = 7) {
+  if (day <= periodLength)  return "Menstrual";
+  if (day <= periodLength + 8) return "Follicular";
+  if (day <= periodLength + 10) return "Ovulation";
   return "Luteal";
 }
 const PHASE_INFO = {
@@ -87,35 +100,8 @@ function Onboarding({ onDone }) {
           <h2 style={s.heading}>What's your name?</h2>
           <p style={{ ...s.sub, marginBottom: 24 }}>We'll personalise your experience.</p>
           <input value={name} onChange={e => setName(e.target.value)} placeholder="Your first name" style={{ ...s.input, textAlign: "center", marginBottom: 20 }} />
-          <button style={s.btn} onClick={() => name.trim() && setStep(mode === "cycle" ? 4 : 5)}>Continue</button>
+          <button style={s.btn} onClick={() => name.trim() && setStep(mode === "cycle" ? 5 : 5)}>Continue</button>
           <button style={s.backBtn} onClick={() => setStep(2)}>← Back</button>
-        </div>
-      )}
-
-      {step === 4 && mode === "cycle" && (
-        <div style={s.onboardBox}>
-          <div style={{ fontSize: 44, marginBottom: 16 }}>💚</div>
-          <h2 style={s.heading}>Any health conditions?</h2>
-          <div style={{ width: 36, height: 1, background: "#C5D9C5", margin: "8px auto 16px" }} />
-          <p style={{ ...s.sub, marginBottom: 20 }}>Optional — helps personalise your tips.</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", marginBottom: 20 }}>
-            {[
-              { dot: "#4A90D9", label: "PCOS" },
-              { dot: "#C97B7B", label: "Endometriosis" },
-              { dot: "#E0904A", label: "Perimenopause" },
-              { dot: "#C9A030", label: "Menopause" },
-              { dot: "#5C9E6E", label: "Thyroid" },
-              { dot: "#9B7BC9", label: "Fibroids" },
-            ].map((c, i) => (
-              <button key={i} onClick={e => e.currentTarget.classList.toggle("selected")} style={{ padding: "12px 10px", borderRadius: 14, border: "0.5px solid #dce8dc", background: "#fff", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", color: "#4a5a4b", display: "flex", alignItems: "center", gap: 8, transition: "all 0.2s" }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: c.dot, display: "inline-block", flexShrink: 0 }}></span>
-                {c.label}
-              </button>
-            ))}
-          </div>
-          <button style={s.btn} onClick={() => setStep(5)}>Continue</button>
-          <button style={{ ...s.btn, background: "transparent", color: "#8FA090", border: "none", fontSize: 13, marginTop: 8 }} onClick={() => setStep(5)}>Skip for now</button>
-          <button style={s.backBtn} onClick={() => setStep(3)}>← Back</button>
         </div>
       )}
 
@@ -162,8 +148,9 @@ function Onboarding({ onDone }) {
 // ─────────────────────────────────────────────
 //  HOME SCREEN
 // ─────────────────────────────────────────────
-function HomeScreen({ name, lastPeriod }) {
-  const cycleDay = getCycleDay(lastPeriod);
+249
+function HomeScreen({ name, lastPeriod, mode }) {
+  const cycleDay = getCycleDay(lastPeriod) - 1 || 1;
   const phase    = getPhase(cycleDay);
   const info     = PHASE_INFO[phase];
 
@@ -171,6 +158,7 @@ function HomeScreen({ name, lastPeriod }) {
   const [elapsed,   setElapsed]     = useState(0);
   const [goalHours, setGoalHours]   = useState(16);
   const [showGoals, setShowGoals]   = useState(false);
+  const [showEditFast, setShowEditFast] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("lf_fast_start");
@@ -224,6 +212,7 @@ function HomeScreen({ name, lastPeriod }) {
     return streak;
   };
   const streak = getFastStreak();
+  const totalFasts = JSON.parse(localStorage.getItem("lf_fast_days") || "[]").length;
   
 
   return (
@@ -235,10 +224,18 @@ function HomeScreen({ name, lastPeriod }) {
           <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: "#2D3B2E", margin: 0, fontWeight: 400 }}>{name} 🌿</h2>
         </div>
         <div style={{ textAlign: "right" }}>
-          <span style={{ ...s.chip, background: info.bg, color: info.color, fontFamily: "sans-serif" }}>
-            {info.emoji} {phase}
-          </span>
-          <p style={{ ...s.label, marginTop: 4 }}>Day {cycleDay}</p>
+          {mode !== "fast" ? (
+            <>
+              <span style={{ ...s.chip, background: info.bg, color: info.color, fontFamily: "sans-serif" }}>
+                {info.emoji} {phase}
+              </span>
+              <p style={{ ...s.label, marginTop: 4 }}>Day {cycleDay}</p>
+            </>
+          ) : (
+            <span style={{ ...s.chip, background: "#EAF2EA", color: "#5C7F60", fontFamily: "sans-serif" }}>
+              ⚡ Fasting
+            </span>
+          )}
         </div>
       </div>
 
@@ -273,11 +270,68 @@ function HomeScreen({ name, lastPeriod }) {
         
 
         {fastStart ? (
-          <button onClick={stopFast} style={{ ...s.btn, background: "#C97B7B" }}>End Fast</button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={stopFast} style={{ ...s.btn, background: "#C97B7B", flex: 1 }}>End Fast</button>
+            <button onClick={() => setShowEditFast(!showEditFast)} style={{ background: "#F0F6F0", border: "0.5px solid #C5D9C5", borderRadius: 50, padding: "0 16px", fontFamily: "sans-serif", fontSize: 13, color: "#5C7F60", cursor: "pointer" }}>✏️</button>
+          </div>
         ) : (
           <button onClick={startFast} style={{ ...s.btn, opacity: goalHours ? 1 : 0.4 }}>Begin Fast 🌙</button>
         )}
+        {showEditFast && fastStart && (
+          <div style={{ background: "#F8FAF8", borderRadius: 16, padding: "16px", border: "0.5px solid #dce8dc", marginTop: 8 }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: "0 0 12px" }}>Edit your fast</p>
+            
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Fast start date</p>
+            <input
+              type="date"
+              defaultValue={fastStart ? new Date(fastStart).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]}
+              max={new Date().toISOString().split("T")[0]}
+              min={new Date(Date.now() - 2 * 86400000).toISOString().split("T")[0]}
+              onChange={e => {
+                const currentTime = fastStart ? new Date(fastStart).toTimeString().slice(0,5) : "00:00";
+                const newStart = new Date(e.target.value + "T" + currentTime).getTime();
+                setFastStart(newStart);
+                localStorage.setItem("lf_fast_start", newStart);
+              }}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12 }}
+            />
+
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Fast start time</p>
+            <input
+              type="time"
+              defaultValue={fastStart ? new Date(fastStart).toTimeString().slice(0,5) : "00:00"}
+              onChange={e => {
+                const currentDate = fastStart ? new Date(fastStart).toISOString().split("T")[0] : new Date().toISOString().split("T")[0];
+                const newStart = new Date(currentDate + "T" + e.target.value).getTime();
+                setFastStart(newStart);
+                localStorage.setItem("lf_fast_start", newStart);
+              }}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12 }}
+            />
+
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Goal hours</p>
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              {[12, 14, 16, 18, 20, 24].map(h => (
+                <button key={h} onClick={() => setGoalHours(h)} style={{ flex: 1, padding: "8px 4px", borderRadius: 10, border: "0.5px solid #dce8dc", background: goalHours === h ? "#7A9E7E" : "#fff", color: goalHours === h ? "#fff" : "#4a5a4b", fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{h}h</button>
+              ))}
+            </div>
+            <button onClick={() => setShowEditFast(false)} style={{ ...s.btn, fontSize: 13, padding: "10px 0" }}>Save changes</button>
+          </div>
+        )}
       </div>
+
+      {/* Hormone card — changes based on mode */}
+      {mode === "fast" ? (
+        <div style={{ margin: "0 16px 12px", background: "linear-gradient(135deg, #1a3a2a, #0f2a1a)", borderRadius: 18, padding: "16px", border: "1px solid rgba(99,179,237,0.2)" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 9, letterSpacing: "2px", color: "#7A9E7E", margin: "0 0 6px", textTransform: "uppercase" }}>Testosterone Window</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 22, fontWeight: 700, color: "#fff", margin: "0 0 4px" }}>
+            {new Date().getHours() < 10 ? "Peak" : new Date().getHours() < 14 ? "High" : new Date().getHours() < 18 ? "Moderate" : "Low"}
+          </p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#A8BEA8", margin: 0 }}>
+            {new Date().getHours() < 10 ? "Best time to train and tackle hard tasks" : new Date().getHours() < 14 ? "Focus work and key decisions" : new Date().getHours() < 18 ? "Meetings and collaborative work" : "Wind down and recover"}
+          </p>
+        </div>
+      ) : null}
 
       {/* Level cards */}
       <div style={{ display: "flex", gap: 8, margin: "0 16px 12px" }}>
@@ -305,11 +359,11 @@ function HomeScreen({ name, lastPeriod }) {
         <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4 }}>
           {[
             { icon: "🗓️", name: "Streak", prog: `${streak} day${streak !== 1 ? "s" : ""}`, earned: streak > 0 },
-            { icon: "⚡", name: "3 Fasts", prog: "1 / 3", earned: false },
-            { icon: "🌙", name: "Cycle Mo.", prog: "0 / 1", earned: false },
-            { icon: "💚", name: "Recovery", prog: "Earned", earned: true },
-            { icon: "⏰", name: "On Time", prog: "Locked", earned: false },
-            { icon: "🧘", name: "Listen", prog: "Locked", earned: false },
+            { icon: "⚡", name: "3 Fasts", prog: `${Math.min(totalFasts, 3)} / 3`, earned: totalFasts >= 3 },
+            { icon: "🌙", name: "Cycle Mo.", prog: `${Math.min(totalFasts, 1)} / 1`, earned: totalFasts >= 1 },
+            { icon: "💚", name: "Recovery", prog: streak >= 2 ? "Earned" : "Locked", earned: streak >= 2 },
+            { icon: "⏰", name: "On Time", prog: totalFasts >= 5 ? "Earned" : `${Math.min(totalFasts, 5)} / 5`, earned: totalFasts >= 5 },
+            { icon: "🧘", name: "Listen", prog: streak >= 7 ? "Earned" : `${Math.min(streak, 7)} / 7`, earned: streak >= 7 },
           ].map((b, i) => (
             <div key={i} style={{
               flexShrink: 0, background: b.earned ? "#F0F6F0" : "#fff",
@@ -330,7 +384,7 @@ function HomeScreen({ name, lastPeriod }) {
 // ─────────────────────────────────────────────
 //  CHECK-IN SCREEN
 // ─────────────────────────────────────────────
-function CheckInScreen() {
+function CheckInScreen({ mode }) {
   const today = new Date().toISOString().split("T")[0];
   const key   = `lf_checkin_${today}`;
 
@@ -349,6 +403,10 @@ function CheckInScreen() {
   };
 
   const flowOptions  = ["none","spotting","light","medium","heavy"];
+  const gutOptions   = ["none","bloating","constipation","diarrhea","cramps","nausea"];
+  const [gut, setGut] = useState("none");
+  const [clarity, setClarity] = useState(3);
+  const [workout, setWorkout] = useState(3);
   const ratingEmojis = ["😔","😕","😐","🙂","😊"];
 
   if (saved) return (
@@ -359,10 +417,48 @@ function CheckInScreen() {
       <div style={{ ...s.card, textAlign: "left" }}>
         <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>⚡ Energy: {ratingEmojis[saved.energy - 1]}</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💭 Mood: {ratingEmojis[saved.mood - 1]}</p>
-        <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🩸 Flow: {saved.flow}</p>
+        {mode !== "fast" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🩸 Flow: {saved.flow}</p>}
+        {mode !== "fast" && saved.gut && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🦠 Gut: {saved.gut}</p>}
+        {mode === "fast" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🧠 Clarity: {ratingEmojis[saved.clarity - 1] || ratingEmojis[2]}</p>}
+        {mode === "fast" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💪 Workout: {ratingEmojis[saved.workout - 1] || ratingEmojis[2]}</p>}
         {saved.notes && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: 0 }}>📝 {saved.notes}</p>}
       </div>
       <button onClick={() => setSaved(null)} style={{ ...s.btn, background: "#EAF2EA", color: "#5C7F60", marginTop: 12 }}>Edit Check-in</button>
+
+      {/* Mood History */}
+      <div style={{ marginTop: 20, textAlign: "left" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 12px" }}>Recent check-ins</p>
+        {(() => {
+          const history = [];
+          for (let i = 1; i <= 7; i++) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateKey = d.toISOString().split("T")[0];
+            const entry = localStorage.getItem(`lf_checkin_${dateKey}`);
+            if (entry) {
+              try { history.push({ ...JSON.parse(entry), dateKey }); } catch {}
+            }
+          }
+          if (history.length === 0) return (
+            <div style={{ ...s.card, textAlign: "center" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#A8BEA8", margin: 0 }}>No previous check-ins yet 🌿</p>
+            </div>
+          );
+          return history.map((entry, i) => (
+            <div key={i} style={{ ...s.card, marginBottom: 10 }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                {new Date(entry.dateKey).toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" })}
+              </p>
+              <div style={{ display: "flex", gap: 12 }}>
+                <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b" }}>⚡ {ratingEmojis[entry.energy - 1]}</span>
+                <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b" }}>💭 {ratingEmojis[entry.mood - 1]}</span>
+                <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b" }}>🩸 {entry.flow}</span>
+              </div>
+              {entry.notes && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "6px 0 0" }}>📝 {entry.notes}</p>}
+            </div>
+          ));
+        })()}
+      </div>
     </div>
   );
 
@@ -389,6 +485,7 @@ function CheckInScreen() {
         </div>
       </div>
 
+      {mode !== "fast" && (
       <div style={s.card}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🩸 Flow</p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -402,6 +499,45 @@ function CheckInScreen() {
           ))}
         </div>
       </div>
+      )}
+
+      {mode !== "fast" && (
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🦠 Gut health</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {gutOptions.map(g => (
+            <button key={g} onClick={() => setGut(g)} style={{
+              padding: "7px 14px", borderRadius: 100, border: "none",
+              background: gut === g ? "#7A9E7E" : "#EAF2EA",
+              color: gut === g ? "#fff" : "#6b7b6b",
+              fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", textTransform: "capitalize",
+            }}>{g}</button>
+          ))}
+        </div>
+      </div>
+      )}
+
+      {mode === "fast" && (
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🧠 Mental clarity</p>
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          {ratingEmojis.map((e, i) => (
+            <button key={i} onClick={() => setClarity(i + 1)} style={{ fontSize: 28, background: "none", border: "none", cursor: "pointer", opacity: clarity === i + 1 ? 1 : 0.35, transition: "opacity 0.15s" }}>{e}</button>
+          ))}
+        </div>
+      </div>
+      )}
+
+      {mode === "fast" && (
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>💪 Workout performance</p>
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          {ratingEmojis.map((e, i) => (
+            <button key={i} onClick={() => setWorkout(i + 1)} style={{ fontSize: 28, background: "none", border: "none", cursor: "pointer", opacity: workout === i + 1 ? 1 : 0.35, transition: "opacity 0.15s" }}>{e}</button>
+          ))}
+        </div>
+      </div>
+      )}
 
       <div style={s.card}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>📝 Notes</p>
@@ -421,7 +557,13 @@ function CheckInScreen() {
 // ─────────────────────────────────────────────
 //  CALENDAR SCREEN
 // ─────────────────────────────────────────────
-function CalendarScreen({ lastPeriod }) {
+function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, periodLength = 7, mode }) {
+  const [showMenu, setShowMenu] = useState(false);
+  const [periodMsg, setPeriodMsg] = useState(null);
+  const [showEditCycle, setShowEditCycle] = useState(false);
+  const [editDateInput, setEditDateInput] = useState("");
+  const [editCycleLength, setEditCycleLength] = useState(cycleLength);
+  const [editPeriodLength, setEditPeriodLength] = useState(periodLength);
   const today   = new Date();
   const [month, setMonth] = useState(today.getMonth());
   const [year,  setYear]  = useState(today.getFullYear());
@@ -442,6 +584,49 @@ function CalendarScreen({ lastPeriod }) {
 
   return (
     <div style={{ padding: "16px 16px 90px" }}>
+      {/* Mini Dashboard */}
+      {lastPeriod && mode !== "fast" && (
+        <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "16px", marginBottom: 14 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>Your cycle overview</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+            <div style={{ background: "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Last period</p>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: 0 }}>{new Date(lastPeriod).toLocaleDateString("en-CA", { month: "short", day: "numeric" })}</p>
+            </div>
+            <div style={{ background: "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Next period</p>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#C97B7B", margin: 0 }}>
+                {(() => { const next = new Date(lastPeriod); next.setDate(next.getDate() + cycleLength); return next.toLocaleDateString("en-CA", { month: "short", day: "numeric" }); })()}
+              </p>
+            </div>
+            <div style={{ background: "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Cycle length</p>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: 0 }}>{cycleLength} days</p>
+            </div>
+            <div style={{ background: "#FDEAEA", borderRadius: 12, padding: "10px 12px" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#C97B7B", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Period length</p>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#C97B7B", margin: 0 }}>{periodLength} days</p>
+            </div>
+          </div>
+          {/* Cycle bar chart */}
+          <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Cycle chart</p>
+          <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", height: 12 }}>
+            <div style={{ width: "25%", background: "#C97B7B" }} title="Menstrual" />
+            <div style={{ width: "29%", background: "#7BA8C9" }} title="Follicular" />
+            <div style={{ width: "4%", background: "#C9A87B" }} title="Ovulation" />
+            <div style={{ width: "42%", background: "#9B7BC9" }} title="Luteal" />
+          </div>
+          <div style={{ display: "flex", gap: 10, marginTop: 6, flexWrap: "wrap" }}>
+            {[["#C97B7B","Menstrual","~7d"],["#7BA8C9","Follicular","~8d"],["#C9A87B","Ovulation","~2d"],["#9B7BC9","Luteal","~12d"]].map(([color, name, days]) => (
+              <div key={name} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <div style={{ width: 8, height: 8, borderRadius: 2, background: color }} />
+                <span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#6b7b6b" }}>{name} {days}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Month nav */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <button onClick={() => { if (month === 0) { setMonth(11); setYear(y => y-1); } else setMonth(m => m-1); }}
@@ -454,7 +639,7 @@ function CalendarScreen({ lastPeriod }) {
       {/* Day of week headers */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 8 }}>
         {["S","M","T","W","T","F","S"].map((d,i) => (
-          <div key={i} style={{ textAlign: "center", fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", fontWeight: 600 }}>{d}</div>
+          <div key={i} style={{ textAlign: "center", fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", aspectRatio: "1" }}>{d}</div>
         ))}
       </div>
 
@@ -467,13 +652,16 @@ function CalendarScreen({ lastPeriod }) {
           const info    = PHASE_INFO[phase];
           const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
           const isSel   = d === selDay;
+          const fastDays = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
+          const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+          const isFasted = fastDays.includes(dateStr);
           return (
             <button key={d} onClick={() => setSelDay(d)} style={{
               aspectRatio: "1", borderRadius: "50%",
-              border: isToday ? `2px solid #8FAF8F` : "none",
-              background: isSel ? info.color : info.bg,
+              border: isToday ? `2px solid #8FAF8F` : isFasted ? "2px solid #7A9E7E" : "none",
+              background: mode === "fast" ? (isSel ? "#7A9E7E" : "#F0F6F0") : (isSel ? info.color : info.bg),
               cursor: "pointer", fontFamily: "sans-serif", fontSize: 13,
-              color: isSel ? "#fff" : info.color,
+              color: mode === "fast" ? (isSel ? "#fff" : "#5C7F60") : (isSel ? "#fff" : info.color),
               fontWeight: isToday ? 700 : 400,
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>{d}</button>
@@ -482,6 +670,7 @@ function CalendarScreen({ lastPeriod }) {
       </div>
 
       {/* Legend */}
+      {mode !== "fast" && (
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16, paddingTop: 12, borderTop: "1px solid #EAF2EA" }}>
         {Object.entries(PHASE_INFO).map(([name, info]) => (
           <div key={name} style={{ display: "flex", alignItems: "center", gap: 5 }}>
@@ -490,8 +679,10 @@ function CalendarScreen({ lastPeriod }) {
           </div>
         ))}
       </div>
+      )}
 
       {/* Selected day detail */}
+      {mode !== "fast" ? (
       <div style={{ ...s.card, background: selInfo.bg, border: `1px solid ${selInfo.color}33`, textAlign: "left", marginTop: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
           <span style={{ fontSize: 24 }}>{selInfo.emoji}</span>
@@ -507,16 +698,100 @@ function CalendarScreen({ lastPeriod }) {
         <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: "0 0 4px" }}>💧 <b>Fast:</b> {selInfo.fast}</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: 0 }}>🏋️ <b>Move:</b> {selInfo.move}</p>
       </div>
+
+      ) : (
+        <div style={{ ...s.card, marginTop: 12, textAlign: "center" }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 4px" }}>🔥 {new Date().toLocaleDateString("en-CA", { month: "long", day: "numeric" })}</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: 0 }}>Fasting day tracker</p>
+        </div>
+      )}
+
+      {/* Edit Cycle Section */}
+      {mode !== "fast" && <div style={{ marginTop: 12 }}>
+        <button onClick={() => setShowEditCycle(!showEditCycle)} style={{ background: "none", border: "0.5px solid #dce8dc", borderRadius: 50, padding: "8px 16px", fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+          ✏️ Edit cycle date {showEditCycle ? "▴" : "▾"}
+        </button>
+        {showEditCycle && (
+          <div style={{ background: "#F8FAF8", borderRadius: 16, padding: "16px", border: "0.5px solid #dce8dc", marginTop: 10 }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: "0 0 12px" }}>When did your last period start?</p>
+            <input
+              type="date"
+              value={editDateInput}
+              onChange={e => setEditDateInput(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              min="2015-01-01"
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12 }}
+            />
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Cycle length (days)</p>
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              {[21, 24, 28, 30, 35, 40].map(d => (
+                <button key={d} onClick={() => setEditCycleLength(d)} style={{ flex: 1, padding: "8px 4px", borderRadius: 10, border: "0.5px solid #dce8dc", background: editCycleLength === d ? "#7A9E7E" : "#fff", color: editCycleLength === d ? "#fff" : "#4a5a4b", fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{d}</button>
+              ))}
+            </div>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Period length (days)</p>
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              {[3, 4, 5, 6, 7, 8].map(d => (
+                <button key={d} onClick={() => setEditPeriodLength(d)} style={{ flex: 1, padding: "8px 4px", borderRadius: 10, border: "0.5px solid #dce8dc", background: editPeriodLength === d ? "#C97B7B" : "#fff", color: editPeriodLength === d ? "#fff" : "#4a5a4b", fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{d}</button>
+              ))}
+            </div>
+            <button onClick={() => { if (editDateInput) { onSave && onSave(editDateInput, editCycleLength, editPeriodLength); setShowEditCycle(false); setPeriodMsg("✅ Cycle date updated!"); setTimeout(() => setPeriodMsg(null), 3000); }}} style={{ background: "#7A9E7E", border: "none", borderRadius: 50, padding: "10px 0", width: "100%", fontFamily: "sans-serif", fontSize: 13, color: "#fff", cursor: "pointer", fontWeight: 600 }}>
+              Save cycle date
+            </button>
+          </div>
+        )}
+      </div>}
+      {/* Floating + button */}
+      {showMenu && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 998 }} onClick={() => setShowMenu(false)} />
+      )}
+      <div style={{ position: "fixed", bottom: 90, right: 20, zIndex: 999, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+        {showMenu && (
+          <div style={{ background: "#fff", borderRadius: 18, padding: "8px 0", boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "0.5px solid #dce8dc", minWidth: 200 }}>
+            {mode !== "fast" ? (
+              <>
+                <button onClick={() => { const today = new Date().toISOString().split("T")[0]; onSave && onSave(today); setShowMenu(false); setPeriodMsg("🩸 Period start logged!"); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#C97B7B", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 18 }}>🩸</span> Period started today
+                </button>
+                <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
+                <button onClick={() => { setShowMenu(false); setPeriodMsg("✅ Period end noted!"); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#7A9E7E", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 18 }}>✅</span> Period ended today
+                </button>
+                <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
+              </>
+            ) : (
+              <>
+                <button onClick={() => { setShowMenu(false); onNavigate && onNavigate("home"); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#5C7F60", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 18 }}>🔥</span> Start a fast
+                </button>
+                <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
+              </>
+            )}
+            <button onClick={() => { setShowMenu(false); onNavigate && onNavigate("checkin"); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#8FA090", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 18 }}>😊</span> Log mood
+            </button>
+          </div>
+        )}
+        {periodMsg && (
+          <div style={{ background: "#fff", borderRadius: 50, padding: "8px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.1)", fontFamily: "sans-serif", fontSize: 12, color: "#5C7F60", border: "0.5px solid #C5D9C5" }}>
+            {periodMsg}
+          </div>
+        )}
+        <button onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }} style={{ width: 52, height: 52, borderRadius: "50%", background: "#C97B7B", border: "none", color: "#fff", fontSize: 26, cursor: "pointer", boxShadow: "0 4px 16px rgba(201,123,123,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          +
+        </button>
+      </div>
     </div>
-  );
+    );
 }
 
 // ─────────────────────────────────────────────
 //  LEARN SCREEN
 // ─────────────────────────────────────────────
-function LearnScreen() {
+function LearnScreen({ mode }) {
   const [tab, setTab] = useState("Phases");
-  const tabs = ["Fasting", "Phases", "Conditions", "Men", "Glossary", "Workouts", "Nutrition", "Blood Color", "Cravings"];
+  const tabs = mode === "fast" 
+    ? ["Fasting", "Men", "Glossary", "Workouts", "Nutrition", "Cravings"]
+    : ["Fasting", "Phases", "Conditions", "Men", "Glossary", "Workouts", "Nutrition", "Blood Color", "Cravings"];
 
   const BLOOD_COLORS = [
     { color: "#B22222", label: "Bright Red",    note: "Fresh flow. Healthy and normal at peak flow." },
@@ -537,21 +812,38 @@ function LearnScreen() {
     { craving: "😶 No Appetite",     why: "Peak estrogen at ovulation naturally suppresses appetite. Totally normal." },
   ];
 
-  const FASTING_INFO = [
+  const FASTING_INFO = mode === "fast" ? [
+    { phase: "16:8 Fasting",  tip: "Fast for 16 hours, eat within an 8 hour window. Most popular and sustainable method. Best for beginners and intermediate fasters." },
+    { phase: "18:6 Fasting",  tip: "Fast for 18 hours, eat within a 6 hour window. Increases autophagy and fat burning. Best for experienced fasters." },
+    { phase: "20:4 Fasting",  tip: "Fast for 20 hours, eat within a 4 hour window. Significant metabolic benefits. Requires strong discipline." },
+    { phase: "OMAD",          tip: "One meal a day. Maximum autophagy and simplicity. Only recommended for experienced fasters." },
+    { phase: "Peak Window",   tip: "Your testosterone peaks in the morning. Breaking your fast with protein within 30-60 minutes of waking optimises muscle synthesis." },
+    { phase: "Sleep Fasting",  tip: "Your longest natural fast happens during sleep. Going to bed slightly hungry extends your fast and boosts overnight growth hormone." },
+  ] : [
     { phase: "Menstrual 🌑",  tip: "Shorter windows (12–14h). Your body needs steady energy during bleeding." },
     { phase: "Follicular 🌒", tip: "Rising estrogen supports metabolic flexibility. 14–16h windows feel natural." },
     { phase: "Ovulation 🌕",  tip: "Peak performance phase. 16–18h may feel manageable. Stay hydrated." },
     { phase: "Luteal 🌗",     tip: "Progesterone affects blood sugar. Shorter 12–14h windows feel better." },
   ];
 
-  const WORKOUT_INFO = [
+  const WORKOUT_INFO = mode === "fast" ? [
+    { phase: "Fasted Training", tip: "Training in a fasted state increases fat oxidation and growth hormone release. Best for low to moderate intensity sessions." },
+    { phase: "Fed Training",    tip: "Break your fast 1-2 hours before heavy lifting. Carbs and protein fuel peak performance on compound lifts." },
+    { phase: "Morning Peak",    tip: "Testosterone peaks 30-60 minutes after waking. Morning workouts in this window maximise muscle building response." },
+    { phase: "Recovery",        tip: "Sleep is when growth hormone peaks naturally. Prioritise 7-9 hours. Poor sleep reduces testosterone by up to 15%." },
+  ] : [
     { phase: "Menstrual 🌑",  tip: "Gentle yoga, slow walks, or full rest. Listen above all else." },
     { phase: "Follicular 🌒", tip: "Strength training, cardio, and HIIT workouts thrive now." },
     { phase: "Ovulation 🌕",  tip: "Your absolute peak. Lift heavy, go fast, compete." },
     { phase: "Luteal 🌗",     tip: "Moderate cardio and pilates. Late luteal – slow right down." },
   ];
 
-  const NUTRITION_INFO = [
+  const NUTRITION_INFO = mode === "fast" ? [
+    { phase: "Break Fast Meal", tip: "Break your fast with protein first — eggs, meat, fish, or Greek yogurt. This triggers muscle protein synthesis and stabilises blood sugar." },
+    { phase: "Electrolytes",    tip: "During extended fasts replenish sodium, potassium and magnesium. Add a pinch of sea salt to water or drink bone broth." },
+    { phase: "Eating Window",   tip: "Prioritise whole foods — lean proteins, complex carbs, healthy fats and vegetables. Avoid ultra-processed foods that spike insulin." },
+    { phase: "Pre-Sleep",       tip: "A small protein-rich snack 2-3 hours before bed supports overnight muscle recovery without disrupting your fasting window." },
+  ] : [
     { phase: "Menstrual 🌑",  tip: "Iron-rich foods, warming soups, anti-inflammatory choices." },
     { phase: "Follicular 🌒", tip: "Leafy greens, lean proteins, and fermented foods for estrogen support." },
     { phase: "Ovulation 🌕",  tip: "Cruciferous vegetables to help estrogen clearance." },
@@ -741,6 +1033,23 @@ function SettingsScreen({ settings, onSave }) {
         {saved ? "✓ Saved!" : "Save Changes"}
       </button>
 
+      {/* Social Links */}
+      <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 12px" }}>Follow us</p>
+        <button onClick={() => window.open("https://www.tiktok.com/@lumenfuxapp", "_blank")} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EAF2EA", border: "none", borderRadius: 12, padding: "12px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#2D3B2E", cursor: "pointer", marginBottom: 8 }}>
+          <span>📱 TikTok <span style={{ fontSize: 12, color: "#8FA090" }}>@lumenfuxapp</span></span>
+          <span style={{ color: "#C5D9C5", fontSize: 18 }}>›</span>
+        </button>
+        <button onClick={() => window.open("https://www.instagram.com/lumenflowapp", "_blank")} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EAF2EA", border: "none", borderRadius: 12, padding: "12px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#2D3B2E", cursor: "pointer", marginBottom: 8 }}>
+          <span>📸 Instagram <span style={{ fontSize: 12, color: "#8FA090" }}>@lumenflowapp</span></span>
+          <span style={{ color: "#C5D9C5", fontSize: 18 }}>›</span>
+        </button>
+        <button onClick={() => window.open("https://pin.it/103O2xFfi", "_blank")} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EAF2EA", border: "none", borderRadius: 12, padding: "12px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#2D3B2E", cursor: "pointer", marginBottom: 8 }}>
+          <span>📌 Pinterest <span style={{ fontSize: 12, color: "#8FA090" }}>Lumen Flow</span></span>
+          <span style={{ color: "#C5D9C5", fontSize: 18 }}>›</span>
+        </button>
+      </div>
+
       <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 12px" }}>Legal</p>
         <button onClick={() => setSubScreen("privacy")} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EAF2EA", border: "none", borderRadius: 12, padding: "12px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#2D3B2E", cursor: "pointer", marginBottom: 8 }}>
@@ -800,7 +1109,152 @@ const RECIPES = [
 const DIET_TYPES    = ["All","High Protein","Low Carb","High Carb","Keto","Carnivore","Vegan","Vegetarian","Mediterranean","Paleo","Gluten-Free","Caribbean"];
 const PHASE_FILTERS = ["All","Menstrual","Follicular","Ovulation","Luteal"];
 
-function RecipesScreen({ phase }) {
+function RecipesScreen({ phase, onNavigate, mode }) {
+  const [cravingType, setCravingType] = useState(null);
+
+  const CRAVINGS = {
+    "Sweet": {
+      emoji: "🍰",
+      insight: "You may be needing energy, comfort, or a gentle reward. Sweet cravings sometimes show up when you feel emotionally drained, tired, or simply in need of something soft.",
+      nourish: ["A piece of dark chocolate with almond butter", "Greek yogurt with honey and berries", "A banana with peanut butter", "Dates with a small handful of nuts", "A warm chai or golden milk", "Oat energy balls with maple syrup", "Fresh fruit with coconut cream"],
+      pause: ["Drink a glass of water first and wait 5 minutes", "Take 3 slow deep breaths", "Place your hand on your heart and ask what you really need", "Name 3 things you are grateful for right now", "Unclench your jaw and relax your shoulders"],
+      romanticize: ["Make your snack beautiful — use a nice plate", "Light a candle and sit somewhere cozy", "Put on soft music while you eat", "Make a warm drink and wrap yourself in a blanket", "Give yourself full permission to enjoy it slowly"]
+    },
+    "Salty": {
+      emoji: "🧂",
+      insight: "You may be craving something steady, grounding, or replenishing. Salty cravings can sometimes show up when you feel depleted, stressed, or in need of comfort.",
+      nourish: ["Try soup or broth", "Eggs with avocado and a pinch of sea salt", "Pickles with cheese or hummus", "Roasted potatoes with olive oil and sea salt", "Crackers with tuna, chicken, or cottage cheese", "Popcorn or salted roasted chickpeas", "A balanced meal with protein, carbs, and electrolytes"],
+      pause: ["Drink a glass of water", "Place your hands on your chest in a butterfly manner and tap in a rhythm", "Put both feet flat on the floor", "Take 5 slow breaths", "Name 5 things you can see", "Relax your shoulders and unclench your jaw"],
+      romanticize: ["Make soup in your favourite bowl", "Sit outside for 5 minutes", "Light a candle while you eat", "Put on soft music", "Make the snack feel intentional and slow"]
+    },
+    "Crunchy": {
+      emoji: "🥨",
+      insight: "Crunchy cravings may sometimes be linked to stress or the need to release tension. Your body might be looking for something satisfying and grounding.",
+      nourish: ["Apple slices with almond butter", "Carrot and celery sticks with hummus", "Rice cakes with avocado", "Roasted chickpeas or edamame", "A handful of mixed nuts and seeds", "Cucumber slices with cottage cheese", "Whole grain crackers with smoked salmon"],
+      pause: ["Shake out your hands and roll your shoulders back", "Take 5 deep breaths through your nose", "Go for a 5 minute walk if you can", "Clench your fists tight then release slowly", "Splash cold water on your face or wrists"],
+      romanticize: ["Arrange your snack on a board like a little charcuterie", "Eat outside or near a window", "Put on a podcast or playlist you love", "Make it a proper snack moment — sit down and enjoy it", "Notice the textures slowly as you eat"]
+    },
+    "Creamy": {
+      emoji: "🍦",
+      insight: "Creamy cravings may be your body asking for comfort, nourishment, or healthy fats. They often show up when you need something soothing and satisfying.",
+      nourish: ["Greek yogurt with granola and honey", "Avocado on toast with lemon", "A smoothie with banana, nut butter, and oat milk", "Cottage cheese with fruit", "Hummus with warm pita bread", "A warm bowl of oatmeal with cream and berries", "Coconut yogurt with mango"],
+      pause: ["Drink a glass of warm water or herbal tea", "Sit down and breathe slowly before eating", "Check in — are you hungry or emotionally reaching?", "Roll your neck gently side to side", "Close your eyes for 60 seconds"],
+      romanticize: ["Make a beautiful smoothie bowl and photograph it", "Eat your yogurt in a pretty glass", "Sit somewhere beautiful to enjoy your snack", "Put on ambient or café music", "Add toppings that make it feel special"]
+    },
+    "Carbs / Pastry": {
+      emoji: "🥐",
+      insight: "You may be craving warmth, slowness, or a moment just for you. Carb cravings can sometimes mean your body needs energy or your heart needs comfort.",
+      nourish: ["Whole grain toast with nut butter and banana", "Oatmeal with cinnamon and maple syrup", "A small portion of pasta with olive oil and herbs", "Sweet potato with butter and sea salt", "Brown rice with roasted vegetables", "A warm croissant enjoyed slowly and mindfully", "Sourdough bread with avocado"],
+      pause: ["Ask yourself — am I hungry or am I tired?", "Drink a glass of water first", "Sit somewhere quiet for 5 minutes", "Breathe in for 4 counts, hold for 4, out for 4", "Check in with your energy level honestly"],
+      romanticize: ["Go to a café and enjoy a pastry slowly", "Make toast at home and eat it by a window", "Use your nicest mug for your coffee or tea", "Let it be a real break — no phone, just the moment", "Light something and make it feel like a ritual"]
+    },
+    "Chocolate": {
+      emoji: "🍫",
+      insight: "Chocolate cravings may sometimes be linked to a need for magnesium, pleasure, or emotional comfort. Your body or your mood might be asking for a gentle lift.",
+      nourish: ["A square or two of dark chocolate 70% or higher", "A chocolate smoothie with banana and cacao powder", "Dark chocolate with almonds or walnuts", "Cacao energy balls with dates and oats", "A warm mug of hot cacao", "Greek yogurt with cacao nibs and honey", "A small chocolate and nut butter snack"],
+      pause: ["Savour one piece slowly instead of eating quickly", "Breathe before you reach — check in first", "Drink a glass of water alongside it", "Notice how your body feels before and after", "Give yourself full permission so it does not feel like guilt"],
+      romanticize: ["Make a beautiful cup of hot chocolate", "Eat your chocolate with intention — slowly and peacefully", "Pair it with a book or journal", "Light a candle and make it a moment", "Choose quality over quantity and really enjoy it"]
+    },
+    "Coffee / Café": {
+      emoji: "☕",
+      insight: "You may be craving atmosphere, ritual, a pause, or simply connection with yourself. This craving is often more about the feeling than the food.",
+      nourish: ["Make your coffee or tea at home beautifully", "Pair it with a small protein snack to balance energy", "Try a matcha latte if you want less caffeine", "Have a glass of water alongside your coffee", "A small oat milk latte with a date or piece of dark chocolate"],
+      pause: ["Ask — do I need energy or do I need a break?", "Sit somewhere away from your screen for 10 minutes", "Breathe slowly and let the warmth of the cup ground you", "Notice if you are tired and need rest not caffeine", "Take 5 minutes of complete stillness"],
+      romanticize: ["Go to your favourite café and sit without your phone", "Make a beautiful coffee at home with your best cup", "Journal or read while you drink it", "Put on ambient café sounds if you are at home", "Make it a proper ritual — slow and intentional"]
+    },
+    "Full meal": {
+      emoji: "🍽️",
+      insight: "Your body may genuinely be hungry and asking to be properly nourished. A full meal craving is worth honouring — try to make it balanced and satisfying.",
+      nourish: ["A plate with protein, complex carbs, and vegetables", "Soup with bread and a side salad", "Rice or pasta with a protein and roasted veg", "A nourishing bowl with grains, greens, and sauce", "Eggs any style with toast and fruit", "A warm homemade meal that feels like a hug", "Whatever sounds genuinely good and will satisfy you"],
+      pause: ["Sit down properly before you eat — no standing or rushing", "Take 3 breaths before your first bite", "Put your phone away during the meal", "Eat slowly and check in halfway through", "Notice when you feel satisfied not just full"],
+      romanticize: ["Set your table even if eating alone", "Light a candle for your meal", "Put on background music that feels good", "Cook something you love from scratch if you have time", "Make it a real moment — you deserve a proper meal"]
+    },
+    "Something else": {
+      emoji: "💭",
+      insight: "Sometimes what we reach for is not really about food at all. You might be craving connection, rest, stimulation, comfort, or simply a change of scenery.",
+      nourish: ["Drink a glass of water first and check in", "Have a small balanced snack if you have not eaten recently", "Ask — when did I last eat a proper meal?", "Try a herbal tea and see if the craving shifts", "Give yourself something genuinely nourishing"],
+      pause: ["Sit quietly and ask — what do I actually need right now?", "Take 5 slow deep breaths", "Name the emotion you are feeling if you can", "Go outside for 5 minutes", "Rest if you are tired — sometimes cravings are just fatigue"],
+      romanticize: ["Journal for 5 minutes about how you are feeling", "Call or message someone you love", "Do one small thing that brings you joy", "Make your environment beautiful — tidy, light a candle, open a window", "Give yourself permission to just be for a moment"]
+    },
+    "Not sure": {
+      emoji: "❓",
+      insight: "Not knowing what you want is completely okay. Sometimes your body and mind are just asking you to slow down and check in with yourself gently.",
+      nourish: ["Start with a glass of water", "Have a small snack with protein and carbs", "Ask — am I actually hungry or am I bored, tired, or stressed?", "Try a piece of fruit and wait 10 minutes", "Make a warm drink and see how you feel"],
+      pause: ["Sit somewhere quiet for 5 minutes", "Take 3 slow breaths and check in with your body", "Name what you are feeling — even if it is just unsettled", "Stretch gently or shake out your body", "Rest if you need to — sometimes uncertainty is exhaustion"],
+      romanticize: ["Make yourself a warm drink and just sit", "Write one sentence about how you feel right now", "Do something small and gentle that feels good", "Give yourself permission to not know — that is okay", "Let this be a soft, slow moment with no pressure"]
+    }
+  };
+
+  const craving = cravingType ? CRAVINGS[cravingType] : null;
+  const cravingKeys = Object.keys(CRAVINGS);
+
+  return (
+    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif" }}>
+      <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: "#2D3B2E", margin: "0 0 4px" }}>Nourish ✨</h2>
+      <p style={{ fontSize: 13, color: "#8FA090", margin: "0 0 20px" }}>Food craving or soul craving?</p>
+      <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: "#2D3B2E", fontWeight: 600, margin: "0 0 12px" }}>What are you craving right now?</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {cravingKeys.map(key => (
+            <button key={key} onClick={() => setCravingType(cravingType === key ? null : key)} style={{
+              padding: "8px 14px", borderRadius: 50, border: "0.5px solid #dce8dc",
+              background: cravingType === key ? "#7A9E7E" : "#F8FAF8",
+              color: cravingType === key ? "#fff" : "#4a5a4b",
+              fontSize: 12, cursor: "pointer", fontFamily: "sans-serif",
+              display: "flex", alignItems: "center", gap: 6
+            }}>
+              <span>{CRAVINGS[key].emoji}</span> {key}
+            </button>
+          ))}
+        </div>
+      </div>
+      {craving && (
+        <div>
+          <div style={{ background: "#F0F6F0", borderRadius: 18, padding: "16px", border: "0.5px solid #C5D9C5", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: 24 }}>{craving.emoji}</span>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: 0 }}>Insight</p>
+            </div>
+            <p style={{ fontSize: 13, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>{craving.insight}</p>
+          </div>
+          <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 12 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#5C7F60", margin: "0 0 10px" }}>🍵 Nourish — feed the body</p>
+            {craving.nourish.map((item, i) => (
+              <p key={i} style={{ fontSize: 13, color: "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {item}</p>
+            ))}
+          </div>
+          <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 12 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#7BA8C9", margin: "0 0 10px" }}>💧 Pause — ground yourself</p>
+            {craving.pause.map((item, i) => (
+              <p key={i} style={{ fontSize: 13, color: "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {item}</p>
+            ))}
+          </div>
+          <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 16 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#9B7BC9", margin: "0 0 10px" }}>📖 Romanticize — feed the soul</p>
+            {craving.romanticize.map((item, i) => (
+              <p key={i} style={{ fontSize: 13, color: "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {item}</p>
+            ))}
+          </div>
+        </div>
+      )}
+      {mode !== "fast" && (
+      <div onClick={() => onNavigate && onNavigate("calendar")} style={{ background: "#F8F0FF", borderRadius: 18, padding: "16px", border: "0.5px solid #D4C5E9", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 24 }}>🌙</span>
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#2D3B2E", margin: "0 0 4px" }}>Cycle reflection</p>
+            <p style={{ fontSize: 12, color: "#6b7b6b", margin: 0 }}>What stage of your cycle are you in?</p>
+            <p style={{ fontSize: 12, color: "#6b7b6b", margin: 0 }}>Are you tired, stressed, or needing comfort?</p>
+          </div>
+        </div>
+        <span style={{ fontSize: 20, color: "#9B7BC9" }}>›</span>
+      </div>
+      )}
+    </div>
+  );
+}
+
+function RecipesScreen_UNUSED({ phase }) {
   const [dietFilter,  setDietFilter]  = useState("All");
   const [phaseFilter, setPhaseFilter] = useState("All");
   const [selected,    setSelected]    = useState(null);
@@ -1007,6 +1461,7 @@ export default function App() {
   });
 
   const [screen, setScreen] = useState("home");
+  const [showWaitlist, setShowWaitlist] = useState(false);
 
   const saveSettings = (data) => {
     setSettings(data);
@@ -1019,14 +1474,41 @@ export default function App() {
 
   return (
     <div style={s.app}>
+      {showWaitlist && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+          <div style={{ background: "#fff", borderRadius: 24, padding: "28px 24px", width: "100%", maxWidth: 400, position: "relative" }}>
+            <button onClick={() => setShowWaitlist(false)} style={{ position: "absolute", top: 12, right: 16, background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#8FA090" }}>✕</button>
+            <div style={{ textAlign: "center", marginBottom: 16 }}>
+              <div style={{ fontSize: 36, marginBottom: 8 }}>🌿</div>
+              <h2 style={{ fontFamily: "Georgia, serif", fontSize: 20, color: "#2D3B2E", margin: "0 0 6px" }}>Join the Waitlist</h2>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0 }}>Be first to know when Lumen Flow launches on Google Play!</p>
+            </div>
+            <iframe
+              src="https://docs.google.com/forms/d/e/1FAIpQLScTYq7u3u7yW1LPIy5ae3sW4Q4saRJFXoNaKPxUX6v0o-GobA/viewform?embedded=true"
+              width="100%"
+              height="480"
+              frameBorder="0"
+              marginHeight="0"
+              marginWidth="0"
+              style={{ borderRadius: 12 }}
+            >Loading…</iframe>
+          </div>
+        </div>
+      )}
+      <div style={{ position: "fixed", bottom: 80, right: 16, zIndex: 999 }}>
+        <button onClick={() => setShowWaitlist(true)} style={{ background: "#7A9E7E", border: "none", borderRadius: 50, padding: "12px 18px", fontFamily: "sans-serif", fontSize: 12, color: "#fff", cursor: "pointer", boxShadow: "0 2px 12px rgba(0,0,0,0.15)", fontWeight: 600, letterSpacing: "0.03em" }}>
+          🌿 Join Waitlist
+        </button>
+      </div>
       <div style={s.container}>
-        {screen === "home"     && <HomeScreen     name={settings.name} lastPeriod={settings.lastPeriod} />}
-        {screen === "calendar" && <CalendarScreen lastPeriod={settings.lastPeriod} />}
-        {screen === "recipes"  && <RecipesScreen  phase={getPhase(getCycleDay(settings.lastPeriod))} />}
-        {screen === "checkin"  && <CheckInScreen />}
-        {screen === "learn"    && <LearnScreen />}
+        {screen === "home"     && <HomeScreen     name={settings.name} lastPeriod={settings.lastPeriod} mode={settings.mode} />}
+        {screen === "calendar" && <CalendarScreen lastPeriod={settings.lastPeriod} cycleLength={settings.cycleLength || 28} periodLength={settings.periodLength || 7} mode={settings.mode} onSave={(date, cycleLen, periodLen) => saveSettings({...settings, lastPeriod: date, cycleLength: cycleLen || settings.cycleLength || 28, periodLength: periodLen || settings.periodLength || 7})} onNavigate={setScreen} />}
+       {screen === "recipes"  && <RecipesScreen phase={getPhase(getCycleDay(settings.lastPeriod))} onNavigate={setScreen} mode={settings.mode} />}
+        {screen === "checkin"  && <CheckInScreen mode={settings.mode} />}
+        {screen === "learn"    && <LearnScreen mode={settings.mode} />}
         {screen === "settings" && <SettingsScreen settings={settings} onSave={saveSettings} />}
-        <BottomNav current={screen} onChange={setScreen} />
+
+.        <BottomNav current={screen} onChange={setScreen} />
       </div>
     </div>
   );
