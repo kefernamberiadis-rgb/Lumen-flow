@@ -555,120 +555,171 @@ function CheckInScreen({ mode, onNavigate }) {
   const [showGround, setShowGround] = useState(false);
   const [showJournal, setShowJournal] = useState(false);
 
-  if (saved) return (
-    <div style={{ padding: "24px 16px 90px", textAlign: "center" }}>
-      <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
-      <h3 style={s.title}>Today's check-in saved!</h3>
-      <p style={{ ...s.label, marginBottom: 24 }}>Come back tomorrow 🌿</p>
-      <div style={{ ...s.card, textAlign: "left" }}>
-        <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>⚡ Energy: {ratingEmojis[saved.energy - 1]}</p>
-        <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💭 Mood: {ratingEmojis[saved.mood - 1]}</p>
-        {mode !== "fast" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🩸 Flow: {saved.flow}</p>}
-        {saved.gut && saved.gut.length > 0 && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🦠 Gut: {Array.isArray(saved.gut) ? saved.gut.join(", ") : saved.gut}</p>}
-        {mode === "fast" && saved.clarity && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🧠 Clarity: {ratingEmojis[saved.clarity - 1] || ratingEmojis[2]}</p>}
-        {mode === "fast" && saved.workout && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💪 Workout: {ratingEmojis[saved.workout - 1] || ratingEmojis[2]}</p>}
-        {saved.sleep && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🌙 Sleep: {["Poor","Light","Fair","Good","Great"][saved.sleep - 1]}</p>}
-        {saved.movement && saved.movement !== "none" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🏃 Movement: {saved.movement}</p>}
-        {saved.water > 0 && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💧 Water: {saved.water} glasses</p>}
-        {saved.bodyCheck && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🌿 Body check: {saved.bodyCheck} {saved.weightUnit || "lbs"}</p>}
-        {saved.namedMood && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💭 Feeling: {saved.namedMood}</p>}
-        {saved.symptoms && saved.symptoms.length > 0 && saved.symptoms[0] !== "none" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🩺 Symptoms: {Array.isArray(saved.symptoms) ? saved.symptoms.join(", ") : saved.symptoms}</p>}
-        {saved.notes && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: 0 }}>📝 {saved.notes}</p>}
+if (saved) {
+    const days7 = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const dk = d.toISOString().split("T")[0];
+      const e = localStorage.getItem(`lf_checkin_${dk}`);
+      days7.push({ dk, data: e ? (() => { try { return JSON.parse(e); } catch { return null; } })() : null, label: d.toLocaleDateString("en-CA", { weekday: "short" }) });
+    }
+    const totalMins = (saved.movements || []).reduce((acc, m) => acc + (parseInt(m.duration) || 0), 0);
+    const history = [];
+    for (let i = 1; i <= 7; i++) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const dk = d.toISOString().split("T")[0];
+      const e = localStorage.getItem(`lf_checkin_${dk}`);
+      if (e) { try { history.push({ ...JSON.parse(e), dk }); } catch {} }
+    }
+    const insight = (() => {
+      const issues = [...(saved.gut || []).filter(g => g !== "good"), ...(saved.symptoms || [])];
+      if (issues.length > 0) return `You logged ${issues.slice(0,3).join(", ")} today. Keep things gentle, hydrate, and notice how sleep, food, and your cycle may be shaping how you feel.`;
+      if ((saved.energy || 3) >= 4) return `Your energy is ${(saved.energy||3) >= 5 ? "great" : "good"} today! A wonderful time to move, create, or connect with yourself.`;
+      return "Every check-in is a small act of self-awareness. You are building a picture of your body over time — that is powerful.";
+    })();
+    return (
+    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif" }}>
+      <div style={{ background: "linear-gradient(135deg, #F0F6F0, #EAF2F9)", borderRadius: 20, padding: 20, marginBottom: 16, textAlign: "center", border: "0.5px solid #C5D9C5" }}>
+        <p style={{ fontSize: 28, marginBottom: 6 }}>✦</p>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 18, color: "#2D3B2E", marginBottom: 4 }}>Today's check-in saved!</p>
+        <p style={{ fontSize: 12, color: "#8FA090" }}>Come back tomorrow 🌿</p>
       </div>
-      <button onClick={() => setSaved(null)} style={{ ...s.btn, background: "#EAF2EA", color: "#5C7F60", marginTop: 12 }}>Edit Check-in</button>
-
-      {/* Body Trend Graph */}
-      <div style={{ marginTop: 20, textAlign: "left" }}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>📊 Your trends</p>
-        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Last 7 days</p>
-        {(() => {
-          const days = [];
-          for (let i = 6; i >= 0; i--) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            const dateKey = d.toISOString().split("T")[0];
-            const entry = localStorage.getItem(`lf_checkin_${dateKey}`);
-            const data = entry ? JSON.parse(entry) : null;
-            days.push({ dateKey, data, label: d.toLocaleDateString("en-CA", { weekday: "short" }) });
-          }
-          const metrics = [
-            { key: "energy", label: "⚡ Energy", color: "#7A9E7E" },
-            { key: "sleep", label: "🌙 Sleep", color: "#7BA8C9" },
-            { key: "water", label: "💧 Water", color: "#63b3ed", max: 10 },
-          ];
-          return (
-            <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 16 }}>
-              {metrics.map(metric => (
-                <div key={metric.key} style={{ marginBottom: 14 }}>
-                  <p style={{ fontFamily: "sans-serif", fontSize: 11, color: metric.color, margin: "0 0 6px", fontWeight: 600 }}>{metric.label}</p>
-                  <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 40 }}>
-                    {days.map((day, i) => {
-                      const val = day.data ? (day.data[metric.key] || 0) : 0;
-                      const max = metric.max || 5;
-                      const height = val ? Math.max(4, (val / max) * 36) : 4;
-                      return (
-                        <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-                          <div style={{ width: "100%", height: `${height}px`, background: val ? metric.color : "#EAF2EA", borderRadius: 4, opacity: val ? 1 : 0.3, transition: "height 0.3s" }} />
-                          <span style={{ fontSize: 8, color: "#A8BEA8", fontFamily: "sans-serif" }}>{day.label}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
+      <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 10px" }}>Today's Snapshot ✦</p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+        {[
+          { label: "⚡ Energy", value: ["Very low","Low","Neutral","Good","Great"][(saved.energy||3)-1] },
+          { label: "🌙 Sleep",  value: ["Poor","Light","Fair","Good","Great"][(saved.sleep||3)-1] },
+          { label: "💧 Water",  value: `${saved.water||0} glasses` },
+          { label: "💭 Mood",   value: saved.namedMood || (saved.namedMoods||[]).slice(0,2).join(", ") || "—" },
+        ].map((item,i) => (
+          <div key={i} style={{ background: "#fff", borderRadius: 14, border: "0.5px solid #dce8dc", padding: "10px 12px" }}>
+            <p style={{ fontSize: 10, color: "#8FA090", margin: "0 0 4px" }}>{item.label}</p>
+            <p style={{ fontSize: 13, color: "#2D3B2E", fontWeight: 600, margin: 0 }}>{item.value}</p>
+          </div>
+        ))}
+        {mode !== "fast" && saved.flow && saved.flow !== "none" && (
+          <div style={{ background: "#FDEAEA", borderRadius: 14, border: "0.5px solid #C97B7B22", padding: "10px 12px" }}>
+            <p style={{ fontSize: 10, color: "#C97B7B", margin: "0 0 4px" }}>🩸 Flow</p>
+            <p style={{ fontSize: 13, color: "#C97B7B", fontWeight: 600, margin: 0, textTransform: "capitalize" }}>{saved.flow}</p>
+          </div>
+        )}
+        {saved.gut && saved.gut.length > 0 && (
+          <div style={{ background: "#F5F0FF", borderRadius: 14, border: "0.5px solid rgba(155,123,201,0.2)", padding: "10px 12px" }}>
+            <p style={{ fontSize: 10, color: "#9B7BC9", margin: "0 0 4px" }}>🦠 Gut</p>
+            <p style={{ fontSize: 12, color: "#9B7BC9", fontWeight: 600, margin: 0 }}>{Array.isArray(saved.gut) ? saved.gut.slice(0,2).join(", ") : saved.gut}</p>
+          </div>
+        )}
+        {saved.movements && saved.movements.length > 0 && (
+          <div style={{ gridColumn: "1/-1", background: "#fff", borderRadius: 14, border: "0.5px solid #dce8dc", padding: "10px 12px" }}>
+            <p style={{ fontSize: 10, color: "#8FA090", margin: "0 0 4px" }}>🏃 Movement — {totalMins} min total</p>
+            <p style={{ fontSize: 12, color: "#2D3B2E", fontWeight: 600, margin: 0 }}>{saved.movements.map(m => `${m.type} ${m.duration}`).join(" · ")}</p>
+          </div>
+        )}
+        {!saved.movements && saved.movement && saved.movement !== "none" && (
+          <div style={{ background: "#fff", borderRadius: 14, border: "0.5px solid #dce8dc", padding: "10px 12px" }}>
+            <p style={{ fontSize: 10, color: "#8FA090", margin: "0 0 4px" }}>🏃 Movement</p>
+            <p style={{ fontSize: 13, color: "#2D3B2E", fontWeight: 600, margin: 0, textTransform: "capitalize" }}>{saved.movement}</p>
+          </div>
+        )}
+        {saved.bodyCheck && (
+          <div style={{ background: "#fff", borderRadius: 14, border: "0.5px solid #dce8dc", padding: "10px 12px" }}>
+            <p style={{ fontSize: 10, color: "#8FA090", margin: "0 0 4px" }}>🌿 Body check</p>
+            <p style={{ fontSize: 13, color: "#2D3B2E", fontWeight: 600, margin: 0 }}>{saved.bodyCheck} {saved.weightUnit || "lbs"}</p>
+          </div>
+        )}
+        {saved.symptoms && saved.symptoms.length > 0 && (
+          <div style={{ background: "#FDEAEA", borderRadius: 14, border: "0.5px solid rgba(201,123,123,0.2)", padding: "10px 12px" }}>
+            <p style={{ fontSize: 10, color: "#C97B7B", margin: "0 0 4px" }}>🩺 Symptoms</p>
+            <p style={{ fontSize: 12, color: "#C97B7B", fontWeight: 600, margin: 0 }}>{saved.symptoms.slice(0,2).join(", ")}</p>
+          </div>
+        )}
+      </div>
+      <button onClick={() => setSaved(null)} style={{ width: "100%", padding: "10px", borderRadius: 50, border: "0.5px solid #dce8dc", background: "#fff", color: "#5C7F60", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", marginBottom: 20 }}>✎ Edit Check-In</button>
+      <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>Your Lumen Trends ✦</p>
+      <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Last 7 days</p>
+      <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+        <p style={{ fontSize: 11, color: "#7A9E7E", fontWeight: 600, margin: "0 0 10px" }}>⚡ Energy</p>
+        <svg width="100%" height="80" viewBox="0 0 300 80" preserveAspectRatio="none">
+          {days7.map((day, i) => { const val = day.data?.energy || 0; const x = (i/6)*260+20; const y = val ? 70-((val-1)/4)*55 : null; return y ? <circle key={i} cx={x} cy={y} r="4" fill={i===6?"#7A9E7E":"#C5D9C5"} /> : null; })}
+          {days7.map((day, i) => { if (i===0) return null; const prev=days7[i-1]; const v1=prev.data?.energy; const v2=day.data?.energy; if (!v1||!v2) return null; const x1=((i-1)/6)*260+20; const y1=70-((v1-1)/4)*55; const x2=(i/6)*260+20; const y2=70-((v2-1)/4)*55; return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#C5D9C5" strokeWidth="2" />; })}
+          {days7.map((day, i) => <text key={i} x={(i/6)*260+20} y="78" textAnchor="middle" fontSize="8" fill="#A8BEA8">{day.label}</text>)}
+        </svg>
+      </div>
+      <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+        <p style={{ fontSize: 11, color: "#9B7BC9", fontWeight: 600, margin: "0 0 10px" }}>🌙 Sleep quality</p>
+        <svg width="100%" height="80" viewBox="0 0 300 80" preserveAspectRatio="none">
+          {days7.map((day, i) => { const val = day.data?.sleep || 0; const x = (i/6)*260+20; const y = val ? 70-((val-1)/4)*55 : null; return y ? <circle key={i} cx={x} cy={y} r="4" fill={i===6?"#9B7BC9":"#D4C5E9"} /> : null; })}
+          {days7.map((day, i) => { if (i===0) return null; const prev=days7[i-1]; const v1=prev.data?.sleep; const v2=day.data?.sleep; if (!v1||!v2) return null; const x1=((i-1)/6)*260+20; const y1=70-((v1-1)/4)*55; const x2=(i/6)*260+20; const y2=70-((v2-1)/4)*55; return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#D4C5E9" strokeWidth="2" />; })}
+          {days7.map((day, i) => <text key={i} x={(i/6)*260+20} y="78" textAnchor="middle" fontSize="8" fill="#A8BEA8">{day.label}</text>)}
+        </svg>
+      </div>
+      <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+        <p style={{ fontSize: 11, color: "#7BA8C9", fontWeight: 600, margin: "0 0 10px" }}>💧 Water intake</p>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 60 }}>
+          {days7.map((day, i) => { const val = Math.min(day.data?.water || 0, 10); return (
+            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+              <div style={{ width: "100%", height: `${val ? Math.max(4, val*5) : 4}px`, background: i===6?"#7BA8C9":"#B5D4F4", borderRadius: "4px 4px 0 0" }} />
+              <span style={{ fontSize: 8, color: "#A8BEA8" }}>{day.label}</span>
+            </div>
+          ); })}
+        </div>
+      </div>
+      {saved.movements && saved.movements.length > 0 && (
+        <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+          <p style={{ fontSize: 11, color: "#C9A87B", fontWeight: 600, margin: "0 0 10px" }}>🏃 Movement breakdown</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#EAF2EA" strokeWidth="12"/>
+              {saved.movements.slice(0,4).map((m, i) => { const colors=["#7BA8C9","#7A9E7E","#C9A87B","#9B7BC9"]; const total=saved.movements.reduce((a,mv)=>a+(parseInt(mv.duration)||0),0)||1; const pct=(parseInt(m.duration)||0)/total; const circ=2*Math.PI*30; const off=saved.movements.slice(0,i).reduce((a,mv)=>a+((parseInt(mv.duration)||0)/total)*circ,0); return <circle key={i} cx="40" cy="40" r="30" fill="none" stroke={colors[i]} strokeWidth="12" strokeDasharray={`${pct*circ} ${circ}`} strokeDashoffset={-(off-circ/4)} transform="rotate(-90 40 40)" />; })}
+              <text x="40" y="37" textAnchor="middle" fontSize="11" fontWeight="500" fill="#2D3B2E">{totalMins}</text>
+              <text x="40" y="49" textAnchor="middle" fontSize="8" fill="#8FA090">min</text>
+            </svg>
+            <div style={{ flex: 1 }}>
+              {saved.movements.slice(0,4).map((m, i) => { const colors=["#7BA8C9","#7A9E7E","#C9A87B","#9B7BC9"]; return (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 2, background: colors[i], flexShrink: 0 }} />
+                  <span style={{ fontSize: 11, color: "#2D3B2E" }}>{m.type || "Activity"}</span>
+                  <span style={{ fontSize: 11, color: "#8FA090", marginLeft: "auto" }}>{m.duration}</span>
                 </div>
-              ))}
-              <div style={{ marginTop: 8, paddingTop: 10, borderTop: "0.5px solid #EAF2EA" }}>
-                <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 6px", fontWeight: 600 }}>💭 Mood this week</p>
-                <div style={{ display: "flex", gap: 4 }}>
-                  {days.map((day, i) => (
-                    <div key={i} style={{ flex: 1, textAlign: "center" }}>
-                      <div style={{ fontSize: 16 }}>{day.data?.namedMood ? "🌿" : day.data?.energy ? "😐" : "·"}</div>
-                      <span style={{ fontSize: 8, color: "#A8BEA8", fontFamily: "sans-serif" }}>{day.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              ); })}
             </div>
-          );
-        })()}
+          </div>
+        </div>
+      )}
+      <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+        <p style={{ fontSize: 11, color: "#C97B7B", fontWeight: 600, margin: "0 0 10px" }}>💭 Mood this week</p>
+        <div style={{ display: "flex", gap: 4 }}>
+          {days7.map((day, i) => { const moods=day.data?.namedMoods||[]; const moodMap={Happy:"😊",Calm:"😌",Energized:"⚡",Tired:"😴",Sad:"🥺",Anxious:"😰",Irritated:"😤",Emotional:"🥹",Unmotivated:"😶",Overwhelmed:"😵"}; const emoji=moods.length>0?(moodMap[moods[0]]||"🌿"):day.data?.namedMood?(moodMap[day.data.namedMood]||"🌿"):"·"; return (
+            <div key={i} style={{ flex: 1, textAlign: "center" }}>
+              <div style={{ fontSize: 16 }}>{emoji}</div>
+              <div style={{ fontSize: 8, color: "#A8BEA8", marginTop: 2 }}>{day.label}</div>
+            </div>
+          ); })}
+        </div>
       </div>
-
-      {/* Mood History */}
-      <div style={{ marginTop: 20, textAlign: "left" }}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 12px" }}>Recent check-ins</p>
-        {(() => {
-          const history = [];
-          for (let i = 1; i <= 7; i++) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            const dateKey = d.toISOString().split("T")[0];
-            const entry = localStorage.getItem(`lf_checkin_${dateKey}`);
-            if (entry) {
-              try { history.push({ ...JSON.parse(entry), dateKey }); } catch {}
-            }
-          }
-          if (history.length === 0) return (
-            <div style={{ ...s.card, textAlign: "center" }}>
-              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#A8BEA8", margin: 0 }}>No previous check-ins yet 🌿</p>
-            </div>
-          );
-          return history.map((entry, i) => (
-            <div key={i} style={{ ...s.card, marginBottom: 10 }}>
-              <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                {new Date(entry.dateKey).toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" })}
-              </p>
-              <div style={{ display: "flex", gap: 12 }}>
-                <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b" }}>⚡ {ratingEmojis[entry.energy - 1]}</span>
-                <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b" }}>💭 {ratingEmojis[entry.mood - 1]}</span>
-                {mode !== "fast" && <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b" }}>🩸 {entry.flow}</span>}
-              </div>
-              {entry.notes && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "6px 0 0" }}>📝 {entry.notes}</p>}
-            </div>
-          ));
-        })()}
+      <div style={{ background: "#F8F0FF", borderRadius: 18, border: "0.5px solid rgba(155,123,201,0.2)", padding: 16, marginBottom: 16 }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#9B7BC9", margin: "0 0 8px" }}>Today's Lumen Note ✦</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>{insight}</p>
       </div>
+      {history.length > 0 && (
+        <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>Recent Check-Ins ✦</p>
+          {history.slice(0,3).map((entry, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? "0.5px solid #EAF2EA" : "none" }}>
+              <div>
+                <p style={{ fontSize: 11, color: "#8FA090", margin: "0 0 2px" }}>{new Date(entry.dk + "T12:00:00").toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" })}</p>
+                <p style={{ fontSize: 13, color: "#2D3B2E", margin: 0 }}>{["Very low","Low","Neutral","Good","Great"][(entry.energy||3)-1]} · {entry.water||0} glasses</p>
+              </div>
+              <span style={{ fontSize: 11, color: "#C97B7B", background: "#FDEAEA", padding: "3px 8px", borderRadius: 50 }}>
+                {(entry.symptoms||[]).length > 0 ? entry.symptoms[0] : (entry.namedMoods||[])[0] || entry.namedMood || "—"}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
-  );
-
+    );
+  }
   return (
     <div style={{ padding: "16px 16px 90px" }}>
       <h3 style={s.title}>Daily Check-In</h3>
@@ -1680,6 +1731,12 @@ function SettingsScreen({ settings, onSave }) {
       </div>
 
       <div style={{ ...s.card, textAlign: "center" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>⚡ Switch experience</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 12px" }}>Currently using: {settings.mode === "fast" ? "Fasting focus" : "Cycle tracking"}</p>
+        <button onClick={() => { const newMode = settings.mode === "fast" ? "cycle" : "fast"; onSave({...settings, mode: newMode}); }} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "0.5px solid #dce8dc", background: "#F8FAF8", color: "#4a5a4b", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>
+          Switch to {settings.mode === "fast" ? "🌸 Cycle tracking" : "⚡ Fasting focus"}
+        </button>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: "8px 0 16px", textAlign: "center" }}>Your data is saved — you can switch back anytime</p>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>🌿 Lumen Flow</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: 0 }}>Version 1.0.0 · Made with care</p>
       </div>
