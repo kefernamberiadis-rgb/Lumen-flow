@@ -659,7 +659,7 @@ function CheckInScreen({ mode, onNavigate }) {
               <div style={{ display: "flex", gap: 12 }}>
                 <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b" }}>⚡ {ratingEmojis[entry.energy - 1]}</span>
                 <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b" }}>💭 {ratingEmojis[entry.mood - 1]}</span>
-                <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b" }}>🩸 {entry.flow}</span>
+                {mode !== "fast" && <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b" }}>🩸 {entry.flow}</span>}
               </div>
               {entry.notes && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "6px 0 0" }}>📝 {entry.notes}</p>}
             </div>
@@ -678,7 +678,10 @@ function CheckInScreen({ mode, onNavigate }) {
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>⚡ Energy</p>
         <div style={{ display: "flex", justifyContent: "space-around" }}>
           {ratingEmojis.map((e, i) => (
-            <button key={i} onClick={() => setEnergy(i + 1)} style={{ fontSize: 28, background: "none", border: "none", cursor: "pointer", opacity: energy === i + 1 ? 1 : 0.35, transition: "opacity 0.15s" }}>{e}</button>
+            <button key={i} onClick={() => setEnergy(i + 1)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "8px 2px", borderRadius: 12, border: `0.5px solid ${energy===i+1?"#7A9E7E":"transparent"}`, background: energy===i+1?"rgba(122,158,126,0.1)":"none", cursor: "pointer" }}>
+              <span style={{ fontSize: 24 }}>{e}</span>
+              <span style={{ fontSize: 8, color: energy===i+1?"#7A9E7E":"#A8BEA8" }}>{["Very low","Low","Neutral","Good","Great"][i]}</span>
+            </button>
           ))}
         </div>
       </div>
@@ -797,14 +800,13 @@ function CheckInScreen({ mode, onNavigate }) {
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🌙 Sleep quality</p>
         <div style={{ display: "flex", justifyContent: "space-around" }}>
           {["😴","😪","😐","🙂","✨"].map((e, i) => (
-            <button key={i} onClick={() => setSleep(i + 1)} style={{ fontSize: 28, background: "none", border: "none", cursor: "pointer", opacity: sleep === i + 1 ? 1 : 0.35, transition: "opacity 0.15s" }}>{e}</button>
+            <button key={i} onClick={() => setSleep(i + 1)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "8px 2px", borderRadius: 12, border: `0.5px solid ${sleep===i+1?"#9B7BC9":"transparent"}`, background: sleep===i+1?"rgba(155,123,201,0.1)":"none", cursor: "pointer" }}>
+              <span style={{ fontSize: 24 }}>{e}</span>
+              <span style={{ fontSize: 8, color: sleep===i+1?"#9B7BC9":"#A8BEA8" }}>{["Poor","Light","Fair","Good","Great"][i]}</span>
+            </button>
           ))}
         </div>
-        <div style={{ display: "flex", justifyContent: "space-around", marginTop: 4 }}>
-          {["Poor","Light","Fair","Good","Great"].map((l, i) => (
-            <span key={i} style={{ fontSize: 9, color: sleep === i + 1 ? "#7A9E7E" : "#A8BEA8", fontFamily: "sans-serif" }}>{l}</span>
-          ))}
-        </div>
+        
       </div>
 
       <div style={s.card}>
