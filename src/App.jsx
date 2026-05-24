@@ -794,6 +794,56 @@ function CheckInScreen({ mode, onNavigate }) {
       </div>
       )}
 
+      {mode === "fast" && (
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🦠 Gut health</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {[
+            { val: "good",         label: "Good",         emoji: "✅" },
+            { val: "bloating",     label: "Bloating",     emoji: "🎈" },
+            { val: "constipation", label: "Constipation", emoji: "🚽" },
+            { val: "diarrhea",     label: "Diarrhea",     emoji: "💧" },
+            { val: "nausea",       label: "Nausea",       emoji: "🤢" },
+            { val: "reflux",       label: "Reflux",       emoji: "🔥" },
+            { val: "gas",          label: "Gas",          emoji: "💨" },
+            { val: "sensitive",    label: "Sensitive",    emoji: "🌿" },
+          ].map(g => (
+            <button key={g.val} onClick={() => { if (g.val === "good") { setGut(prev => prev.includes("good") ? [] : ["good"]); } else { setGut(prev => { const without = prev.filter(x => x !== "good"); return without.includes(g.val) ? without.filter(x => x !== g.val) : [...without, g.val]; }); } }}
+              style={{ padding: "7px 12px", borderRadius: 100, border: "none", background: gut.includes(g.val) ? "#7A9E7E" : "#EAF2EA", color: gut.includes(g.val) ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+              {g.emoji} {g.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      )}
+
+      {mode === "fast" && (
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🩺 Symptoms</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Select all that apply today</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {[
+            { val: "headache",      label: "Headache",       emoji: "🤕" },
+            { val: "fatigue",       label: "Fatigue",        emoji: "🔋" },
+            { val: "brain fog",     label: "Brain fog",      emoji: "🧠" },
+            { val: "insomnia",      label: "Insomnia",       emoji: "😴" },
+            { val: "muscle soreness", label: "Muscle soreness", emoji: "💪" },
+            { val: "back pain",     label: "Back pain",      emoji: "🔙" },
+            { val: "irritability",  label: "Irritability",   emoji: "😤" },
+            { val: "nausea",        label: "Nausea",         emoji: "🤢" },
+          ].map(sym => {
+            const isOn = symptoms.includes(sym.val);
+            return (
+              <button key={sym.val} onClick={() => setSymptoms(prev => prev.includes(sym.val) ? prev.filter(x => x !== sym.val) : [...prev, sym.val])}
+                style={{ padding: "7px 12px", borderRadius: 100, border: "none", background: isOn ? "#7A9E7E" : "#EAF2EA", color: isOn ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                {sym.emoji} {sym.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      )}
+
       {mode !== "fast" && (
       <div style={s.card}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🩺 Symptoms</p>
