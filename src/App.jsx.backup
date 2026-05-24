@@ -480,26 +480,46 @@ function CheckInScreen({ mode, onNavigate }) {
   const today = new Date().toISOString().split("T")[0];
   const key   = `lf_checkin_${today}`;
 
-  const [saved, setSaved] = useState(() => {
+  const [saved,  setSaved]  = useState(() => {
     try { return JSON.parse(localStorage.getItem(key)) || null; } catch { return null; }
   });
-
   const [energy, setEnergy] = useState(3);
-  const [namedMoods, setNamedMoods] = useState([]);
-  const [flow, setFlow] = useState("none");
+  const [mood,   setMood]   = useState(3);
+  const [flow,   setFlow]   = useState("none");
+  const [notes,  setNotes]  = useState("");
+
+  const save = () => {
+    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, bodyCheck, weightUnit, namedMood, symptoms };
+    localStorage.setItem(key, JSON.stringify(data));
+    setSaved(data);
+  };
+
+  const flowOptions  = ["none","spotting","light","medium","heavy"];
+  const gutOptions   = ["good","none","bloating","constipation","diarrhea","cramps","nausea","reflux","gas","sensitive"];
   const [gut, setGut] = useState([]);
-  const [symptoms, setSymptoms] = useState([]);
-  const [sleep, setSleep] = useState(3);
-  const [movements, setMovements] = useState([]);
-  const [water, setWater] = useState(0);
-  const [bodyCheck, setBodyCheck] = useState("");
-  const [weightUnit, setWeightUnit] = useState("lbs");
-  const [notes, setNotes] = useState("");
   const [clarity, setClarity] = useState(3);
   const [workout, setWorkout] = useState(3);
-  const [showGround, setShowGround] = useState(false);
-  const [showJournal, setShowJournal] = useState(false);
-  const [activeMoodAction, setActiveMoodAction] = useState(null);
+  const [sleep, setSleep] = useState(3);
+  const [water, setWater] = useState(0);
+  const [movement, setMovement] = useState("none");
+  const [bodyCheck, setBodyCheck] = useState("");
+  const [symptoms, setSymptoms] = useState([]);
+  const [weightUnit, setWeightUnit] = useState("lbs");
+  const ratingEmojis = ["😞","😔","😐","🙂","😄"];
+  const [namedMood, setNamedMood] = useState(null);
+
+  const NAMED_MOODS = {
+    "Happy":       { emoji: "😊", color: "#7A9E7E", bg: "#F0F6F0", message: "You're glowing today. Let that energy carry you gently through the day.", actions: ["Open Nourish", "Log a fast", "Add Note"] },
+    "Calm":        { emoji: "😌", color: "#7BA8C9", bg: "#EAF2F9", message: "You're in a peaceful place. This is a good time to rest into yourself.", actions: ["Open Nourish", "Add Note"] },
+    "Energized":   { emoji: "⚡", color: "#C9A87B", bg: "#FDF6EA", message: "Your energy is high. Use it with intention — move, create, or connect.", actions: ["Log a fast", "Add Note"] },
+    "Tired":       { emoji: "😴", color: "#8FA090", bg: "#F0F6F0", message: "Your body is asking for rest. One small gentle choice is enough today.", actions: ["Open Nourish", "Ground Me", "Add Note"] },
+    "Sad":         { emoji: "🥺", color: "#C97B7B", bg: "#FDEAEA", message: "You're feeling tender today. Start with one small supportive choice.", actions: ["Open Nourish", "Ground Me", "Journal Prompt", "Add Note"] },
+    "Anxious":     { emoji: "😰", color: "#9B7BC9", bg: "#F5F0FF", message: "Your nervous system needs softness right now. You are safe and you are okay.", actions: ["Ground Me", "Open Nourish", "Add Note"] },
+    "Irritated":   { emoji: "😤", color: "#C97B7B", bg: "#FDEAEA", message: "Something is asking for your attention. Be gentle with yourself first.", actions: ["Ground Me", "Open Nourish", "Add Note"] },
+    "Emotional":   { emoji: "🥹", color: "#9B7BC9", bg: "#F5F0FF", message: "Feeling deeply is not a weakness. Let yourself feel without judgment.", actions: ["Journal Prompt", "Open Nourish", "Ground Me", "Add Note"] },
+    "Unmotivated": { emoji: "😶", color: "#8FA090", bg: "#F0F6F0", message: "Low motivation is often your body asking for something. Rest counts too.", actions: ["Open Nourish", "Ground Me", "Add Note"] },
+    "Overwhelmed": { emoji: "😵", color: "#C9A87B", bg: "#FDF6EA", message: "One thing at a time. You don't have to do everything today.", actions: ["Ground Me", "Journal Prompt", "Add Note"] },
+  };
 
   const GROUND_ME = [
     "Take 5 slow deep breaths — in for 4, hold for 4, out for 4.",
@@ -507,591 +527,620 @@ function CheckInScreen({ mode, onNavigate }) {
     "Name 5 things you can see right now.",
     "Place your hand on your heart and breathe slowly.",
     "Drink a glass of cold water slowly and mindfully.",
+    "Step outside for 2 minutes and feel the air.",
+    "Unclench your jaw, drop your shoulders, and exhale.",
   ];
+
   const JOURNAL_PROMPTS = [
     "What is one thing that felt heavy today?",
     "What do you need most right now that you haven't given yourself?",
     "What would you say to a friend feeling the way you feel today?",
     "What is one small thing that brought you comfort today?",
+    "What are you carrying that you could put down, even just for today?",
   ];
+
   const [groundPrompt] = useState(() => GROUND_ME[Math.floor(Math.random() * GROUND_ME.length)]);
   const [journalPrompt] = useState(() => JOURNAL_PROMPTS[Math.floor(Math.random() * JOURNAL_PROMPTS.length)]);
+  const [showGround, setShowGround] = useState(false);
+  const [showJournal, setShowJournal] = useState(false);
 
-  const MOOD_OPTIONS = [
-    { name: "Happy",       emoji: "😊", color: "#7A9E7E", bg: "#F0F6F0",  actions: ["Open Nourish", "Add Note"] },
-    { name: "Calm",        emoji: "😌", color: "#7BA8C9", bg: "#EAF2F9",  actions: ["Open Nourish", "Add Note"] },
-    { name: "Energized",   emoji: "⚡", color: "#C9A87B", bg: "#FDF6EA",  actions: ["Log Fast", "Add Note"] },
-    { name: "Tired",       emoji: "😴", color: "#8FA090", bg: "#F0F6F0",  actions: ["Open Nourish", "Ground Me", "Add Note"] },
-    { name: "Sad",         emoji: "🥺", color: "#C97B7B", bg: "#FDEAEA",  actions: ["Open Nourish", "Ground Me", "Journal Prompt", "Add Note"] },
-    { name: "Anxious",     emoji: "😰", color: "#9B7BC9", bg: "#F5F0FF",  actions: ["Ground Me", "Open Nourish", "Add Note"] },
-    { name: "Irritated",   emoji: "😤", color: "#C97B7B", bg: "#FDEAEA",  actions: ["Ground Me", "Open Nourish", "Add Note"] },
-    { name: "Emotional",   emoji: "🥹", color: "#9B7BC9", bg: "#F5F0FF",  actions: ["Journal Prompt", "Open Nourish", "Ground Me", "Add Note"] },
-    { name: "Unmotivated", emoji: "😶", color: "#8FA090", bg: "#F0F6F0",  actions: ["Open Nourish", "Ground Me", "Add Note"] },
-    { name: "Overwhelmed", emoji: "😵", color: "#C9A87B", bg: "#FDF6EA",  actions: ["Ground Me", "Journal Prompt", "Add Note"] },
-  ];
-
-  const MOVEMENT_TYPES = ["🚶 Walk","🏃 Run","🏋️ Weights","🧘 Yoga","⚡ HIIT","🚴 Cycling","🏊 Swimming","🏀 Sport","💃 Dance","🤸 Stretching","🌿 Yard work","🔨 Carpentry","🎨 Painting","🧹 Cleaning","📦 Moving","🛒 Errands","🪴 Gardening","🌙 Rest day"];
-  const INTENSITIES = ["🌿 Gentle","🚶 Moderate","💪 Strong","🔥 Intense","🌙 Recovery"];
-  const DURATIONS = ["5 min","10 min","15 min","20 min","30 min","45 min","60+ min"];
-  const BODY_FOCUS = ["💪 Upper body","🦵 Lower body","✨ Full body","🔥 Core","❤️ Cardio","🌿 Flexibility","⚖️ Balance","🌙 Recovery"];
-  const DISTANCES = ["0.5 km","1 km","2 km","5 km","10 km"];
-
-  const addMovement = () => setMovements(prev => [...prev, { type: "", intensity: "🌿 Gentle", duration: "20 min", distance: "", bodyFocus: "", lbs: "", reps: "" }]);
-  const updateMovement = (i, field, val) => setMovements(prev => prev.map((m, idx) => idx === i ? { ...m, [field]: val } : m));
-  const removeMovement = (i) => setMovements(prev => prev.filter((_, idx) => idx !== i));
-
-  const needsDistance = (type) => ["🚶 Walk","🏃 Run","🚴 Cycling","🏊 Swimming"].some(t => type.includes(t.split(" ")[1] || t));
-  const needsWeight = (type) => type.includes("Weights");
-
-  const save = () => {
-    const data = { energy, mood: energy, namedMoods, flow, gut, symptoms, sleep, movements, water, bodyCheck, weightUnit, notes, clarity, workout, date: today };
-    localStorage.setItem(key, JSON.stringify(data));
-    setSaved(data);
-  };
-
-  const isFemale = mode !== "fast";
-  const bg = isFemale
-    ? "linear-gradient(160deg, #E8F5E9 0%, #F3E5F5 30%, #FCE4EC 60%, #E8EAF6 100%)"
-    : "linear-gradient(160deg, #0a1a0f 0%, #0d2010 40%, #0a1a0f 100%)";
-  const cardBg = isFemale ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.06)";
-  const cardBorder = isFemale ? "0.5px solid #dce8dc" : "0.5px solid rgba(122,158,126,0.2)";
-  const textPrimary = isFemale ? "#2D3B2E" : "#e8eaf0";
-  const textSec = isFemale ? "#8FA090" : "#4a6a4a";
-  const chipOff = isFemale
-    ? { background: "#F0F6F0", color: "#5C7F60", border: "0.5px solid #dce8dc" }
-    : { background: "rgba(122,158,126,0.1)", color: "#7A9E7E", border: "0.5px solid rgba(122,158,126,0.2)" };
-  const chipOn = isFemale
-    ? { background: "#7A9E7E", color: "#fff", border: "0.5px solid #7A9E7E" }
-    : { background: "#2D5A3D", color: "#7A9E7E", border: "0.5px solid #3a6a4a" };
-  const accentPink = isFemale ? "#C97B7B" : "#7A9E7E";
-  const saveBtnStyle = isFemale
-    ? { background: "#7A9E7E", color: "#fff" }
-    : { background: "linear-gradient(135deg,#1a3a2a,#2D5A3D)", color: "#7A9E7E" };
-
-  const FLOW_OPTIONS = [
-    { val: "none",     label: "None",     emoji: "🚫" },
-    { val: "spotting", label: "Spotting", emoji: "🩸̈" },
-    { val: "light",    label: "Light",    emoji: "🩸" },
-    { val: "medium",   label: "Medium",   emoji: "🩸🩸" },
-    { val: "heavy",    label: "Heavy",    emoji: "🩸🩸🩸" },
-  ];
-  const GUT_OPTIONS = [
-    { val: "good",         label: "Good",         emoji: "✅" },
-    { val: "bloating",     label: "Bloating",     emoji: "🎈" },
-    { val: "constipation", label: "Constipation", emoji: "🪨" },
-    { val: "diarrhea",     label: "Diarrhea",     emoji: "💧" },
-    { val: "cramps",       label: "Cramps",       emoji: "⚡" },
-    { val: "nausea",       label: "Nausea",       emoji: "🤢" },
-    { val: "reflux",       label: "Reflux",       emoji: "🔥" },
-    { val: "gas",          label: "Gas",          emoji: "💨" },
-    { val: "sensitive",    label: "Sensitive",    emoji: "😣" },
-  ];
-  const SYMPTOM_OPTIONS = [
-    { val: "cramps",            label: "Cramps",            emoji: "😣" },
-    { val: "headache",          label: "Headache",          emoji: "🤕" },
-    { val: "breast tenderness", label: "Breast tenderness", emoji: "💗" },
-    { val: "back pain",         label: "Back pain",         emoji: "🔙" },
-    { val: "acne",              label: "Acne",              emoji: "🌸" },
-    { val: "bloating",          label: "Bloating",          emoji: "🎈" },
-    { val: "insomnia",          label: "Insomnia",          emoji: "😴" },
-    { val: "fatigue",           label: "Fatigue",           emoji: "😓" },
-    { val: "nausea",            label: "Nausea",            emoji: "🤢" },
-    { val: "hot flashes",       label: "Hot flashes",       emoji: "🔥" },
-    { val: "irritability",      label: "Irritability",      emoji: "😤" },
-    { val: "brain fog",         label: "Brain fog",         emoji: "🧠" },
-  ];
-
-  const sCard = { background: cardBg, borderRadius: 18, border: cardBorder, padding: "14px", margin: "0 16px 12px" };
-  const sLabel = { fontFamily: "sans-serif", fontSize: 13, fontWeight: 600, color: textPrimary, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 };
-  const emojiRow = { display: "flex", justifyContent: "space-between", gap: 4 };
-
-  if (saved) {
-    const history = [];
-    for (let i = 1; i <= 7; i++) {
-      const d = new Date(); d.setDate(d.getDate() - i);
-      const dk = d.toISOString().split("T")[0];
-      const e = localStorage.getItem(`lf_checkin_${dk}`);
-      if (e) { try { history.push({ ...JSON.parse(e), dk }); } catch {} }
-    }
-    const days7 = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate() - i);
-      const dk = d.toISOString().split("T")[0];
-      const e = localStorage.getItem(`lf_checkin_${dk}`);
-      days7.push({ dk, data: e ? JSON.parse(e) : null, label: d.toLocaleDateString("en-CA", { weekday: "short" }) });
-    }
-    const totalMins = (saved.movements || []).reduce((acc, m) => acc + (parseInt(m.duration) || 0), 0);
-    const insight = (() => {
-      const issues = [...(saved.gut || []).filter(g => g !== "good"), ...(saved.symptoms || [])];
-      if (issues.length > 0) return `You logged ${issues.slice(0,3).join(", ")} today. Keep things gentle, hydrate, and notice how sleep, food, and your cycle phase may be shaping how you feel.`;
-      if (saved.energy >= 4) return `Your energy is ${saved.energy >= 5 ? "great" : "good"} today! This is a wonderful time to move, create, or connect with yourself.`;
-      return "Every check-in is a small act of self-awareness. You are building a picture of your body over time — that is powerful.";
-    })();
-
-    return (
-      <div style={{ padding: "16px 16px 100px", background: bg, minHeight: "100vh", fontFamily: "sans-serif" }}>
-        {/* Confirmation */}
-        <div style={{ background: isFemale ? "linear-gradient(135deg,#F0F6F0,#EAF2F9)" : "linear-gradient(135deg,rgba(26,58,42,0.8),rgba(13,32,16,0.9))", borderRadius: 20, padding: 20, marginBottom: 16, textAlign: "center", border: cardBorder }}>
-          <p style={{ fontSize: 28, marginBottom: 8 }}>✦</p>
-          <p style={{ fontFamily: "Georgia, serif", fontSize: 18, color: textPrimary, marginBottom: 4 }}>Today's check-in saved!</p>
-          <p style={{ fontSize: 12, color: textSec }}>Come back tomorrow 🌿</p>
-        </div>
-
-        {/* Snapshot */}
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: textPrimary, margin: "0 0 10px" }}>Today's Snapshot ✦</p>
-<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12, alignItems: "start" }}>          {[
-            { label: "⚡ Energy", value: ["Very low","Low","Neutral","Good","Great"][(saved.energy||3)-1] },
-            { label: "💭 Mood", value: (saved.namedMoods||[]).slice(0,2).join(", ") || "—" },
-            { label: "🌙 Sleep", value: ["Poor","Light","Fair","Good","Great"][(saved.sleep||3)-1] },
-            { label: "💧 Water", value: `${saved.water||0} glasses` },
-          ].map((item, i) => (
-            <div key={i} style={{ background: cardBg, borderRadius: 14, border: cardBorder, padding: "10px 12px" }}>
-              <p style={{ fontSize: 10, color: textSec, margin: "0 0 4px" }}>{item.label}</p>
-              <p style={{ fontSize: 13, color: textPrimary, fontWeight: 600, margin: 0 }}>{item.value}</p>
-            </div>
-          ))}
-          {isFemale && saved.flow && saved.flow !== "none" && (
-            <div style={{ background: "#FDEAEA", borderRadius: 14, border: "0.5px solid #C97B7B22", padding: "10px 12px" }}>
-              <p style={{ fontSize: 10, color: "#C97B7B", margin: "0 0 4px" }}>🩸 Flow</p>
-              <p style={{ fontSize: 13, color: "#C97B7B", fontWeight: 600, margin: 0 }}>{saved.flow}</p>
-            </div>
-          )}
-          {saved.gut && saved.gut.length > 0 && (
-            <div style={{ background: isFemale ? "#F5F0FF" : "rgba(155,123,201,0.1)", borderRadius: 14, border: "0.5px solid rgba(155,123,201,0.2)", padding: "10px 12px" }}>
-              <p style={{ fontSize: 10, color: "#9B7BC9", margin: "0 0 4px" }}>🦠 Gut</p>
-              <p style={{ fontSize: 12, color: "#9B7BC9", fontWeight: 600, margin: 0 }}>{Array.isArray(saved.gut) ? saved.gut.slice(0,2).join(", ") : saved.gut}</p>
-            </div>
-          )}
-          {saved.movements && saved.movements.length > 0 && (
-            <div style={{ gridColumn: "1/-1", background: cardBg, borderRadius: 14, border: cardBorder, padding: "10px 12px" }}>
-              <p style={{ fontSize: 10, color: textSec, margin: "0 0 4px" }}>🏃 Movement — {totalMins} min total</p>
-              <p style={{ fontSize: 12, color: textPrimary, fontWeight: 600, margin: 0 }}>{saved.movements.map(m => `${m.type} ${m.duration}`).join(" · ")}</p>
-            </div>
-          )}
-          {saved.bodyCheck && (
-            <div style={{ background: cardBg, borderRadius: 14, border: cardBorder, padding: "10px 12px" }}>
-              <p style={{ fontSize: 10, color: textSec, margin: "0 0 4px" }}>🌿 Body check</p>
-              <p style={{ fontSize: 13, color: textPrimary, fontWeight: 600, margin: 0 }}>{saved.bodyCheck} {saved.weightUnit || "lbs"}</p>
-            </div>
-          )}
-          {saved.symptoms && saved.symptoms.length > 0 && (
-            <div style={{ background: isFemale ? "#FDEAEA" : "rgba(201,123,123,0.1)", borderRadius: 14, border: "0.5px solid rgba(201,123,123,0.2)", padding: "10px 12px" }}>
-              <p style={{ fontSize: 10, color: "#C97B7B", margin: "0 0 4px" }}>🩺 Symptoms</p>
-              <p style={{ fontSize: 12, color: "#C97B7B", fontWeight: 600, margin: 0 }}>{saved.symptoms.slice(0,2).join(", ")}</p>
-            </div>
-          )}
-        </div>
-
-        <button onClick={() => setSaved(null)} style={{ width: "100%", padding: "10px", borderRadius: 50, border: cardBorder, background: cardBg, color: isFemale ? "#5C7F60" : "#7A9E7E", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", marginBottom: 20 }}>✎ Edit Check-In</button>
-
-        {/* Trends */}
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: textPrimary, margin: "0 0 4px" }}>Your Lumen Trends ✦</p>
-        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: textSec, margin: "0 0 12px" }}>Last 7 days</p>
-
-        {/* Energy chart */}
-        <div style={{ ...sCard, padding: 16 }}>
-          <p style={{ fontSize: 11, color: "#7A9E7E", fontWeight: 600, margin: "0 0 10px" }}>⚡ Energy</p>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 50 }}>
-            {days7.map((day, i) => {
-              const val = day.data?.energy || 0;
-              return (
-                <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                  <div style={{ width: "100%", height: `${val ? Math.max(6, val * 8) : 4}px`, background: i === 6 ? "#7A9E7E" : (isFemale ? "#C5D9C5" : "rgba(122,158,126,0.3)"), borderRadius: "4px 4px 0 0" }} />
-                  <span style={{ fontSize: 8, color: textSec }}>{day.label}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Sleep chart */}
-        <div style={{ ...sCard, padding: 16 }}>
-          <p style={{ fontSize: 11, color: "#9B7BC9", fontWeight: 600, margin: "0 0 10px" }}>🌙 Sleep quality</p>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 50 }}>
-            {days7.map((day, i) => {
-              const val = day.data?.sleep || 0;
-              return (
-                <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                  <div style={{ width: "100%", height: `${val ? Math.max(6, val * 8) : 4}px`, background: i === 6 ? "#9B7BC9" : (isFemale ? "#D4C5E9" : "rgba(155,123,201,0.3)"), borderRadius: "4px 4px 0 0" }} />
-                  <span style={{ fontSize: 8, color: textSec }}>{day.label}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Water chart */}
-        <div style={{ ...sCard, padding: 16 }}>
-          <p style={{ fontSize: 11, color: "#7BA8C9", fontWeight: 600, margin: "0 0 10px" }}>💧 Water intake</p>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 50 }}>
-            {days7.map((day, i) => {
-              const val = Math.min(day.data?.water || 0, 10);
-              return (
-                <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                  <div style={{ width: "100%", height: `${val ? Math.max(6, val * 4) : 4}px`, background: i === 6 ? "#7BA8C9" : (isFemale ? "#B5D4F4" : "rgba(123,168,201,0.3)"), borderRadius: "4px 4px 0 0" }} />
-                  <span style={{ fontSize: 8, color: textSec }}>{day.label}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Movement donut */}
-        {saved.movements && saved.movements.length > 0 && (
-          <div style={{ ...sCard, padding: 16 }}>
-            <p style={{ fontSize: 11, color: "#C9A87B", fontWeight: 600, margin: "0 0 10px" }}>🏃 Movement breakdown</p>
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <svg width="80" height="80" viewBox="0 0 80 80">
-                <circle cx="40" cy="40" r="30" fill="none" stroke={isFemale ? "#EAF2EA" : "rgba(122,158,126,0.2)"} strokeWidth="12"/>
-                {saved.movements.slice(0,4).map((m, i) => {
-                  const colors = ["#7BA8C9","#7A9E7E","#C9A87B","#9B7BC9"];
-                  const total = saved.movements.reduce((a,mv) => a + (parseInt(mv.duration)||0), 0) || 1;
-                  const pct = (parseInt(m.duration)||0) / total;
-                  const circumference = 2 * Math.PI * 30;
-                  const offset = saved.movements.slice(0,i).reduce((a,mv) => a + ((parseInt(mv.duration)||0)/total) * circumference, 0);
-                  return (
-                    <circle key={i} cx="40" cy="40" r="30" fill="none" stroke={colors[i]} strokeWidth="12"
-                      strokeDasharray={`${pct * circumference} ${circumference}`}
-                      strokeDashoffset={-(offset - circumference/4)}
-                      transform="rotate(-90 40 40)" />
-                  );
-                })}
-                <text x="40" y="37" textAnchor="middle" fontSize="11" fontWeight="500" fill={textPrimary}>{totalMins}</text>
-                <text x="40" y="49" textAnchor="middle" fontSize="8" fill={textSec}>min</text>
-              </svg>
-              <div style={{ flex: 1 }}>
-                {saved.movements.slice(0,4).map((m, i) => {
-                  const colors = ["#7BA8C9","#7A9E7E","#C9A87B","#9B7BC9"];
-                  return (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
-                      <div style={{ width: 8, height: 8, borderRadius: 2, background: colors[i], flexShrink: 0 }} />
-                      <span style={{ fontSize: 11, color: textPrimary }}>{m.type || "Activity"}</span>
-                      <span style={{ fontSize: 11, color: textSec, marginLeft: "auto" }}>{m.duration}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Mood week */}
-        <div style={{ ...sCard, padding: 16 }}>
-          <p style={{ fontSize: 11, color: "#C97B7B", fontWeight: 600, margin: "0 0 10px" }}>💭 Mood this week</p>
-          <div style={{ display: "flex", gap: 4 }}>
-            {days7.map((day, i) => {
-              const moods = day.data?.namedMoods || [];
-              const emoji = moods.length > 0 ? (MOOD_OPTIONS.find(m => m.name === moods[0])?.emoji || "🌿") : "·";
-              return (
-                <div key={i} style={{ flex: 1, textAlign: "center" }}>
-                  <div style={{ fontSize: 16 }}>{emoji}</div>
-                  <div style={{ fontSize: 8, color: textSec, marginTop: 2 }}>{day.label}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Insight */}
-        <div style={{ background: isFemale ? "#F8F0FF" : "rgba(155,123,201,0.1)", borderRadius: 18, border: "0.5px solid rgba(155,123,201,0.2)", padding: 16, marginBottom: 16 }}>
-          <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#9B7BC9", margin: "0 0 8px" }}>Today's Lumen Note ✦</p>
-          <p style={{ fontFamily: "sans-serif", fontSize: 13, color: isFemale ? "#4a5a4b" : "#94a3b8", margin: 0, lineHeight: 1.7 }}>{insight}</p>
-        </div>
-
-        {/* Recent check-ins */}
-        {history.length > 0 && (
-          <div style={{ ...sCard, padding: 16 }}>
-            <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: textPrimary, margin: "0 0 12px" }}>Recent Check-Ins ✦</p>
-            {history.slice(0,3).map((entry, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? `0.5px solid ${isFemale ? "#EAF2EA" : "rgba(122,158,126,0.1)"}` : "none" }}>
-                <div>
-                  <p style={{ fontSize: 11, color: textSec, margin: "0 0 2px" }}>{new Date(entry.dk + "T12:00:00").toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" })}</p>
-                  <p style={{ fontSize: 13, color: textPrimary, margin: 0 }}>{["Very low","Low","Neutral","Good","Great"][(entry.energy||3)-1]} · {entry.water||0} glasses</p>
-                </div>
-                <span style={{ fontSize: 11, color: accentPink, background: isFemale ? "#FDEAEA" : "rgba(201,123,123,0.1)", padding: "3px 8px", borderRadius: 50 }}>
-                  {(entry.symptoms||[]).length > 0 ? entry.symptoms[0] : (entry.namedMoods||[])[0] || "—"}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+  if (saved) return (
+    <div style={{ padding: "24px 16px 90px", textAlign: "center" }}>
+      <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+      <h3 style={s.title}>Today's check-in saved!</h3>
+      <p style={{ ...s.label, marginBottom: 24 }}>Come back tomorrow 🌿</p>
+      <div style={{ ...s.card, textAlign: "left" }}>
+        <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>⚡ Energy: {ratingEmojis[saved.energy - 1]}</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💭 Mood: {ratingEmojis[saved.mood - 1]}</p>
+        {mode !== "fast" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🩸 Flow: {saved.flow}</p>}
+        {saved.gut && saved.gut.length > 0 && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🦠 Gut: {Array.isArray(saved.gut) ? saved.gut.join(", ") : saved.gut}</p>}
+        {mode === "fast" && saved.clarity && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🧠 Clarity: {ratingEmojis[saved.clarity - 1] || ratingEmojis[2]}</p>}
+        {mode === "fast" && saved.workout && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💪 Workout: {ratingEmojis[saved.workout - 1] || ratingEmojis[2]}</p>}
+        {saved.sleep && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🌙 Sleep: {["Poor","Light","Fair","Good","Great"][saved.sleep - 1]}</p>}
+        {saved.movement && saved.movement !== "none" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🏃 Movement: {saved.movement}</p>}
+        {saved.water > 0 && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💧 Water: {saved.water} glasses</p>}
+        {saved.bodyCheck && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🌿 Body check: {saved.bodyCheck} {saved.weightUnit || "lbs"}</p>}
+        {saved.namedMood && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>💭 Feeling: {saved.namedMood}</p>}
+        {saved.symptoms && saved.symptoms.length > 0 && saved.symptoms[0] !== "none" && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: "0 0 6px" }}>🩺 Symptoms: {Array.isArray(saved.symptoms) ? saved.symptoms.join(", ") : saved.symptoms}</p>}
+        {saved.notes && <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#4a5a4b", margin: 0 }}>📝 {saved.notes}</p>}
       </div>
-    );
-  }
+      <button onClick={() => setSaved(null)} style={{ ...s.btn, background: "#EAF2EA", color: "#5C7F60", marginTop: 12 }}>Edit Check-in</button>
 
-  return (
-    <div style={{ padding: "0 0 100px", background: bg, minHeight: "100vh", fontFamily: "sans-serif" }}>
-      {/* Header */}
-      <div style={{ padding: "24px 16px 8px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div>
-          <p style={{ fontFamily: "Georgia, serif", fontSize: 22, color: textPrimary }}>Daily Check-In ✦</p>
-          <p style={{ fontSize: 12, color: textSec, marginTop: 3 }}>How are you feeling today?</p>
-        </div>
-      </div>
-
-      {/* ⚡ Energy */}
-      <div style={sCard}>
-        <p style={sLabel}>⚡ Energy</p>
-        <div style={emojiRow}>
-          {[["😞","Very low"],["😔","Low"],["😐","Neutral"],["🙂","Good"],["😄","Great"]].map(([e,l], i) => (
-            <button key={i} onClick={() => setEnergy(i+1)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "8px 2px", borderRadius: 12, border: `0.5px solid ${energy === i+1 ? (isFemale ? "#7A9E7E" : "#7A9E7E") : "transparent"}`, background: energy === i+1 ? (isFemale ? "rgba(122,158,126,0.1)" : "rgba(122,158,126,0.15)") : "none", cursor: "pointer" }}>
-              <span style={{ fontSize: 22 }}>{e}</span>
-              <span style={{ fontSize: 8, color: energy === i+1 ? (isFemale ? "#7A9E7E" : "#7A9E7E") : textSec }}>{l}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 💭 Mood */}
-      <div style={sCard}>
-        <p style={sLabel}>💭 How are you feeling?</p>
-        <p style={{ fontSize: 11, color: textSec, marginBottom: 10 }}>Select all that apply</p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-          {MOOD_OPTIONS.map(m => {
-            const isOn = namedMoods.includes(m.name);
-            return (
-              <button key={m.name} onClick={() => setNamedMoods(prev => prev.includes(m.name) ? prev.filter(x => x !== m.name) : [...prev, m.name])}
-                style={{ padding: "7px 12px", borderRadius: 50, border: `0.5px solid ${isOn ? m.color : (isFemale ? "#dce8dc" : "rgba(122,158,126,0.2)")}`, background: isOn ? m.color : (isFemale ? "#F8FAF8" : "rgba(122,158,126,0.05)"), color: isOn ? "#fff" : (isFemale ? "#4a5a4b" : "#7A9E7E"), fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
-                {m.emoji} {m.name}
-              </button>
-            );
-          })}
-        </div>
-        {namedMoods.length > 0 && (() => {
-          const firstMood = MOOD_OPTIONS.find(m => m.name === namedMoods[0]);
-          if (!firstMood) return null;
+      {/* Body Trend Graph */}
+      <div style={{ marginTop: 20, textAlign: "left" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>📊 Your trends</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Last 7 days</p>
+        {(() => {
+          const days = [];
+          for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateKey = d.toISOString().split("T")[0];
+            const entry = localStorage.getItem(`lf_checkin_${dateKey}`);
+            const data = entry ? JSON.parse(entry) : null;
+            days.push({ dateKey, data, label: d.toLocaleDateString("en-CA", { weekday: "short" }) });
+          }
+          const metrics = [
+            { key: "energy", label: "⚡ Energy", color: "#7A9E7E" },
+            { key: "sleep", label: "🌙 Sleep", color: "#7BA8C9" },
+            { key: "water", label: "💧 Water", color: "#63b3ed", max: 10 },
+          ];
           return (
-            <div style={{ background: isFemale ? firstMood.bg : "rgba(122,158,126,0.1)", borderRadius: 12, padding: "12px 14px", border: `0.5px solid ${firstMood.color}33` }}>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {firstMood.actions.map((action, i) => (
-                  <button key={i} onClick={() => {
-                    if (action === "Open Nourish" && onNavigate) onNavigate("recipes");
-                    else if (action === "Log Fast") {
-                      localStorage.setItem("lf_auto_start_fast", "true");
-                      if (onNavigate) onNavigate("home");
-                    }
-                    else if (action === "Ground Me") setShowGround(!showGround);
-                    else if (action === "Journal Prompt") setShowJournal(!showJournal);
-                    else if (action === "Add Note") { const el = document.getElementById("checkin-notes"); if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => el.focus(), 300); } }
-                  }}
-                    style={{ padding: "6px 12px", borderRadius: 50, border: `0.5px solid ${firstMood.color}`, background: isFemale ? "#fff" : "rgba(255,255,255,0.05)", color: firstMood.color, fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>
-                    {action === "Open Nourish" ? "🌿 " : action === "Log Fast" ? "⚡ " : action === "Ground Me" ? "💧 " : action === "Journal Prompt" ? "📝 " : "✏️ "}{action}
-                  </button>
-                ))}
+            <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 16 }}>
+              {metrics.map(metric => (
+                <div key={metric.key} style={{ marginBottom: 14 }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 11, color: metric.color, margin: "0 0 6px", fontWeight: 600 }}>{metric.label}</p>
+                  <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 40 }}>
+                    {days.map((day, i) => {
+                      const val = day.data ? (day.data[metric.key] || 0) : 0;
+                      const max = metric.max || 5;
+                      const height = val ? Math.max(4, (val / max) * 36) : 4;
+                      return (
+                        <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                          <div style={{ width: "100%", height: `${height}px`, background: val ? metric.color : "#EAF2EA", borderRadius: 4, opacity: val ? 1 : 0.3, transition: "height 0.3s" }} />
+                          <span style={{ fontSize: 8, color: "#A8BEA8", fontFamily: "sans-serif" }}>{day.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              <div style={{ marginTop: 8, paddingTop: 10, borderTop: "0.5px solid #EAF2EA" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 6px", fontWeight: 600 }}>💭 Mood this week</p>
+                <div style={{ display: "flex", gap: 4 }}>
+                  {days.map((day, i) => (
+                    <div key={i} style={{ flex: 1, textAlign: "center" }}>
+                      <div style={{ fontSize: 16 }}>{day.data?.namedMood ? "🌿" : day.data?.energy ? "😐" : "·"}</div>
+                      <span style={{ fontSize: 8, color: "#A8BEA8", fontFamily: "sans-serif" }}>{day.label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              {showGround && (
-                <div style={{ marginTop: 10, background: isFemale ? "#fff" : "rgba(255,255,255,0.05)", borderRadius: 10, padding: "10px 12px" }}>
-                  <p style={{ fontFamily: "sans-serif", fontSize: 12, color: isFemale ? "#4a5a4b" : "#94a3b8", margin: 0, lineHeight: 1.7 }}>🌿 {groundPrompt}</p>
-                </div>
-              )}
-              {showJournal && (
-                <div style={{ marginTop: 10, background: isFemale ? "#fff" : "rgba(255,255,255,0.05)", borderRadius: 10, padding: "10px 12px" }}>
-                  <p style={{ fontFamily: "sans-serif", fontSize: 12, color: isFemale ? "#4a5a4b" : "#94a3b8", margin: 0, lineHeight: 1.7 }}>📝 {journalPrompt}</p>
-                </div>
-              )}
             </div>
           );
         })()}
       </div>
 
-      {/* 🩸 Flow - women only */}
-      {isFemale && (
-        <div style={sCard}>
-          <p style={sLabel}>🩸 Flow</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {FLOW_OPTIONS.map(f => (
-              <button key={f.val} onClick={() => setFlow(f.val)}
-                style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: flow === f.val ? "#C97B7B" : "#FDEAEA", color: flow === f.val ? "#fff" : "#C97B7B", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
-                {f.emoji} {f.label}
-              </button>
+      {/* Mood History */}
+      <div style={{ marginTop: 20, textAlign: "left" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 12px" }}>Recent check-ins</p>
+        {(() => {
+          const history = [];
+          for (let i = 1; i <= 7; i++) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateKey = d.toISOString().split("T")[0];
+            const entry = localStorage.getItem(`lf_checkin_${dateKey}`);
+            if (entry) {
+              try { history.push({ ...JSON.parse(entry), dateKey }); } catch {}
+            }
+          }
+          if (history.length === 0) return (
+            <div style={{ ...s.card, textAlign: "center" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#A8BEA8", margin: 0 }}>No previous check-ins yet 🌿</p>
+            </div>
+          );
+          return history.map((entry, i) => (
+            <div key={i} style={{ ...s.card, marginBottom: 10 }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                {new Date(entry.dateKey).toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" })}
+              </p>
+              <div style={{ display: "flex", gap: 12 }}>
+                <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b" }}>⚡ {ratingEmojis[entry.energy - 1]}</span>
+                <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b" }}>💭 {ratingEmojis[entry.mood - 1]}</span>
+                <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b" }}>🩸 {entry.flow}</span>
+              </div>
+              {entry.notes && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "6px 0 0" }}>📝 {entry.notes}</p>}
+            </div>
+          ));
+        })()}
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ padding: "16px 16px 90px" }}>
+      <h3 style={s.title}>Daily Check-In</h3>
+      <p style={{ ...s.label, marginBottom: 20 }}>How are you feeling today?</p>
+
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>⚡ Energy</p>
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          {ratingEmojis.map((e, i) => (
+            <button key={i} onClick={() => setEnergy(i + 1)} style={{ fontSize: 28, background: "none", border: "none", cursor: "pointer", opacity: energy === i + 1 ? 1 : 0.35, transition: "opacity 0.15s" }}>{e}</button>
+          ))}
+        </div>
+      </div>
+
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>💭 How are you feeling?</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: namedMood ? 12 : 0 }}>
+          {Object.entries(NAMED_MOODS).map(([name, m]) => (
+            <button key={name} onClick={() => setNamedMood(namedMood === name ? null : name)} style={{
+              padding: "7px 12px", borderRadius: 50, border: "none",
+              background: namedMood === name ? m.color : m.bg,
+              color: namedMood === name ? "#fff" : m.color,
+              fontFamily: "sans-serif", fontSize: 12, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 5,
+            }}><span>{m.emoji}</span>{name}</button>
+          ))}
+        </div>
+        {namedMood && (
+          <div style={{ background: NAMED_MOODS[namedMood].bg, borderRadius: 12, padding: "12px 14px", marginTop: 8 }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: NAMED_MOODS[namedMood].color, margin: "0 0 10px", lineHeight: 1.6 }}>{NAMED_MOODS[namedMood].message}</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {NAMED_MOODS[namedMood].actions.map((action, i) => (
+                <button key={i} onClick={() => {
+                  if (action === "Ground Me") setShowGround(!showGround);
+                  else if (action === "Journal Prompt") setShowJournal(!showJournal);
+                  else if (action === "Open Nourish" && onNavigate) onNavigate("recipes");
+                }} style={{ padding: "6px 12px", borderRadius: 50, border: `0.5px solid ${NAMED_MOODS[namedMood].color}`, background: "#fff", color: NAMED_MOODS[namedMood].color, fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{action}</button>
+              ))}
+            </div>
+            {showGround && (
+              <div style={{ marginTop: 10, background: "#fff", borderRadius: 10, padding: "10px 12px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>🌿 {groundPrompt}</p>
+              </div>
+            )}
+            {showJournal && (
+              <div style={{ marginTop: 10, background: "#fff", borderRadius: 10, padding: "10px 12px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>📝 {journalPrompt}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {mode !== "fast" && (
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🩸 Flow</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {flowOptions.map(f => (
+            <button key={f} onClick={() => setFlow(f)} style={{
+              padding: "7px 14px", borderRadius: 100, border: "none",
+              background: flow === f ? "#C97B7B" : "#EAF2EA",
+              color: flow === f ? "#fff" : "#6b7b6b",
+              fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", textTransform: "capitalize",
+            }}>{f}</button>
+          ))}
+        </div>
+      </div>
+      )}
+
+      {mode !== "fast" && (
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🦠 Gut health</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {gutOptions.map(g => (
+            <button key={g} onClick={() => setGut(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g])} style={{
+              padding: "7px 14px", borderRadius: 100, border: "none",
+              background: gut.includes(g) ? "#7A9E7E" : "#EAF2EA",
+              color: gut.includes(g) ? "#fff" : "#6b7b6b",
+              fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", textTransform: "capitalize",
+            }}>{g}</button>
+          ))}
+        </div>
+      </div>
+      )}
+
+      {mode === "fast" && (
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🧠 Mental clarity</p>
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          {ratingEmojis.map((e, i) => (
+            <button key={i} onClick={() => setClarity(i + 1)} style={{ fontSize: 28, background: "none", border: "none", cursor: "pointer", opacity: clarity === i + 1 ? 1 : 0.35, transition: "opacity 0.15s" }}>{e}</button>
+          ))}
+        </div>
+      </div>
+      )}
+
+      {mode === "fast" && (
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>💪 Workout performance</p>
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          {ratingEmojis.map((e, i) => (
+            <button key={i} onClick={() => setWorkout(i + 1)} style={{ fontSize: 28, background: "none", border: "none", cursor: "pointer", opacity: workout === i + 1 ? 1 : 0.35, transition: "opacity 0.15s" }}>{e}</button>
+          ))}
+        </div>
+      </div>
+      )}
+
+      {mode !== "fast" && (
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🩺 Symptoms</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Select all that apply today</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {["none","cramps","headache","breast tenderness","back pain","acne","bloating","insomnia","fatigue","nausea","hot flashes","irritability","brain fog"].map(sym => (
+            <button key={sym} onClick={() => setSymptoms(prev => prev.includes(sym) ? prev.filter(x => x !== sym) : [...prev, sym])} style={{
+              padding: "7px 14px", borderRadius: 100, border: "none",
+              background: symptoms.includes(sym) ? "#C97B7B" : "#FDEAEA",
+              color: symptoms.includes(sym) ? "#fff" : "#C97B7B",
+              fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", textTransform: "capitalize",
+            }}>{sym}</button>
+          ))}
+        </div>
+      </div>
+      )}
+
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🌙 Sleep quality</p>
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          {["😴","😪","😐","🙂","✨"].map((e, i) => (
+            <button key={i} onClick={() => setSleep(i + 1)} style={{ fontSize: 28, background: "none", border: "none", cursor: "pointer", opacity: sleep === i + 1 ? 1 : 0.35, transition: "opacity 0.15s" }}>{e}</button>
+          ))}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-around", marginTop: 4 }}>
+          {["Poor","Light","Fair","Good","Great"].map((l, i) => (
+            <span key={i} style={{ fontSize: 9, color: sleep === i + 1 ? "#7A9E7E" : "#A8BEA8", fontFamily: "sans-serif" }}>{l}</span>
+          ))}
+        </div>
+      </div>
+
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🏃 Movement</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {["none","gentle","moderate","intense","rest day"].map(m => (
+            <button key={m} onClick={() => setMovement(m)} style={{
+              padding: "7px 14px", borderRadius: 100, border: "none",
+              background: movement === m ? "#7A9E7E" : "#EAF2EA",
+              color: movement === m ? "#fff" : "#6b7b6b",
+              fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", textTransform: "capitalize",
+            }}>{m}</button>
+          ))}
+        </div>
+      </div>
+
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>💧 Water intake</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "center" }}>
+          <button onClick={() => setWater(Math.max(0, water - 1))} style={{ width: 36, height: 36, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#F0F6F0", fontSize: 18, cursor: "pointer" }}>−</button>
+          <div style={{ textAlign: "center" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 28, color: "#7BA8C9", margin: 0 }}>{water}</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: 0 }}>glasses today</p>
+          </div>
+          <button onClick={() => setWater(Math.min(15, water + 1))} style={{ width: 36, height: 36, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#F0F6F0", fontSize: 18, cursor: "pointer" }}>+</button>
+        </div>
+      </div>
+
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 4px" }}>🌿 Body check</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Your body changes throughout your cycle and fasting journey. This is just a snapshot — not a score.</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+          <button onClick={() => setWeightUnit("lbs")} style={{ padding: "6px 14px", borderRadius: 50, border: "none", background: weightUnit === "lbs" ? "#7A9E7E" : "#EAF2EA", color: weightUnit === "lbs" ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>lbs</button>
+          <button onClick={() => setWeightUnit("kg")} style={{ padding: "6px 14px", borderRadius: 50, border: "none", background: weightUnit === "kg" ? "#7A9E7E" : "#EAF2EA", color: weightUnit === "kg" ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>kg</button>
+        </div>
+        <input
+          type="number"
+          value={bodyCheck}
+          onChange={e => setBodyCheck(e.target.value)}
+          placeholder={`Optional — your body snapshot today (${weightUnit})`}
+          style={{ ...s.input, marginBottom: 0 }}
+        />
+      </div>
+
+      <div style={s.card}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>📝 Notes</p>
+        <textarea
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          placeholder="How are you feeling? Any symptoms?"
+          style={{ ...s.input, height: 80, resize: "none", fontFamily: "sans-serif" }}
+        />
+      </div>
+
+      <button onClick={save} style={s.btn}>Save Check-In ✅</button>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  CALENDAR SCREEN
+// ─────────────────────────────────────────────
+function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, periodLength = 7, mode }) {
+  const [showMenu, setShowMenu] = useState(false);
+  const [calendarKey, setCalendarKey] = useState(0);
+  const [periodMsg, setPeriodMsg] = useState(null);
+  const [showEditCycle, setShowEditCycle] = useState(false);
+  const [periodRangesState, setPeriodRangesState] = useState(() => JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"));
+  const [editDateInput, setEditDateInput] = useState("");
+  const [editCycleLength, setEditCycleLength] = useState(cycleLength);
+  const [editPeriodLength, setEditPeriodLength] = useState(periodLength);
+  const today   = new Date();
+  const [month, setMonth] = useState(today.getMonth());
+  const [year,  setYear]  = useState(today.getFullYear());
+  const [selDay, setSelDay] = useState(today.getDate());
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDow    = new Date(year, month, 1).getDay();
+
+  const getCycleDayFor = (d) => {
+    if (!lastPeriod) return 1;
+    const date = new Date(year, month, d);
+    const diff = Math.floor((date - new Date(lastPeriod)) / 86400000);
+    return ((diff % 28) + 28) % 28 + 1;
+  };
+
+  const selPhase = getPhase(getCycleDayFor(selDay));
+  const selInfo  = PHASE_INFO[selPhase];
+
+  return (
+    <div style={{ padding: "16px 16px 90px" }}>
+      {/* Mini Dashboard */}
+      {lastPeriod && mode !== "fast" && (
+        <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "16px", marginBottom: 14 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>Your cycle overview</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+            <div style={{ background: "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Last period</p>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: 0 }}>{new Date(lastPeriod + "T12:00:00").toLocaleDateString("en-CA", { month: "short", day: "numeric" })}</p>
+            </div>
+            <div style={{ background: "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Next period</p>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#C97B7B", margin: 0 }}>
+                {(() => { const next = new Date(lastPeriod); next.setDate(next.getDate() + cycleLength); return next.toLocaleDateString("en-CA", { month: "short", day: "numeric" }); })()}
+              </p>
+            </div>
+            <div style={{ background: "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Cycle length</p>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: 0 }}>{cycleLength} days</p>
+            </div>
+            <div style={{ background: "#FDEAEA", borderRadius: 12, padding: "10px 12px" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#C97B7B", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Period length</p>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#C97B7B", margin: 0 }}>{periodLength} days</p>
+            </div>
+          </div>
+          {/* Cycle bar chart */}
+          <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Cycle chart</p>
+          <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", height: 12 }}>
+            <div style={{ width: "25%", background: "#C97B7B" }} title="Menstrual" />
+            <div style={{ width: "29%", background: "#7BA8C9" }} title="Follicular" />
+            <div style={{ width: "4%", background: "#C9A87B" }} title="Ovulation" />
+            <div style={{ width: "42%", background: "#9B7BC9" }} title="Luteal" />
+          </div>
+          <div style={{ display: "flex", gap: 10, marginTop: 6, flexWrap: "wrap" }}>
+            {[["#C97B7B","Menstrual","~7d"],["#7BA8C9","Follicular","~8d"],["#C9A87B","Ovulation","~2d"],["#9B7BC9","Luteal","~12d"]].map(([color, name, days]) => (
+              <div key={name} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <div style={{ width: 8, height: 8, borderRadius: 2, background: color }} />
+                <span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#6b7b6b" }}>{name} {days}</span>
+              </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* 🦠 Gut health */}
-      <div style={sCard}>
-        <p style={sLabel}>🦠 Gut health</p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {GUT_OPTIONS.map(g => {
-            const isOn = gut.includes(g.val);
-            return (
-              <button key={g.val} onClick={() => setGut(prev => prev.includes(g.val) ? prev.filter(x => x !== g.val) : [...prev, g.val])}
-                style={{ padding: "7px 12px", borderRadius: 50, border: "none", background: isOn ? (isFemale ? "#7A9E7E" : "#2D5A3D") : (isFemale ? "#F0F6F0" : "rgba(122,158,126,0.1)"), color: isOn ? "#fff" : (isFemale ? "#5C7F60" : "#7A9E7E"), fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
-                {g.emoji} {g.label}
-              </button>
-            );
-          })}
-        </div>
+      {/* Month nav */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <button onClick={() => { if (month === 0) { setMonth(11); setYear(y => y-1); } else setMonth(m => m-1); }}
+          style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#8FAF8F" }}>‹</button>
+        <h3 style={{ ...s.title, margin: 0 }}>{MONTHS[month]} {year}</h3>
+        <button onClick={() => { if (month === 11) { setMonth(0); setYear(y => y+1); } else setMonth(m => m+1); }}
+          style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#8FAF8F" }}>›</button>
       </div>
 
-      {/* 🩺 Symptoms - women only */}
-      {isFemale && (
-        <div style={sCard}>
-          <p style={sLabel}>🩺 Symptoms</p>
-          <p style={{ fontSize: 11, color: textSec, marginBottom: 10 }}>Select all that apply today</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {SYMPTOM_OPTIONS.map(s => {
-              const isOn = symptoms.includes(s.val);
-              return (
-                <button key={s.val} onClick={() => setSymptoms(prev => prev.includes(s.val) ? prev.filter(x => x !== s.val) : [...prev, s.val])}
-                  style={{ padding: "7px 12px", borderRadius: 50, border: "none", background: isOn ? "#C97B7B" : "#FDEAEA", color: isOn ? "#fff" : "#C97B7B", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
-                  {s.emoji} {s.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* 🧠 Mental clarity + 💪 Workout - fasting only */}
-      {!isFemale && (
-        <>
-          <div style={sCard}>
-            <p style={sLabel}>🧠 Mental clarity</p>
-            <div style={emojiRow}>
-              {[["😞","Foggy"],["😔","Low"],["😐","Fair"],["🙂","Sharp"],["😄","Peak"]].map(([e,l], i) => (
-                <button key={i} onClick={() => setClarity(i+1)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "8px 2px", borderRadius: 12, border: `0.5px solid ${clarity === i+1 ? "#7A9E7E" : "transparent"}`, background: clarity === i+1 ? "rgba(122,158,126,0.15)" : "none", cursor: "pointer" }}>
-                  <span style={{ fontSize: 22 }}>{e}</span>
-                  <span style={{ fontSize: 8, color: clarity === i+1 ? "#7A9E7E" : textSec }}>{l}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div style={sCard}>
-            <p style={sLabel}>💪 Workout performance</p>
-            <div style={emojiRow}>
-              {[["😞","Poor"],["😔","Low"],["😐","Fair"],["🙂","Good"],["😄","Peak"]].map(([e,l], i) => (
-                <button key={i} onClick={() => setWorkout(i+1)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "8px 2px", borderRadius: 12, border: `0.5px solid ${workout === i+1 ? "#7A9E7E" : "transparent"}`, background: workout === i+1 ? "rgba(122,158,126,0.15)" : "none", cursor: "pointer" }}>
-                  <span style={{ fontSize: 22 }}>{e}</span>
-                  <span style={{ fontSize: 8, color: workout === i+1 ? "#7A9E7E" : textSec }}>{l}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* 🌙 Sleep */}
-      <div style={sCard}>
-        <p style={sLabel}>🌙 Sleep quality</p>
-        <div style={emojiRow}>
-          {[["😴","Poor"],["😪","Light"],["😐","Fair"],["🙂","Good"],["✨","Great"]].map(([e,l], i) => (
-            <button key={i} onClick={() => setSleep(i+1)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "8px 2px", borderRadius: 12, border: `0.5px solid ${sleep === i+1 ? (isFemale ? "#7A9E7E" : "#7A9E7E") : "transparent"}`, background: sleep === i+1 ? (isFemale ? "rgba(122,158,126,0.1)" : "rgba(122,158,126,0.15)") : "none", cursor: "pointer" }}>
-              <span style={{ fontSize: 22 }}>{e}</span>
-              <span style={{ fontSize: 8, color: sleep === i+1 ? (isFemale ? "#7A9E7E" : "#7A9E7E") : textSec }}>{l}</span>
-            </button>
-          ))}
-        </div>
+      {/* Day of week headers */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 8 }}>
+        {["S","M","T","W","T","F","S"].map((d,i) => (
+          <div key={i} style={{ textAlign: "center", fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", aspectRatio: "1" }}>{d}</div>
+        ))}
       </div>
 
-      {/* 🏃 Movement */}
-      <div style={sCard}>
-        <p style={sLabel}>🏃 Movement</p>
-        <p style={{ fontSize: 11, color: textSec, marginBottom: 12 }}>Log each activity separately</p>
-        {movements.map((m, i) => (
-          <div key={i} style={{ background: isFemale ? "rgba(122,158,126,0.06)" : "rgba(26,58,42,0.4)", borderRadius: 14, border: isFemale ? "0.5px solid rgba(122,158,126,0.2)" : "0.5px solid rgba(122,158,126,0.3)", padding: 12, marginBottom: 10 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <select value={m.type} onChange={e => updateMovement(i, "type", e.target.value)}
-                style={{ flex: 1, padding: "6px 8px", borderRadius: 10, border: isFemale ? "0.5px solid #dce8dc" : "0.5px solid rgba(122,158,126,0.3)", background: isFemale ? "#fff" : "rgba(255,255,255,0.08)", fontFamily: "sans-serif", fontSize: 13, color: textPrimary, marginRight: 8 }}>
-                <option value="">Select activity</option>
-                {MOVEMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-              <button onClick={() => removeMovement(i)} style={{ fontSize: 10, color: "#C97B7B", background: isFemale ? "#FDEAEA" : "rgba(201,123,123,0.15)", border: "none", borderRadius: 50, padding: "4px 10px", cursor: "pointer", fontFamily: "sans-serif", whiteSpace: "nowrap" }}>Remove</button>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, alignItems: "end" }}>
-              <div>
-                <p style={{ fontSize: 8, color: textSec, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Intensity</p>
-                <select value={m.intensity} onChange={e => updateMovement(i, "intensity", e.target.value)}
-                  style={{ width: "100%", padding: "6px 8px", borderRadius: 10, border: isFemale ? "0.5px solid #dce8dc" : "0.5px solid rgba(122,158,126,0.3)", background: isFemale ? "#fff" : "rgba(255,255,255,0.08)", fontFamily: "sans-serif", fontSize: 11, color: textPrimary }}>
-                  {INTENSITIES.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-              <div>
-                <p style={{ fontSize: 8, color: textSec, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Duration</p>
-                <select value={m.duration} onChange={e => updateMovement(i, "duration", e.target.value)}
-                  style={{ width: "100%", padding: "6px 8px", borderRadius: 10, border: isFemale ? "0.5px solid #dce8dc" : "0.5px solid rgba(122,158,126,0.3)", background: isFemale ? "#fff" : "rgba(255,255,255,0.08)", fontFamily: "sans-serif", fontSize: 11, color: textPrimary }}>
-                  {DURATIONS.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-              {needsDistance(m.type) && (
-                <div>
-                  <p style={{ fontSize: 8, color: textSec, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Distance</p>
-                  <select value={m.distance} onChange={e => updateMovement(i, "distance", e.target.value)}
-                    style={{ width: "100%", padding: "6px 8px", borderRadius: 10, border: isFemale ? "0.5px solid #dce8dc" : "0.5px solid rgba(122,158,126,0.3)", background: isFemale ? "#fff" : "rgba(255,255,255,0.08)", fontFamily: "sans-serif", fontSize: 11, color: textPrimary }}>
-                    <option value="">Optional</option>
-                    {DISTANCES.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-              )}
-              {needsWeight(m.type) && (
-                <div>
-                  <p style={{ fontSize: 8, color: textSec, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Weight used</p>
-                  <input type="text" value={m.lbs} onChange={e => updateMovement(i, "lbs", e.target.value)} placeholder="e.g. 35 lbs"
-                    style={{ width: "100%", padding: "6px 8px", borderRadius: 10, border: isFemale ? "0.5px solid #dce8dc" : "0.5px solid rgba(122,158,126,0.3)", background: isFemale ? "#fff" : "rgba(255,255,255,0.08)", fontFamily: "sans-serif", fontSize: 11, color: textPrimary }} />
-                </div>
-              )}
-              <div>
-                <p style={{ fontSize: 8, color: textSec, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Body focus</p>
-                <select value={m.bodyFocus} onChange={e => updateMovement(i, "bodyFocus", e.target.value)}
-                  style={{ width: "100%", padding: "6px 8px", borderRadius: 10, border: isFemale ? "0.5px solid #dce8dc" : "0.5px solid rgba(122,158,126,0.3)", background: isFemale ? "#fff" : "rgba(255,255,255,0.08)", fontFamily: "sans-serif", fontSize: 11, color: textPrimary }}>
-                  <option value="">Select</option>
-                  {BODY_FOCUS.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-            </div>
+      {/* Calendar grid */}
+      <div key={calendarKey} style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
+        {Array.from({ length: firstDow }).map((_, i) => <div key={`e${i}`} />)}
+        {(() => {
+          const allPeriodRanges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]");
+          const allFastDays = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
+          return Array.from({ length: daysInMonth }, (_, i) => i + 1).map(d => {
+          const cycDay  = getCycleDayFor(d);
+          const phase   = getPhase(cycDay);
+          const info    = PHASE_INFO[phase];
+          const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+          const isSel   = d === selDay;
+          const fastDays = allFastDays;
+          const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+          const isFasted = fastDays.includes(dateStr);
+          const periodRanges = allPeriodRanges;
+          const isPeriodDay = periodRanges.some(r => {
+            if (!r.start) return false;
+            const start = r.start;
+            const end = r.end || r.start;
+            return dateStr >= start && dateStr <= end;
+          });
+          const isPredictedPeriod = !isPeriodDay && lastPeriod && (() => {
+            const next = new Date(lastPeriod + "T12:00:00");
+            next.setDate(next.getDate() + cycleLength);
+            const nextStr = next.toISOString().split("T")[0];
+            const nextEnd = new Date(lastPeriod + "T12:00:00");
+            nextEnd.setDate(nextEnd.getDate() + cycleLength + (periodLength - 1));
+            const nextEndStr = nextEnd.toISOString().split("T")[0];
+            return dateStr >= nextStr && dateStr <= nextEndStr;
+          })();
+          return (
+            <button key={d} onClick={() => setSelDay(d)} style={{
+              aspectRatio: "1", borderRadius: "50%",
+              border: isToday ? `2px solid #8FAF8F` : isFasted ? "2px solid #7A9E7E" : "none",
+              background: mode === "fast" ? (isSel ? "#7A9E7E" : "#F0F6F0") : isPeriodDay ? (isSel ? "#C97B7B" : "#FDEAEA") : isPredictedPeriod ? (isSel ? "#E8B4B4" : "#FDF0F0") : (isSel ? info.color : info.bg),
+              cursor: "pointer", fontFamily: "sans-serif", fontSize: 13,
+              color: mode === "fast" ? (isSel ? "#fff" : "#5C7F60") : (isSel ? "#fff" : info.color),
+              fontWeight: isToday ? 700 : 400,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>{d}</button>
+          );
+        });
+        })()}
+      </div>
+
+      {/* Legend */}
+      {mode !== "fast" && (
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16, paddingTop: 12, borderTop: "1px solid #EAF2EA" }}>
+        {Object.entries(PHASE_INFO).map(([name, info]) => (
+          <div key={name} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: info.color }} />
+            <span style={{ fontFamily: "sans-serif", fontSize: 11, color: "#6b7b6b" }}>{name}</span>
           </div>
         ))}
-        <button onClick={addMovement} style={{ width: "100%", padding: 10, borderRadius: 12, border: isFemale ? "1px dashed #C5D9C5" : "1px dashed rgba(122,158,126,0.4)", background: "none", color: isFemale ? "#7A9E7E" : "#7A9E7E", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>+ Add movement</button>
       </div>
+      )}
 
-      {/* 💧 Water */}
-      <div style={sCard}>
-        <p style={sLabel}>💧 Water intake</p>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20 }}>
-          <button onClick={() => setWater(Math.max(0, water-1))} style={{ width: 36, height: 36, borderRadius: "50%", border: isFemale ? "0.5px solid #dce8dc" : "0.5px solid rgba(122,158,126,0.3)", background: isFemale ? "#EAF2F9" : "rgba(99,179,237,0.1)", fontSize: 18, cursor: "pointer", color: "#7BA8C9" }}>−</button>
-          <div style={{ textAlign: "center" }}>
-            <p style={{ fontFamily: "Georgia, serif", fontSize: 28, color: "#7BA8C9", margin: 0 }}>{water}</p>
-            <p style={{ fontSize: 10, color: textSec, margin: 0 }}>glasses today</p>
+      {/* Selected day detail */}
+      {mode !== "fast" ? (
+      <div style={{ ...s.card, background: selInfo.bg, border: `1px solid ${selInfo.color}33`, textAlign: "left", marginTop: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+          <span style={{ fontSize: 24 }}>{selInfo.emoji}</span>
+          <div>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: selInfo.color, margin: 0 }}>
+              {MONTHS[month]} {selDay}
+            </p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0 }}>
+              {selPhase} phase · Day {getCycleDayFor(selDay)}
+            </p>
           </div>
-          <button onClick={() => setWater(Math.min(15, water+1))} style={{ width: 36, height: 36, borderRadius: "50%", border: isFemale ? "0.5px solid #dce8dc" : "0.5px solid rgba(122,158,126,0.3)", background: isFemale ? "#EAF2F9" : "rgba(99,179,237,0.1)", fontSize: 18, cursor: "pointer", color: "#7BA8C9" }}>+</button>
         </div>
-        <div style={{ display: "flex", gap: 4, marginTop: 10 }}>
-          {[...Array(8)].map((_, i) => <div key={i} style={{ flex: 1, height: 5, borderRadius: 3, background: i < water ? "#7BA8C9" : (isFemale ? "#EAF2F9" : "rgba(99,179,237,0.15)") }} />)}
-        </div>
+        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: "0 0 4px" }}>💧 <b>Fast:</b> {selInfo.fast}</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: 0 }}>🏋️ <b>Move:</b> {selInfo.move}</p>
       </div>
 
-      {/* 🌿 Body check */}
-      <div style={sCard}>
-        <p style={sLabel}>🌿 Body check</p>
-        <p style={{ fontSize: 11, color: textSec, marginBottom: 10 }}>This is just a snapshot — not a score.</p>
-        <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-          {["lbs","kg"].map(u => (
-            <button key={u} onClick={() => setWeightUnit(u)} style={{ padding: "6px 14px", borderRadius: 50, border: "none", background: weightUnit === u ? (isFemale ? "#7A9E7E" : "#2D5A3D") : (isFemale ? "#F0F6F0" : "rgba(122,158,126,0.1)"), color: weightUnit === u ? "#fff" : (isFemale ? "#5C7F60" : "#7A9E7E"), fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{u}</button>
-          ))}
+      ) : (
+        <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "16px", marginTop: 12 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>⚡ Fasting overview</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {(() => {
+              const fastDays = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
+              const streak = (() => {
+                let s = 0;
+                const today = new Date();
+                while (true) {
+                  const d = new Date(today);
+                  d.setDate(d.getDate() - s);
+                  const str = d.toISOString().split("T")[0];
+                  if (fastDays.includes(str)) s++;
+                  else break;
+                }
+                return s;
+              })();
+              const stats = [
+                { label: "Total fasts", value: fastDays.length, icon: "🔥" },
+                { label: "Current streak", value: `${streak} days`, icon: "⚡" },
+                { label: "This month", value: fastDays.filter(d => d.startsWith(new Date().toISOString().slice(0,7))).length, icon: "📅" },
+                { label: "Best window", value: "16h", icon: "⏰" },
+              ];
+              return stats.map((stat, i) => (
+                <div key={i} style={{ background: "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{stat.icon} {stat.label}</p>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: 0, fontWeight: 600 }}>{stat.value}</p>
+                </div>
+              ));
+            })()}
+          </div>
         </div>
-        <input type="number" value={bodyCheck} onChange={e => setBodyCheck(e.target.value)} placeholder={`Optional — your body snapshot (${weightUnit})`}
-          style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: isFemale ? "0.5px solid #dce8dc" : "0.5px solid rgba(122,158,126,0.3)", fontFamily: "sans-serif", fontSize: 13, color: textPrimary, background: isFemale ? "#fff" : "rgba(255,255,255,0.06)" }} />
-      </div>
+      )}
 
-      {/* 📝 Notes */}
-      <div style={sCard}>
-        <p style={sLabel}>📝 Notes</p>
-        <textarea id="checkin-notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Write anything you'd like to remember…"
-          style={{ width: "100%", height: 80, borderRadius: 10, border: isFemale ? "0.5px solid #dce8dc" : "0.5px solid rgba(122,158,126,0.3)", padding: "10px 12px", fontFamily: "sans-serif", fontSize: 13, resize: "none", color: textPrimary, background: isFemale ? "#fff" : "rgba(255,255,255,0.06)" }} />
+      {/* Edit Cycle Section */}
+      {mode !== "fast" && <div style={{ marginTop: 12 }}>
+        <button onClick={() => setShowEditCycle(!showEditCycle)} style={{ background: "none", border: "0.5px solid #dce8dc", borderRadius: 50, padding: "8px 16px", fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+          ✏️ Edit cycle date {showEditCycle ? "▴" : "▾"}
+        </button>
+        {showEditCycle && (
+          <div style={{ background: "#F8FAF8", borderRadius: 16, padding: "16px", border: "0.5px solid #dce8dc", marginTop: 10 }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: "0 0 12px" }}>When did your last period start?</p>
+            <input
+              type="date"
+              value={editDateInput}
+              onChange={e => setEditDateInput(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              min="2015-01-01"
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12 }}
+            />
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Cycle length (days)</p>
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              {[21, 24, 28, 30, 35, 40].map(d => (
+                <button key={d} onClick={() => setEditCycleLength(d)} style={{ flex: 1, padding: "8px 4px", borderRadius: 10, border: "0.5px solid #dce8dc", background: editCycleLength === d ? "#7A9E7E" : "#fff", color: editCycleLength === d ? "#fff" : "#4a5a4b", fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{d}</button>
+              ))}
+            </div>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Period length (days)</p>
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              {[3, 4, 5, 6, 7, 8].map(d => (
+                <button key={d} onClick={() => setEditPeriodLength(d)} style={{ flex: 1, padding: "8px 4px", borderRadius: 10, border: "0.5px solid #dce8dc", background: editPeriodLength === d ? "#C97B7B" : "#fff", color: editPeriodLength === d ? "#fff" : "#4a5a4b", fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{d}</button>
+              ))}
+            </div>
+            <button onClick={() => { if (editDateInput) { onSave && onSave(editDateInput, editCycleLength, editPeriodLength); setShowEditCycle(false); setPeriodMsg("✅ Cycle date updated!"); setTimeout(() => setPeriodMsg(null), 3000); }}} style={{ background: "#7A9E7E", border: "none", borderRadius: 50, padding: "10px 0", width: "100%", fontFamily: "sans-serif", fontSize: 13, color: "#fff", cursor: "pointer", fontWeight: 600 }}>
+              Save cycle date
+            </button>
+          </div>
+        )}
+      </div>}
+      {/* Floating + button */}
+      {showMenu && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 998 }} onClick={() => setShowMenu(false)} />
+      )}
+      <div style={{ position: "fixed", bottom: 140, right: 20, zIndex: 999, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+        {showMenu && (
+          <div style={{ background: "#fff", borderRadius: 18, padding: "8px 0", boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "0.5px solid #dce8dc", minWidth: 200 }}>
+            {mode !== "fast" ? (
+              <>
+                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); ranges.push({ start: selectedDate, end: null, predicted: false }); localStorage.setItem("lf_period_ranges", JSON.stringify(ranges)); setPeriodRangesState(ranges); setCalendarKey(k => k + 1); onSave && onSave(selectedDate); setShowMenu(false); setPeriodMsg(`🩸 Period started ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#C97B7B", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 18 }}>🩸</span> Period started today
+                </button>
+                <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
+                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); if (ranges.length > 0 && !ranges[ranges.length-1].end) { ranges[ranges.length-1].end = selectedDate; localStorage.setItem("lf_period_ranges", JSON.stringify(ranges)); setPeriodRangesState([...ranges]); } setShowMenu(false); setPeriodMsg(`✅ Period ended ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#7A9E7E", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 18 }}>✅</span> Period ended today
+                </button>
+                <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
+              </>
+            ) : (
+              <>
+                <button onClick={() => { setShowMenu(false); localStorage.setItem("lf_auto_start_fast", "true"); onNavigate && onNavigate("home"); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#5C7F60", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 18 }}>🔥</span> Start a fast
+                </button>
+                <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
+              </>
+            )}
+            <button onClick={() => { setShowMenu(false); onNavigate && onNavigate("checkin"); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#8FA090", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 18 }}>😊</span> Log mood
+            </button>
+          </div>
+        )}
+        {periodMsg && (
+          <div style={{ background: "#fff", borderRadius: 50, padding: "8px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.1)", fontFamily: "sans-serif", fontSize: 12, color: "#5C7F60", border: "0.5px solid #C5D9C5" }}>
+            {periodMsg}
+          </div>
+        )}
+        <button onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }} style={{ width: 52, height: 52, borderRadius: "50%", background: "#C97B7B", border: "none", color: "#fff", fontSize: 26, cursor: "pointer", boxShadow: "0 4px 16px rgba(201,123,123,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          +
+        </button>
       </div>
-
-      <button onClick={save} style={{ width: "calc(100% - 32px)", margin: "4px 16px 16px", padding: 14, borderRadius: 50, border: "none", fontFamily: "sans-serif", fontSize: 15, cursor: "pointer", ...saveBtnStyle }}>
-        Save Check-In ✅
-      </button>
     </div>
-  );
+    );
 }
+
+// ─────────────────────────────────────────────
+//  LEARN SCREEN
+// ─────────────────────────────────────────────
 function LearnScreen({ mode }) {
   const [tab, setTab] = useState(mode === "fast" ? "Fasting" : "Phases");
   const tabs = mode === "fast" 
     ? ["Fasting", "Men", "Glossary", "Workouts", "Nutrition", "Cravings", "Grooming", "Gut Health"]
-    : ["Fasting", "Phases", "Conditions", "Glossary", "Workouts", "Nutrition", "Blood Color", "Cravings", "Cycle Guide", "Gut Health"];
+    : ["Fasting", "Phases", "Conditions", "Men", "Glossary", "Workouts", "Nutrition", "Blood Color", "Cravings", "Cycle Guide", "Gut Health"];
 
   const BLOOD_COLORS = [
     { color: "#B22222", label: "Bright Red",    note: "Fresh flow. Healthy and normal at peak flow." },
@@ -1501,16 +1550,6 @@ function SettingsScreen({ settings, onSave }) {
         <button onClick={() => setSubScreen("terms")} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EAF2EA", border: "none", borderRadius: 12, padding: "12px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#2D3B2E", cursor: "pointer" }}>
           <span>📄 Terms of Service</span><span style={{ color: "#C5D9C5", fontSize: 18 }}>›</span>
         </button>
-      </div>
-
-      {/* Switch mode */}
-      <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>⚡ Switch experience</p>
-        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 12px" }}>Currently using: {settings.mode === "fast" ? "Fasting focus" : "Cycle tracking"}</p>
-        <button onClick={() => { const newMode = settings.mode === "fast" ? "cycle" : "fast"; onSave({...settings, mode: newMode}); }} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "0.5px solid #dce8dc", background: "#F8FAF8", color: "#4a5a4b", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>
-          Switch to {settings.mode === "fast" ? "🌸 Cycle tracking" : "⚡ Fasting focus"}
-        </button>
-        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: "8px 0 0", textAlign: "center" }}>Your data is saved — you can switch back anytime</p>
       </div>
 
       <div style={{ ...s.card, textAlign: "center" }}>
