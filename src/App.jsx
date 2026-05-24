@@ -489,7 +489,7 @@ function CheckInScreen({ mode, onNavigate }) {
   const [notes,  setNotes]  = useState("");
 
   const save = () => {
-    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, bodyCheck, weightUnit, namedMood, symptoms };
+    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, movements, bodyCheck, weightUnit, namedMood, symptoms };
     localStorage.setItem(key, JSON.stringify(data));
     setSaved(data);
   };
