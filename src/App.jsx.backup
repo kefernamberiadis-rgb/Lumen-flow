@@ -900,13 +900,27 @@ if (saved) {
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🩺 Symptoms</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Select all that apply today</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {["none","cramps","headache","breast tenderness","back pain","acne","bloating","insomnia","fatigue","nausea","hot flashes","irritability","brain fog"].map(sym => (
-            <button key={sym} onClick={() => setSymptoms(prev => prev.includes(sym) ? prev.filter(x => x !== sym) : [...prev, sym])} style={{
-              padding: "7px 14px", borderRadius: 100, border: "none",
-              background: symptoms.includes(sym) ? "#C97B7B" : "#FDEAEA",
-              color: symptoms.includes(sym) ? "#fff" : "#C97B7B",
-              fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", textTransform: "capitalize",
-            }}>{sym}</button>
+          {[
+            { val: "cramps",            label: "Cramps",            emoji: "⚡" },
+            { val: "headache",          label: "Headache",          emoji: "🤕" },
+            { val: "breast tenderness", label: "Breast tenderness", emoji: "💗" },
+            { val: "back pain",         label: "Back pain",         emoji: "🔙" },
+            { val: "acne",              label: "Acne",              emoji: "🌋" },
+            { val: "bloating",          label: "Bloating",          emoji: "🎈" },
+            { val: "insomnia",          label: "Insomnia",          emoji: "🌙" },
+            { val: "fatigue",           label: "Fatigue",           emoji: "🔋" },
+            { val: "nausea",            label: "Nausea",            emoji: "🤢" },
+            { val: "hot flashes",       label: "Hot flashes",       emoji: "🔥" },
+            { val: "irritability",      label: "Irritability",      emoji: "😤" },
+            { val: "brain fog",         label: "Brain fog",         emoji: "🧠" },
+          ].map(sym => (
+            <button key={sym.val} onClick={() => setSymptoms(prev => prev.includes(sym.val) ? prev.filter(x => x !== sym.val) : [...prev, sym.val])} style={{
+              padding: "7px 12px", borderRadius: 100, border: "none",
+              background: symptoms.includes(sym.val) ? "#C97B7B" : "#FDEAEA",
+              color: symptoms.includes(sym.val) ? "#fff" : "#C97B7B",
+              fontFamily: "sans-serif", fontSize: 12, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 4,
+            }}>{sym.emoji} {sym.label}</button>
           ))}
         </div>
       </div>
