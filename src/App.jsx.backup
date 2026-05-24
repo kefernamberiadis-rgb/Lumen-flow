@@ -2082,7 +2082,7 @@ const s = {
   chip:       { borderRadius: 100, padding: "5px 14px", fontSize: 13, fontWeight: 600 },
   header:     { display: "flex", alignItems: "center", gap: 8, padding: "14px 16px" },
   title:      { fontFamily: "Georgia, serif", fontWeight: 400, fontSize: 20, color: "#2D3B2E", margin: "0 0 12px" },
-  card:       { background: "#F8FAF8", padding: 16, borderRadius: 18, textAlign: "center", marginBottom: 12 },
+  card:       { background: "#F8FAF8", padding: 16, borderRadius: 18, textAlign: "left", marginBottom: 12 },
   label:      { margin: 0, fontSize: 13, color: "#6b7b6b" },
   btn:        { width: "100%", padding: 14, borderRadius: 16, border: "none", background: "#8FAF8F", color: "#fff", fontWeight: "bold", fontSize: 15, cursor: "pointer" },
   backBtn:    { marginTop: 10, background: "none", border: "none", color: "#8FA090", fontSize: 14, cursor: "pointer", padding: 8 },

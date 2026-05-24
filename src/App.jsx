@@ -502,6 +502,17 @@ function CheckInScreen({ mode, onNavigate }) {
   const [sleep, setSleep] = useState(3);
   const [water, setWater] = useState(0);
   const [movement, setMovement] = useState("none");
+  const [movements, setMovements] = useState([]);
+  const MOVEMENT_TYPES = ["🚶 Walk","🏃 Run","🏋️ Weights","🧘 Yoga","⚡ HIIT","🚴 Cycling","🏊 Swimming","🏀 Sport","💃 Dance","🤸 Stretching","🌀 Mobility","🧘 Pilates","🌿 Yard work","🔨 Carpentry","🎨 Painting","🧹 Cleaning","📦 Moving","🛒 Errands","🪴 Gardening","🛌 None today","🌙 Rest day"];
+  const INTENSITIES = ["🌿 Gentle","🚶 Moderate","💪 Strong","🔥 Intense","🌙 Recovery"];
+  const DURATIONS = ["5 min","10 min","15 min","20 min","30 min","45 min","60 min","90 min"];
+  const DISTANCES = ["0.5 km","1 km","2 km","5 km","10 km"];
+  const BODY_FOCUS = ["💪 Upper body","🦵 Lower body","✨ Full body","🔥 Core","❤️ Cardio","🌿 Flexibility","⚖️ Balance","🌙 Recovery"];
+  const addMovement = () => setMovements(prev => [...prev, { type: "", intensity: "🌿 Gentle", duration: "20 min", distance: "", bodyFocus: "", lbs: "" }]);
+  const updateMovement = (i, field, val) => setMovements(prev => prev.map((m, idx) => idx === i ? { ...m, [field]: val } : m));
+  const removeMovement = (i) => setMovements(prev => prev.filter((_, idx) => idx !== i));
+  const needsDistance = (type) => ["Walk","Run","Cycling","Swimming"].some(t => type.includes(t));
+  const needsWeight = (type) => type.includes("Weights");
   const [bodyCheck, setBodyCheck] = useState("");
   const [symptoms, setSymptoms] = useState([]);
   const [weightUnit, setWeightUnit] = useState("lbs");
@@ -797,17 +808,62 @@ function CheckInScreen({ mode, onNavigate }) {
       </div>
 
       <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🏃 Movement</p>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {["none","gentle","moderate","intense","rest day"].map(m => (
-            <button key={m} onClick={() => setMovement(m)} style={{
-              padding: "7px 14px", borderRadius: 100, border: "none",
-              background: movement === m ? "#7A9E7E" : "#EAF2EA",
-              color: movement === m ? "#fff" : "#6b7b6b",
-              fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", textTransform: "capitalize",
-            }}>{m}</button>
-          ))}
-        </div>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 4px" }}>🏃 Movement</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Log each activity separately</p>
+        {movements.map((m, i) => (
+          <div key={i} style={{ background: "#F0F6F0", borderRadius: 14, border: "0.5px solid #dce8dc", padding: 12, marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <select value={m.type} onChange={e => updateMovement(i,"type",e.target.value)}
+                style={{ flex: 1, padding: "7px 10px", borderRadius: 10, border: "0.5px solid #dce8dc", background: "#fff", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", marginRight: 8 }}>
+                <option value="">Select activity</option>
+                {MOVEMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <button onClick={() => removeMovement(i)} style={{ fontSize: 10, color: "#C97B7B", background: "#FDEAEA", border: "none", borderRadius: 50, padding: "4px 10px", cursor: "pointer", fontFamily: "sans-serif" }}>Remove</button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              <div>
+                <p style={{ fontSize: 9, color: "#8FA090", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 4px" }}>Intensity</p>
+                <select value={m.intensity} onChange={e => updateMovement(i,"intensity",e.target.value)}
+                  style={{ width: "100%", padding: "7px 10px", borderRadius: 10, border: "0.5px solid #dce8dc", background: "#fff", fontFamily: "sans-serif", fontSize: 12, color: "#2D3B2E" }}>
+                  {INTENSITIES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <p style={{ fontSize: 9, color: "#8FA090", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 4px" }}>Duration</p>
+                <select value={m.duration} onChange={e => updateMovement(i,"duration",e.target.value)}
+                  style={{ width: "100%", padding: "7px 10px", borderRadius: 10, border: "0.5px solid #dce8dc", background: "#fff", fontFamily: "sans-serif", fontSize: 12, color: "#2D3B2E" }}>
+                  {DURATIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              {needsDistance(m.type) && (
+                <div>
+                  <p style={{ fontSize: 9, color: "#8FA090", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 4px" }}>Distance</p>
+                  <select value={m.distance} onChange={e => updateMovement(i,"distance",e.target.value)}
+                    style={{ width: "100%", padding: "7px 10px", borderRadius: 10, border: "0.5px solid #dce8dc", background: "#fff", fontFamily: "sans-serif", fontSize: 12, color: "#2D3B2E" }}>
+                    <option value="">Optional</option>
+                    {DISTANCES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              )}
+              {needsWeight(m.type) && (
+                <div>
+                  <p style={{ fontSize: 9, color: "#8FA090", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 4px" }}>Weight used</p>
+                  <input type="text" value={m.lbs} onChange={e => updateMovement(i,"lbs",e.target.value)} placeholder="e.g. 35 lbs"
+                    style={{ width: "100%", padding: "7px 10px", borderRadius: 10, border: "0.5px solid #dce8dc", background: "#fff", fontFamily: "sans-serif", fontSize: 12, color: "#2D3B2E" }} />
+                </div>
+              )}
+              <div style={{ gridColumn: needsDistance(m.type) || needsWeight(m.type) ? "auto" : "1/-1" }}>
+                <p style={{ fontSize: 9, color: "#8FA090", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 4px" }}>Body focus</p>
+                <select value={m.bodyFocus} onChange={e => updateMovement(i,"bodyFocus",e.target.value)}
+                  style={{ width: "100%", padding: "7px 10px", borderRadius: 10, border: "0.5px solid #dce8dc", background: "#fff", fontFamily: "sans-serif", fontSize: 12, color: "#2D3B2E" }}>
+                  <option value="">Select</option>
+                  {BODY_FOCUS.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
+        ))}
+        <button onClick={addMovement} style={{ width: "100%", padding: 10, borderRadius: 12, border: "1px dashed #C5D9C5", background: "none", color: "#7A9E7E", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>+ Add movement</button>
       </div>
 
       <div style={s.card}>
