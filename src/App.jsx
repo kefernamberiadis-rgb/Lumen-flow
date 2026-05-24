@@ -752,13 +752,21 @@ function CheckInScreen({ mode, onNavigate }) {
       <div style={s.card}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🦠 Gut health</p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {gutOptions.map(g => (
-            <button key={g} onClick={() => { if (g === "good") { setGut(prev => prev.includes("good") ? [] : ["good"]); } else { setGut(prev => { const without = prev.filter(x => x !== "good"); return without.includes(g) ? without.filter(x => x !== g) : [...without, g]; }); } }} style={{
-              padding: "7px 14px", borderRadius: 100, border: "none",
-              background: gut.includes(g) ? "#7A9E7E" : "#EAF2EA",
-              color: gut.includes(g) ? "#fff" : "#6b7b6b",
-              fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", textTransform: "capitalize",
-            }}>{g}</button>
+          {[
+            { val: "good",         label: "Good",         emoji: "✅" },
+            { val: "bloating",     label: "Bloating",     emoji: "🎈" },
+            { val: "constipation", label: "Constipation", emoji: "🚽" },
+            { val: "diarrhea",     label: "Diarrhea",     emoji: "💧" },
+            { val: "cramps",       label: "Cramps",       emoji: "⚡" },
+            { val: "nausea",       label: "Nausea",       emoji: "🤢" },
+            { val: "reflux",       label: "Reflux",       emoji: "🔥" },
+            { val: "gas",          label: "Gas",          emoji: "💨" },
+            { val: "sensitive",    label: "Sensitive",    emoji: "🌿" },
+          ].map(g => (
+            <button key={g.val} onClick={() => { if (g.val === "good") { setGut(prev => prev.includes("good") ? [] : ["good"]); } else { setGut(prev => { const without = prev.filter(x => x !== "good"); return without.includes(g.val) ? without.filter(x => x !== g.val) : [...without, g.val]; }); } }}
+              style={{ padding: "7px 12px", borderRadius: 100, border: "none", background: gut.includes(g.val) ? "#7A9E7E" : "#EAF2EA", color: gut.includes(g.val) ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+              {g.emoji} {g.label}
+            </button>
           ))}
         </div>
       </div>

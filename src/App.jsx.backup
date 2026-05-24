@@ -729,13 +729,20 @@ function CheckInScreen({ mode, onNavigate }) {
       <div style={s.card}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🩸 Flow</p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {flowOptions.map(f => (
-            <button key={f} onClick={() => setFlow(f)} style={{
+          {[
+            { val: "none",     label: "None",     emoji: "🚫" },
+            { val: "spotting", label: "Spotting", emoji: "🩸" },
+            { val: "light",    label: "Light",    emoji: "🩸🩸" },
+            { val: "medium",   label: "Medium",   emoji: "🩸🩸🩸" },
+            { val: "heavy",    label: "Heavy",    emoji: "🩸🩸🩸🩸" },
+          ].map(f => (
+            <button key={f.val} onClick={() => setFlow(f.val)} style={{
               padding: "7px 14px", borderRadius: 100, border: "none",
-              background: flow === f ? "#C97B7B" : "#EAF2EA",
-              color: flow === f ? "#fff" : "#6b7b6b",
-              fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", textTransform: "capitalize",
-            }}>{f}</button>
+              background: flow === f.val ? "#C97B7B" : "#FDEAEA",
+              color: flow === f.val ? "#fff" : "#C97B7B",
+              fontFamily: "sans-serif", fontSize: 12, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 4,
+            }}><span>{f.emoji}</span> {f.label}</button>
           ))}
         </div>
       </div>
@@ -746,7 +753,7 @@ function CheckInScreen({ mode, onNavigate }) {
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🦠 Gut health</p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {gutOptions.map(g => (
-            <button key={g} onClick={() => setGut(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g])} style={{
+            <button key={g} onClick={() => { if (g === "good") { setGut(prev => prev.includes("good") ? [] : ["good"]); } else { setGut(prev => { const without = prev.filter(x => x !== "good"); return without.includes(g) ? without.filter(x => x !== g) : [...without, g]; }); } }} style={{
               padding: "7px 14px", borderRadius: 100, border: "none",
               background: gut.includes(g) ? "#7A9E7E" : "#EAF2EA",
               color: gut.includes(g) ? "#fff" : "#6b7b6b",
