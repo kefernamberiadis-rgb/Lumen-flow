@@ -721,12 +721,12 @@ if (saved) {
     );
   }
   return (
-    <div style={{ padding: "16px 16px 90px" }}>
-      <h3 style={s.title}>Daily Check-In</h3>
+    <div style={{ padding: "16px 16px 90px", background: mode === "fast" ? "linear-gradient(160deg, #1a2f1e 0%, #1e3524 40%, #162a1a 100%)" : "linear-gradient(160deg, #E8F5E9 0%, #F3E5F5 35%, #FCE4EC 70%, #E8EAF6 100%)", minHeight: "100vh" }}>
+      <h3 style={{ ...s.title, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E" }}>Daily Check-In</h3>
       <p style={{ ...s.label, marginBottom: 20 }}>How are you feeling today?</p>
 
-      <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>⚡ Energy</p>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>⚡ Energy</p>
         <div style={{ display: "flex", justifyContent: "space-around" }}>
           {ratingEmojis.map((e, i) => (
             <button key={i} onClick={() => setEnergy(i + 1)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "8px 2px", borderRadius: 12, border: `0.5px solid ${energy===i+1?"#7A9E7E":"transparent"}`, background: energy===i+1?"rgba(122,158,126,0.1)":"none", cursor: "pointer" }}>
@@ -737,8 +737,8 @@ if (saved) {
         </div>
       </div>
 
-      <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>💭 How are you feeling?</p>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>💭 How are you feeling?</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: namedMood ? 12 : 0 }}>
           {Object.entries(NAMED_MOODS).map(([name, m]) => (
             <button key={name} onClick={() => setNamedMood(namedMood === name ? null : name)} style={{
@@ -777,8 +777,8 @@ if (saved) {
       </div>
 
       {mode !== "fast" && (
-      <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🩸 Flow</p>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🩸 Flow</p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {[
             { val: "none",     label: "None",     emoji: "🚫" },
@@ -800,8 +800,8 @@ if (saved) {
       )}
 
       {mode !== "fast" && (
-      <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🦠 Gut health</p>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🦠 Gut health</p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {[
             { val: "good",         label: "Good",         emoji: "✅" },
@@ -824,30 +824,36 @@ if (saved) {
       )}
 
       {mode === "fast" && (
-      <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🧠 Mental clarity</p>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🧠 Mental clarity</p>
         <div style={{ display: "flex", justifyContent: "space-around" }}>
           {ratingEmojis.map((e, i) => (
-            <button key={i} onClick={() => setClarity(i + 1)} style={{ fontSize: 28, background: "none", border: "none", cursor: "pointer", opacity: clarity === i + 1 ? 1 : 0.35, transition: "opacity 0.15s" }}>{e}</button>
+            <button key={i} onClick={() => setClarity(i + 1)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "8px 2px", borderRadius: 12, border: `0.5px solid ${clarity===i+1?"#7A9E7E":"transparent"}`, background: clarity===i+1?"rgba(122,158,126,0.15)":"none", cursor: "pointer" }}>
+              <span style={{ fontSize: 22 }}>{e}</span>
+              <span style={{ fontSize: 8, color: clarity===i+1?"#7A9E7E":"#A8BEA8" }}>{["Foggy","Low","Fair","Sharp","Peak"][i]}</span>
+            </button>
           ))}
         </div>
       </div>
       )}
 
       {mode === "fast" && (
-      <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>💪 Workout performance</p>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>💪 Workout performance</p>
         <div style={{ display: "flex", justifyContent: "space-around" }}>
           {ratingEmojis.map((e, i) => (
-            <button key={i} onClick={() => setWorkout(i + 1)} style={{ fontSize: 28, background: "none", border: "none", cursor: "pointer", opacity: workout === i + 1 ? 1 : 0.35, transition: "opacity 0.15s" }}>{e}</button>
+            <button key={i} onClick={() => setWorkout(i + 1)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "8px 2px", borderRadius: 12, border: `0.5px solid ${workout===i+1?"#7A9E7E":"transparent"}`, background: workout===i+1?"rgba(122,158,126,0.15)":"none", cursor: "pointer" }}>
+              <span style={{ fontSize: 22 }}>{e}</span>
+              <span style={{ fontSize: 8, color: workout===i+1?"#7A9E7E":"#A8BEA8" }}>{["Poor","Low","Fair","Good","Peak"][i]}</span>
+            </button>
           ))}
         </div>
       </div>
       )}
 
       {mode === "fast" && (
-      <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🦠 Gut health</p>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🦠 Gut health</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {[
             { val: "good",         label: "Good",         emoji: "✅" },
@@ -869,8 +875,8 @@ if (saved) {
       )}
 
       {mode === "fast" && (
-      <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🩺 Symptoms</p>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🩺 Symptoms</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Select all that apply today</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {[
@@ -896,8 +902,8 @@ if (saved) {
       )}
 
       {mode !== "fast" && (
-      <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🩺 Symptoms</p>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🩺 Symptoms</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Select all that apply today</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {[
@@ -926,8 +932,8 @@ if (saved) {
       </div>
       )}
 
-      <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>🌙 Sleep quality</p>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🌙 Sleep quality</p>
         <div style={{ display: "flex", justifyContent: "space-around" }}>
           {["😴","😪","😐","🙂","✨"].map((e, i) => (
             <button key={i} onClick={() => setSleep(i + 1)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "8px 2px", borderRadius: 12, border: `0.5px solid ${sleep===i+1?"#9B7BC9":"transparent"}`, background: sleep===i+1?"rgba(155,123,201,0.1)":"none", cursor: "pointer" }}>
@@ -939,8 +945,8 @@ if (saved) {
         
       </div>
 
-      <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 4px" }}>🏃 Movement</p>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 4px" }}>🏃 Movement</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Log each activity separately</p>
         {movements.map((m, i) => (
           <div key={i} style={{ background: "#F0F6F0", borderRadius: 14, border: "0.5px solid #dce8dc", padding: 12, marginBottom: 10 }}>
@@ -998,8 +1004,8 @@ if (saved) {
         <button onClick={addMovement} style={{ width: "100%", padding: 10, borderRadius: 12, border: "1px dashed #C5D9C5", background: "none", color: "#7A9E7E", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>+ Add movement</button>
       </div>
 
-      <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>💧 Water intake</p>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>💧 Water intake</p>
         <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "center" }}>
           <button onClick={() => setWater(Math.max(0, water - 1))} style={{ width: 36, height: 36, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#F0F6F0", fontSize: 18, cursor: "pointer" }}>−</button>
           <div style={{ textAlign: "center" }}>
@@ -1010,8 +1016,8 @@ if (saved) {
         </div>
       </div>
 
-      <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 4px" }}>🌿 Body check</p>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 4px" }}>🌿 Body check</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Your body changes throughout your cycle and fasting journey. This is just a snapshot — not a score.</p>
         <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
           <button onClick={() => setWeightUnit("lbs")} style={{ padding: "6px 14px", borderRadius: 50, border: "none", background: weightUnit === "lbs" ? "#7A9E7E" : "#EAF2EA", color: weightUnit === "lbs" ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>lbs</button>
@@ -1026,8 +1032,8 @@ if (saved) {
         />
       </div>
 
-      <div style={s.card}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>📝 Notes</p>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>📝 Notes</p>
         <textarea
           value={notes}
           onChange={e => setNotes(e.target.value)}
