@@ -1786,7 +1786,7 @@ const DIET_TYPES    = ["All","High Protein","Low Carb","High Carb","Keto","Carni
 const PHASE_FILTERS = ["All","Menstrual","Follicular","Ovulation","Luteal"];
 
 function RecipesScreen({ phase, onNavigate, mode }) {
-  const [cravingType, setCravingType] = useState(null);
+  const [cravingType, setCravingType] = useState([]);
   const [nourishTab, setNourishTab] = useState("cravings");
 
   const CRAVINGS = {
@@ -1889,10 +1889,10 @@ function RecipesScreen({ phase, onNavigate, mode }) {
         <p style={{ fontSize: 13, color: "#2D3B2E", fontWeight: 600, margin: "0 0 12px" }}>What are you craving right now?</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {cravingKeys.map(key => (
-            <button key={key} onClick={() => setCravingType(cravingType === key ? null : key)} style={{
+            <button key={key} onClick={() => setCravingType(prev => Array.isArray(prev) ? (prev.includes(key) ? prev.filter(x => x !== key) : [...prev, key]) : [key])} style={{
               padding: "8px 14px", borderRadius: 50, border: "0.5px solid #dce8dc",
-              background: cravingType === key ? "#7A9E7E" : "#F8FAF8",
-              color: cravingType === key ? "#fff" : "#4a5a4b",
+              background: (Array.isArray(cravingType) ? cravingType.includes(key) : cravingType === key) ? "#7A9E7E" : "#F8FAF8",
+              color: (Array.isArray(cravingType) ? cravingType.includes(key) : cravingType === key) ? "#fff" : "#4a5a4b",
               fontSize: 12, cursor: "pointer", fontFamily: "sans-serif",
               display: "flex", alignItems: "center", gap: 6
             }}>
@@ -1901,7 +1901,7 @@ function RecipesScreen({ phase, onNavigate, mode }) {
           ))}
         </div>
       </div>}
-      {nourishTab === "cravings" && craving && (
+      {nourishTab === "cravings" && Array.isArray(cravingType) && cravingType.length > 0 && cravingType.map(key => { const craving = CRAVINGS[key]; if (!craving) return null; return (
         <div>
           <div style={{ background: "#F0F6F0", borderRadius: 18, padding: "16px", border: "0.5px solid #C5D9C5", marginBottom: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
@@ -1929,7 +1929,7 @@ function RecipesScreen({ phase, onNavigate, mode }) {
             ))}
           </div>
         </div>
-      )}
+      ); })}
       {nourishTab === "fasting" && (
         <div>
           {[
