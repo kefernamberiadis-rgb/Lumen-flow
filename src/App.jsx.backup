@@ -224,7 +224,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
   
 
   return (
-    <div style={{ padding: "0 0 90px", background: mode === "fast" ? "linear-gradient(180deg, #0d1f14 0%, #F7FAF7 30%)" : "transparent", minHeight: "100vh" }}>
+    <div style={{ padding: "0 0 90px", background: mode === "fast" ? "linear-gradient(180deg, #0c1410 0%, #141e16 40%, #0f1a12 100%)" : "linear-gradient(150deg, #f7f0ec 0%, #ede5f0 35%, #f5e8ed 65%, #eceaf5 100%)", minHeight: "100vh" }}>
       {/* Header */}
       <div style={{ ...s.header, justifyContent: "space-between", paddingTop: 20 }}>
         <div>
@@ -247,43 +247,87 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
         </div>
       </div>
 
-      {/* Fasting Timer */}
-      <div style={{ ...s.card, margin: "12px 16px", position: "relative" }}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 16px" }}>
-          {fastStart ? "Fasting in progress 🌙" : "Start your fast"}
-        </p>
-
-        {/* Circle */}
-        <div style={{ position: "relative", width: 128, height: 128, margin: "0 auto 16px" }}>
-          <svg width="128" height="128" style={{ transform: "rotate(-90deg)" }}>
-            <circle cx="64" cy="64" r="54" fill="none" stroke="#EAF2EA" strokeWidth="10" />
-            <circle cx="64" cy="64" r="54" fill="none" stroke={info.color} strokeWidth="10"
-              strokeDasharray={circumference}
-              strokeDashoffset={circumference * (1 - progress)}
-              strokeLinecap="round"
-              style={{ transition: "stroke-dashoffset 1s linear" }}
-            />
-          </svg>
-          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <p style={{ fontFamily: "Georgia, serif", fontSize: 20, color: "#2D3B2E", margin: 0 }}>
-              {fastStart ? fmtTime(elapsed) : "00:00:00"}
-            </p>
-            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: 0 }}>
-              {fastStart ? (() => { const end = new Date(fastStart + goalHours * 3600000); const h = end.getHours() % 12 || 12; const m = end.getMinutes(); const ap = end.getHours() >= 12 ? "pm" : "am"; return `ends ${h}:${m < 10 ? "0" : ""}${m}${ap}`; })() : "ready"}
-            </p>
-          </div>
-        </div>
-
-        {/* Goal selector */}
-        
-
+      {/* Fasting Timer — Arc for women, Bar for men */}
+      <div style={{ margin: "12px 16px", background: mode === "fast" ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.92)", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.2)" : "0.5px solid #dce8dc", padding: 16, position: "relative" }}>
+        {mode === "fast" ? (
+          <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div>
+                <p style={{ fontFamily: "sans-serif", fontSize: 9, color: "#3a5a3a", letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 2px" }}>Fasting window</p>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#e8e0ce", margin: 0 }}>{fastStart ? "In progress ⚡" : "Ready to begin"}</p>
+              </div>
+              <span style={{ fontSize: 9, color: "#C9A84C", background: "rgba(201,168,76,0.1)", border: "0.5px solid rgba(201,168,76,0.3)", borderRadius: 4, padding: "3px 8px", letterSpacing: "0.08em" }}>{goalHours}H FAST</span>
+            </div>
+            <div style={{ textAlign: "center", marginBottom: 10 }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 38, color: "#e8e0ce", margin: 0, letterSpacing: "0.02em", lineHeight: 1 }}>{fastStart ? fmtTime(elapsed) : "00:00:00"}</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 9, color: "#3a5a3a", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 4 }}>Hours fasted</p>
+            </div>
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                <span style={{ fontSize: 8, color: "#3a5a3a", textTransform: "uppercase", letterSpacing: "0.06em" }}>0h</span>
+                <span style={{ fontSize: 8, color: "#C9A84C" }}>{fastStart ? `${Math.round(progress * 100)}% complete ⚡` : "Begin your fast"}</span>
+                <span style={{ fontSize: 8, color: "#3a5a3a", textTransform: "uppercase", letterSpacing: "0.06em" }}>{goalHours}h</span>
+              </div>
+              <div style={{ height: 4, background: "rgba(184,148,60,0.08)", borderRadius: 2, overflow: "hidden" }}>
+                <div style={{ width: `${fastStart ? Math.min(progress * 100, 100) : 0}%`, height: "100%", background: "linear-gradient(90deg, #C9A84C, rgba(201,168,76,0.4))", borderRadius: 2, transition: "width 1s linear" }} />
+              </div>
+              <div style={{ display: "flex", gap: 3, marginTop: 3 }}>
+                {[...Array(4)].map((_, i) => <div key={i} style={{ flex: 1, height: 2, background: `rgba(184,148,60,${0.3 - i * 0.06})`, borderRadius: 1 }} />)}
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+              {fastStart ? [
+                { label: "Started", val: (() => { const d = new Date(fastStart); const h = d.getHours() % 12 || 12; const m = d.getMinutes(); const ap = d.getHours() >= 12 ? "pm" : "am"; return `${h}:${m < 10 ? "0" : ""}${m}${ap}`; })() },
+                { label: "Ends", val: (() => { const end = new Date(fastStart + goalHours * 3600000); const h = end.getHours() % 12 || 12; const m = end.getMinutes(); const ap = end.getHours() >= 12 ? "pm" : "am"; return `${h}:${m < 10 ? "0" : ""}${m}${ap}`; })() },
+                { label: "Left", val: (() => { const rem = Math.max(0, (fastStart + goalHours * 3600000) - Date.now()); const rh = Math.floor(rem / 3600000); const rm = Math.floor((rem % 3600000) / 60000); return `${rh}:${rm < 10 ? "0" : ""}${rm}`; })() },
+              ].map((item, i) => (
+                <div key={i} style={{ textAlign: "center" }}>
+                  <p style={{ fontSize: 7, color: "#3a5a3a", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 2px" }}>{item.label}</p>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 11, color: "#e8e0ce", margin: 0 }}>{item.val}</p>
+                </div>
+              )) : <p style={{ fontSize: 10, color: "#3a5a3a", margin: "0 auto" }}>Select your fasting window below</p>}
+            </div>
+          </>
+        ) : (
+          <>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 12px" }}>{fastStart ? "Fasting in progress 🌙" : "Start your fast"}</p>
+            <div style={{ position: "relative", width: 148, height: 148, margin: "0 auto 12px" }}>
+              <svg width="148" height="148" style={{ transform: "rotate(-90deg)" }}>
+                <circle cx="74" cy="74" r="62" fill="none" stroke="rgba(168,120,152,0.12)" strokeWidth="10" />
+                <circle cx="74" cy="74" r="62" fill="none" stroke="url(#wGrad)" strokeWidth="10"
+                  strokeDasharray={2 * Math.PI * 62}
+                  strokeDashoffset={2 * Math.PI * 62 * (1 - (fastStart ? Math.min(progress, 1) : 0))}
+                  strokeLinecap="round"
+                  style={{ transition: "stroke-dashoffset 1s linear" }}
+                />
+                <defs>
+                  <linearGradient id="wGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#A87898"/>
+                    <stop offset="100%" stopColor="#C4A0BA"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 22, color: "#6B4E5E", margin: 0, lineHeight: 1 }}>{fastStart ? fmtTime(elapsed) : "00:00:00"}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 9, color: "#b8a0b0", margin: "4px 0 0", letterSpacing: "0.04em" }}>
+                  {fastStart ? (() => { const end = new Date(fastStart + goalHours * 3600000); const h = end.getHours() % 12 || 12; const m = end.getMinutes(); const ap = end.getHours() >= 12 ? "pm" : "am"; return `ends ${h}:${m < 10 ? "0" : ""}${m}${ap}`; })() : "ready"}
+                </p>
+                {fastStart && <p style={{ fontFamily: "sans-serif", fontSize: 8, color: "#A87898", margin: "3px 0 0" }}>{Math.round(progress * 100)}% ✦</p>}
+              </div>
+            </div>
+          </>
+        )}
         {fastStart ? (
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={stopFast} style={{ ...s.btn, background: mode === "fast" ? "#2D5A3D" : "#C97B7B", flex: 1 }}>End Fast</button>
-            <button onClick={() => setShowEditFast(!showEditFast)} style={{ background: "#F0F6F0", border: "0.5px solid #C5D9C5", borderRadius: 50, padding: "0 16px", fontFamily: "sans-serif", fontSize: 13, color: "#5C7F60", cursor: "pointer" }}>✏️</button>
+            <button onClick={stopFast} style={{ ...s.btn, background: mode === "fast" ? "linear-gradient(135deg,#1a3a2a,#2D5A3D)" : "linear-gradient(135deg,#8B5E7A,#7D5490)", color: mode === "fast" ? "#C9A84C" : "#fff", flex: 1, letterSpacing: mode === "fast" ? "0.06em" : "0" }}>
+              {mode === "fast" ? "END FAST ›" : "End Fast ✦"}
+            </button>
+            <button onClick={() => setShowEditFast(!showEditFast)} style={{ background: mode === "fast" ? "rgba(184,148,60,0.06)" : "#F0F6F0", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.3)" : "0.5px solid #C5D9C5", borderRadius: mode === "fast" ? 5 : 50, padding: "0 16px", fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#C9A84C" : "#5C7F60", cursor: "pointer" }}>✏️</button>
           </div>
         ) : (
-          <button onClick={startFast} style={{ ...s.btn, opacity: goalHours ? 1 : 0.4 }}>Begin Fast 🌙</button>
+          <button onClick={startFast} style={{ ...s.btn, background: mode === "fast" ? "rgba(184,148,60,0.06)" : "linear-gradient(135deg,#8B5E7A,#7D5490)", color: mode === "fast" ? "#C9A84C" : "#fff", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.3)" : "none", letterSpacing: mode === "fast" ? "0.1em" : "0", opacity: goalHours ? 1 : 0.5 }}>
+            {mode === "fast" ? "BEGIN FAST ›" : "Begin Fast 🌙"}
+          </button>
         )}
         {showEditFast && fastStart && (
           <div style={{ background: "#F8FAF8", borderRadius: 16, padding: "16px", border: "0.5px solid #dce8dc", marginTop: 8 }}>
@@ -420,22 +464,22 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
       )}
 
       {/* Water tracker - both modes */}
-      <div style={{ margin: "0 16px 12px", background: "#fff", borderRadius: 18, padding: "14px 16px", border: "0.5px solid #dce8dc" }}>
+      <div style={{ margin: "0 16px 12px", background: mode === "fast" ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.7)", borderRadius: 18, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.15)" : "0.5px solid rgba(160,120,145,0.2)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-          <p style={{ fontFamily: "sans-serif", fontSize: 11, letterSpacing: "1px", color: "#7BA8C9", margin: 0, textTransform: "uppercase" }}>💧 Water today</p>
-          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: 0 }}>Goal: 8 glasses</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, letterSpacing: "1px", color: mode === "fast" ? "#C9A84C" : "#A87898", margin: 0, textTransform: "uppercase" }}>💧 Water today</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#3a5a3a" : "#b8a0b0", margin: 0 }}>Goal: 8 glasses</p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "center" }}>
-          <button onClick={() => { const w = Math.max(0, waterToday - 1); localStorage.setItem("lf_water_today", w); setWaterToday(w); }} style={{ width: 32, height: 32, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#EAF2F9", fontSize: 16, cursor: "pointer", color: "#7BA8C9" }}>−</button>
+          <button onClick={() => { const w = Math.max(0, waterToday - 1); localStorage.setItem("lf_water_today", w); setWaterToday(w); }} style={{ width: 32, height: 32, borderRadius: mode === "fast" ? 5 : "50%", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.3)" : "0.5px solid rgba(160,120,145,0.2)", background: mode === "fast" ? "rgba(184,148,60,0.06)" : "rgba(168,120,152,0.08)", fontSize: 16, cursor: "pointer", color: mode === "fast" ? "#C9A84C" : "#A87898" }}>−</button>
           <div style={{ textAlign: "center" }}>
-            <p style={{ fontFamily: "Georgia, serif", fontSize: 26, color: "#7BA8C9", margin: 0 }}>{waterToday}</p>
-            <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#A8BEA8", margin: 0 }}>glasses</p>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 26, color: mode === "fast" ? "#e8e0ce" : "#6B4E5E", margin: 0 }}>{waterToday}</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#3a5a3a" : "#b8a0b0", margin: 0 }}>glasses</p>
           </div>
-          <button onClick={() => { const w = Math.min(15, waterToday + 1); localStorage.setItem("lf_water_today", w); setWaterToday(w); }} style={{ width: 32, height: 32, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#EAF2F9", fontSize: 16, cursor: "pointer", color: "#7BA8C9" }}>+</button>
+          <button onClick={() => { const w = Math.min(15, waterToday + 1); localStorage.setItem("lf_water_today", w); setWaterToday(w); }} style={{ width: 32, height: 32, borderRadius: mode === "fast" ? 5 : "50%", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.3)" : "0.5px solid rgba(160,120,145,0.2)", background: mode === "fast" ? "rgba(184,148,60,0.06)" : "rgba(168,120,152,0.08)", fontSize: 16, cursor: "pointer", color: mode === "fast" ? "#C9A84C" : "#A87898" }}>+</button>
         </div>
         <div style={{ display: "flex", gap: 4, marginTop: 10 }}>
           {[...Array(8)].map((_, i) => (
-            <div key={i} style={{ flex: 1, height: 6, borderRadius: 3, background: i < waterToday ? "#7BA8C9" : "#EAF2F9" }} />
+            <div key={i} style={{ flex: 1, height: mode === "fast" ? 3 : 5, borderRadius: 2, background: i < waterToday ? (mode === "fast" ? "#C9A84C" : "#A87898") : (mode === "fast" ? "rgba(184,148,60,0.08)" : "rgba(168,120,152,0.1)") }} />
           ))}
         </div>
       </div>
@@ -447,7 +491,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
             <span style={{ fontSize: 14 }}>🔥</span> {streak} day{streak !== 1 ? "s" : ""} fasting streak
           </div>
         </div>
-        <div style={{ fontFamily: "sans-serif", fontSize: 10, color: "#A8BEA8", letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 10 }}>Your badges</div>
+        <div style={{ fontFamily: "sans-serif", fontSize: 9, color: mode === "fast" ? "#3a5a3a" : "#b8a0b0", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Your badges</div>
         <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4 }}>
           {[
             { icon: "🗓️", name: "Streak", prog: `${streak} day${streak !== 1 ? "s" : ""}`, earned: streak > 0 },
@@ -458,13 +502,14 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
             { icon: "🧘", name: "Listen", prog: streak >= 7 ? "Earned" : `${Math.min(streak, 7)} / 7`, earned: streak >= 7 },
           ].map((b, i) => (
             <div key={i} style={{
-              flexShrink: 0, background: b.earned ? "#F0F6F0" : "#fff",
-              border: b.earned ? "0.5px solid #C5D9C5" : "0.5px solid #dce8dc",
-              borderRadius: 14, padding: "11px 12px", textAlign: "center", minWidth: 76,
+              flexShrink: 0,
+              background: mode === "fast" ? (b.earned ? "rgba(201,168,76,0.08)" : "rgba(255,255,255,0.03)") : (b.earned ? "rgba(168,120,152,0.08)" : "rgba(255,255,255,0.6)"),
+              border: mode === "fast" ? (b.earned ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(184,148,60,0.1)") : (b.earned ? "0.5px solid rgba(168,120,152,0.3)" : "0.5px solid rgba(160,120,145,0.15)"),
+              borderRadius: mode === "fast" ? 8 : 14, padding: "11px 12px", textAlign: "center", minWidth: 76,
             }}>
-              <div style={{ fontSize: 19, marginBottom: 4, opacity: b.earned ? 1 : 0.3 }}>{b.icon}</div>
-              <div style={{ fontFamily: "sans-serif", fontSize: 9, color: b.earned ? "#5C7F60" : "#A8BEA8", fontWeight: 500, letterSpacing: "0.03em", textTransform: "uppercase" }}>{b.name}</div>
-              <div style={{ fontFamily: "sans-serif", fontSize: 9, color: "#A8BEA8", marginTop: 2 }}>{b.prog}</div>
+              <div style={{ fontSize: 19, marginBottom: 4, opacity: b.earned ? 1 : 0.25 }}>{b.icon}</div>
+              <div style={{ fontFamily: "sans-serif", fontSize: 9, color: mode === "fast" ? (b.earned ? "#C9A84C" : "#3a5a3a") : (b.earned ? "#7D5470" : "#b8a0b0"), fontWeight: 500, letterSpacing: "0.05em", textTransform: "uppercase" }}>{b.name}</div>
+              <div style={{ fontFamily: "sans-serif", fontSize: 9, color: mode === "fast" ? "#3a5a3a" : "#b8a0b0", marginTop: 2 }}>{b.prog}</div>
             </div>
           ))}
         </div>
