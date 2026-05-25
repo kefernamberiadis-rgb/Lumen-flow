@@ -437,12 +437,12 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
       <div style={{ display: "flex", gap: 8, margin: "0 16px 12px" }}>
         {[{ h: 12, icon: "🌱", label: "Beginner" }, { h: 16, icon: "🌿", label: "Intermediate" }, { h: 18, icon: "🔥", label: "Advanced" }].map(({ h, icon, label }) => (
           <div key={h} onClick={() => setGoalHours(h)} style={{
-            flex: 1, background: goalHours === h ? (mode === "fast" ? "rgba(26,58,42,0.9)" : "#F0F6F0") : (mode === "fast" ? "rgba(255,255,255,0.05)" : "#fff"),
-            border: goalHours === h ? (mode === "fast" ? "1.5px solid #7A9E7E" : "1.5px solid #7A9E7E") : (mode === "fast" ? "1px solid rgba(122,158,126,0.2)" : "1px solid #dce8dc"),
+            flex: 1, background: goalHours === h ? (mode === "fast" ? "rgba(26,58,42,0.9)" : "rgba(212,160,184,0.1)") : (mode === "fast" ? "rgba(255,255,255,0.05)" : "#fff"),
+            border: goalHours === h ? (mode === "fast" ? "1.5px solid #7A9E7E" : "1.5px solid #D4A0B8") : (mode === "fast" ? "1px solid rgba(122,158,126,0.2)" : "1px solid #dce8dc"),
             borderRadius: 16, padding: "12px 8px", textAlign: "center", cursor: "pointer",
           }}>
             <div style={{ fontSize: 20, marginBottom: 4 }}>{icon}</div>
-            <div style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 600, color: goalHours === h ? (mode === "fast" ? "#7A9E7E" : "#5C7F60") : (mode === "fast" ? "#A8BEA8" : "#4a5a4b"), letterSpacing: "0.02em" }}>{label}</div>
+            <div style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 600, color: goalHours === h ? (mode === "fast" ? "#7A9E7E" : "#A0607A") : (mode === "fast" ? "#A8BEA8" : "#4a5a4b"), letterSpacing: "0.02em" }}>{label}</div>
             <div style={{ fontFamily: "sans-serif", fontSize: 10, color: "#A8BEA8", marginTop: 2 }}>{h}h</div>
           </div>
         ))}
@@ -487,7 +487,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
       {/* Streak + Badges */}
       <div style={{ padding: "4px 16px 8px" }}>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
-          <div style={{ background: mode === "fast" ? "rgba(26,58,42,0.9)" : "#F0F6F0", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.4)" : "0.5px solid #C5D9C5", borderRadius: 50, padding: "6px 18px", display: "flex", alignItems: "center", gap: 6, fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#5C7F60" }}>
+          <div style={{ background: mode === "fast" ? "rgba(26,58,42,0.9)" : "rgba(212,160,184,0.12)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.4)" : "0.5px solid #D4A0B8", borderRadius: 50, padding: "6px 18px", display: "flex", alignItems: "center", gap: 6, fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#A0607A" }}>
             <span style={{ fontSize: 14 }}>🔥</span> {streak} day{streak !== 1 ? "s" : ""} fasting streak
           </div>
         </div>
@@ -682,7 +682,7 @@ if (saved) {
       <button onClick={() => setSaved(null)} style={{ width: "100%", padding: "10px", borderRadius: 50, border: "0.5px solid #dce8dc", background: "#fff", color: "#5C7F60", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", marginBottom: 20 }}>✎ Edit Check-In</button>
       <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>Your Lumen Trends ✦</p>
       <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Last 7 days</p>
-      <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+      <div style={{ background: "linear-gradient(135deg, #F0F8F0, #fff)", borderRadius: 18, border: "0.5px solid rgba(122,158,126,0.3)", padding: "14px 16px", marginBottom: 12 }}>
         <p style={{ fontSize: 11, color: "#7A9E7E", fontWeight: 600, margin: "0 0 10px" }}>⚡ Energy</p>
         <svg width="100%" height="80" viewBox="0 0 300 80" preserveAspectRatio="none">
           {days7.map((day, i) => { const val = day.data?.energy || 0; const x = (i/6)*260+20; const y = val ? 70-((val-1)/4)*55 : null; return y ? <circle key={i} cx={x} cy={y} r="4" fill={i===6?"#7A9E7E":"#C5D9C5"} /> : null; })}
@@ -690,7 +690,7 @@ if (saved) {
           {days7.map((day, i) => <text key={i} x={(i/6)*260+20} y="78" textAnchor="middle" fontSize="8" fill="#A8BEA8">{day.label}</text>)}
         </svg>
       </div>
-      <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+      <div style={{ background: "linear-gradient(135deg, #F5F0FF, #fff)", borderRadius: 18, border: "0.5px solid rgba(155,123,201,0.3)", padding: "14px 16px", marginBottom: 12 }}>
         <p style={{ fontSize: 11, color: "#9B7BC9", fontWeight: 600, margin: "0 0 10px" }}>🌙 Sleep quality</p>
         <svg width="100%" height="80" viewBox="0 0 300 80" preserveAspectRatio="none">
           {days7.map((day, i) => { const val = day.data?.sleep || 0; const x = (i/6)*260+20; const y = val ? 70-((val-1)/4)*55 : null; return y ? <circle key={i} cx={x} cy={y} r="4" fill={i===6?"#9B7BC9":"#D4C5E9"} /> : null; })}
@@ -698,7 +698,7 @@ if (saved) {
           {days7.map((day, i) => <text key={i} x={(i/6)*260+20} y="78" textAnchor="middle" fontSize="8" fill="#A8BEA8">{day.label}</text>)}
         </svg>
       </div>
-      <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+      <div style={{ background: "linear-gradient(135deg, #EAF4FF, #fff)", borderRadius: 18, border: "0.5px solid rgba(123,168,201,0.3)", padding: "14px 16px", marginBottom: 12 }}>
         <p style={{ fontSize: 11, color: "#7BA8C9", fontWeight: 600, margin: "0 0 10px" }}>💧 Water intake</p>
         <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 60 }}>
           {days7.map((day, i) => { const val = Math.min(day.data?.water || 0, 10); return (
@@ -767,7 +767,7 @@ if (saved) {
   }
   return (
     <div style={{ padding: "16px 16px 90px", background: mode === "fast" ? "linear-gradient(160deg, #1a2f1e 0%, #1e3524 40%, #162a1a 100%)" : "linear-gradient(160deg, #E8F5E9 0%, #F3E5F5 35%, #FCE4EC 70%, #E8EAF6 100%)", minHeight: "100vh" }}>
-      <h3 style={{ ...s.title, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E" }}>Daily Check-In</h3>
+      <h3 style={{ ...s.title, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E" }}>Daily Check-In {mode !== "fast" ? "🌸" : ""}</h3>
       <p style={{ ...s.label, marginBottom: 20 }}>How are you feeling today?</p>
 
       <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
@@ -1087,7 +1087,7 @@ if (saved) {
         />
       </div>
 
-      <button onClick={save} style={s.btn}>Save Check-In ✅</button>
+      <button onClick={save} style={{ ...s.btn, background: mode === "fast" ? "#8FAF8F" : "linear-gradient(135deg, #C4809A, #A87898)" }}>Save Check-In ✅</button>
     </div>
   );
 }
@@ -2301,14 +2301,14 @@ export default function App() {
         </button>
       </div>
       <div style={s.container}>
-        {screen === "home"     && <HomeScreen     name={settings.name} lastPeriod={settings.lastPeriod} mode={settings.mode} settings={settings} />}
-        {screen === "calendar" && <CalendarScreen lastPeriod={settings.lastPeriod} cycleLength={settings.cycleLength || 28} periodLength={settings.periodLength || 7} mode={settings.mode} onSave={(date, cycleLen, periodLen) => saveSettings({...settings, lastPeriod: date, cycleLength: cycleLen || settings.cycleLength || 28, periodLength: periodLen || settings.periodLength || 7})} onNavigate={setScreen} />}
-       {screen === "recipes"  && <RecipesScreen phase={getPhase(getCycleDay(settings.lastPeriod))} onNavigate={setScreen} mode={settings.mode} />}
-        {screen === "checkin"  && <CheckInScreen mode={settings.mode} onNavigate={setScreen} />}
-        {screen === "learn"    && <LearnScreen mode={settings.mode} />}
+        {screen === "home"     && <HomeScreen     name={settings.name} lastPeriod={settings.lastPeriod} mode={settings.mode || "cycle"} settings={settings} />}
+        {screen === "calendar" && <CalendarScreen lastPeriod={settings.lastPeriod} cycleLength={settings.cycleLength || 28} periodLength={settings.periodLength || 7} mode={settings.mode || "cycle"} onSave={(date, cycleLen, periodLen) => saveSettings({...settings, lastPeriod: date, cycleLength: cycleLen || settings.cycleLength || 28, periodLength: periodLen || settings.periodLength || 7})} onNavigate={setScreen} />}
+       {screen === "recipes"  && <RecipesScreen phase={getPhase(getCycleDay(settings.lastPeriod))} onNavigate={setScreen} mode={settings.mode || "cycle"} />}
+        {screen === "checkin"  && <CheckInScreen mode={settings.mode || "cycle"} onNavigate={setScreen} />}
+        {screen === "learn"    && <LearnScreen mode={settings.mode || "cycle"} />}
         {screen === "settings" && <SettingsScreen settings={settings} onSave={saveSettings} />}
 
-.        <BottomNav current={screen} onChange={setScreen} />
+<BottomNav current={screen} onChange={setScreen} />
       </div>
     </div>
   );
