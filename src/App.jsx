@@ -623,8 +623,8 @@ if (saved) {
       return "Every check-in is a small act of self-awareness. You are building a picture of your body over time — that is powerful.";
     })();
     return (
-    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif" }}>
-      <div style={{ background: "linear-gradient(135deg, #F0F6F0, #EAF2F9)", borderRadius: 20, padding: 20, marginBottom: 16, textAlign: "center", border: "0.5px solid #C5D9C5" }}>
+    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: "linear-gradient(160deg, #E8EAF6 0%, #F3E5F5 35%, #FCE4EC 65%, #FFF8E7 100%)", minHeight: "100vh" }}>
+      <div style={{ background: "rgba(255,255,255,0.75)", borderRadius: 20, padding: 20, marginBottom: 16, textAlign: "center", border: "0.5px solid rgba(180,160,210,0.3)" }}>
         <p style={{ fontSize: 28, marginBottom: 6 }}>✦</p>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 18, color: "#2D3B2E", marginBottom: 4 }}>Today's check-in saved!</p>
         <p style={{ fontSize: 12, color: "#8FA090" }}>Come back tomorrow 🌿</p>
@@ -766,11 +766,11 @@ if (saved) {
     );
   }
   return (
-    <div style={{ padding: "16px 16px 90px", background: mode === "fast" ? "linear-gradient(160deg, #1a2f1e 0%, #1e3524 40%, #162a1a 100%)" : "linear-gradient(160deg, #E8F5E9 0%, #F3E5F5 35%, #FCE4EC 70%, #E8EAF6 100%)", minHeight: "100vh" }}>
+    <div style={{ padding: "16px 16px 90px", background: mode === "fast" ? "linear-gradient(160deg, #1a2f1e 0%, #1e3524 40%, #162a1a 100%)" : "linear-gradient(160deg, #E8EAF6 0%, #F3E5F5 30%, #FCE4EC 60%, #FFF8E7 100%)", minHeight: "100vh" }}>
       <h3 style={{ ...s.title, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E" }}>Daily Check-In {mode !== "fast" ? "🌸" : ""}</h3>
       <p style={{ ...s.label, marginBottom: 20 }}>How are you feeling today?</p>
 
-      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>⚡ Energy</p>
         <div style={{ display: "flex", justifyContent: "space-around" }}>
           {ratingEmojis.map((e, i) => (
@@ -782,7 +782,7 @@ if (saved) {
         </div>
       </div>
 
-      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>💭 How are you feeling?</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: namedMood ? 12 : 0 }}>
           {Object.entries(NAMED_MOODS).map(([name, m]) => (
@@ -822,7 +822,7 @@ if (saved) {
       </div>
 
       {mode !== "fast" && (
-      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🩸 Flow</p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {[
@@ -845,7 +845,7 @@ if (saved) {
       )}
 
       {mode !== "fast" && (
-      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🦠 Gut health</p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {[
@@ -869,7 +869,7 @@ if (saved) {
       )}
 
       {mode === "fast" && (
-      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🧠 Mental clarity</p>
         <div style={{ display: "flex", justifyContent: "space-around" }}>
           {ratingEmojis.map((e, i) => (
@@ -883,7 +883,7 @@ if (saved) {
       )}
 
       {mode === "fast" && (
-      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>💪 Workout performance</p>
         <div style={{ display: "flex", justifyContent: "space-around" }}>
           {ratingEmojis.map((e, i) => (
@@ -897,7 +897,7 @@ if (saved) {
       )}
 
       {mode === "fast" && (
-      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🦠 Gut health</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {[
@@ -920,7 +920,7 @@ if (saved) {
       )}
 
       {mode === "fast" && (
-      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🩺 Symptoms</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Select all that apply today</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -937,7 +937,7 @@ if (saved) {
             const isOn = symptoms.includes(sym.val);
             return (
               <button key={sym.val} onClick={() => setSymptoms(prev => prev.includes(sym.val) ? prev.filter(x => x !== sym.val) : [...prev, sym.val])}
-                style={{ padding: "7px 12px", borderRadius: 100, border: "none", background: isOn ? "#7A9E7E" : "#EAF2EA", color: isOn ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                style={{ padding: "7px 12px", borderRadius: 100, border: "none", background: isOn ? "rgba(122,158,126,0.3)" : "rgba(122,158,126,0.08)", color: isOn ? "#a8d4a8" : "#7A9E7E", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
                 {sym.emoji} {sym.label}
               </button>
             );
@@ -947,7 +947,7 @@ if (saved) {
       )}
 
       {mode !== "fast" && (
-      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🩺 Symptoms</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Select all that apply today</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -977,7 +977,7 @@ if (saved) {
       </div>
       )}
 
-      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🌙 Sleep quality</p>
         <div style={{ display: "flex", justifyContent: "space-around" }}>
           {["😴","😪","😐","🙂","✨"].map((e, i) => (
@@ -990,7 +990,7 @@ if (saved) {
         
       </div>
 
-      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 4px" }}>🏃 Movement</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Log each activity separately</p>
         {movements.map((m, i) => (
@@ -1049,7 +1049,7 @@ if (saved) {
         <button onClick={addMovement} style={{ width: "100%", padding: 10, borderRadius: 12, border: "1px dashed #C5D9C5", background: "none", color: "#7A9E7E", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>+ Add movement</button>
       </div>
 
-      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>💧 Water intake</p>
         <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "center" }}>
           <button onClick={() => setWater(Math.max(0, water - 1))} style={{ width: 36, height: 36, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#F0F6F0", fontSize: 18, cursor: "pointer" }}>−</button>
@@ -1061,7 +1061,7 @@ if (saved) {
         </div>
       </div>
 
-      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 4px" }}>🌿 Body check</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Your body changes throughout your cycle and fasting journey. This is just a snapshot — not a score.</p>
         <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
@@ -1077,7 +1077,7 @@ if (saved) {
         />
       </div>
 
-      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "#F8FAF8", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid #dce8dc" }}>
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>📝 Notes</p>
         <textarea
           value={notes}
@@ -1123,11 +1123,11 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
   const selInfo  = PHASE_INFO[selPhase];
 
   return (
-    <div style={{ padding: "16px 16px 90px" }}>
+    <div style={{ padding: "16px 16px 90px", background: mode === "fast" ? "linear-gradient(180deg, #0c1410 0%, #141e16 50%, #1a2a0f 100%)" : "linear-gradient(160deg, #E8EAF6 0%, #F3E5F5 35%, #FCE4EC 65%, #FFF8E7 100%)", minHeight: "100vh" }}>
       {/* Mini Dashboard */}
       {lastPeriod && mode !== "fast" && (
-        <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "16px", marginBottom: 14 }}>
-          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>Your cycle overview</p>
+        <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.75)", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.25)" : "0.5px solid rgba(180,160,200,0.3)", padding: "16px", marginBottom: 14 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 12px" }}>Your cycle overview</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
             <div style={{ background: "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
               <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Last period</p>
@@ -1171,7 +1171,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <button onClick={() => { if (month === 0) { setMonth(11); setYear(y => y-1); } else setMonth(m => m-1); }}
           style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#8FAF8F" }}>‹</button>
-        <h3 style={{ ...s.title, margin: 0 }}>{MONTHS[month]} {year}</h3>
+        <h3 style={{ ...s.title, margin: 0, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E" }}>{MONTHS[month]} {year}</h3>
         <button onClick={() => { if (month === 11) { setMonth(0); setYear(y => y+1); } else setMonth(m => m+1); }}
           style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#8FAF8F" }}>›</button>
       </div>
@@ -1260,8 +1260,8 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
       </div>
 
       ) : (
-        <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "16px", marginTop: 12 }}>
-          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>⚡ Fasting overview</p>
+        <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "#fff", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.25)" : "0.5px solid #dce8dc", padding: "16px", marginTop: 12 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 12px" }}>⚡ Fasting overview</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {(() => {
               const fastDays = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
@@ -1284,9 +1284,9 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
                 { label: "Best window", value: "16h", icon: "⏰" },
               ];
               return stats.map((stat, i) => (
-                <div key={i} style={{ background: "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
-                  <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{stat.icon} {stat.label}</p>
-                  <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: 0, fontWeight: 600 }}>{stat.value}</p>
+                <div key={i} style={{ background: mode === "fast" ? "rgba(201,168,76,0.08)" : "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#C9A84C" : "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{stat.icon} {stat.label}</p>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: 0, fontWeight: 600 }}>{stat.value}</p>
                 </div>
               ));
             })()}
@@ -1443,9 +1443,9 @@ function LearnScreen({ mode }) {
   ];
 
   return (
-    <div style={{ padding: "0 0 90px" }}>
+    <div style={{ padding: "0 0 90px", background: mode === "fast" ? "linear-gradient(180deg, #0c1410 0%, #141e16 100%)" : "linear-gradient(160deg, #F5EDE8 0%, #F9EEF2 40%, #F2EDF5 100%)", minHeight: "100vh" }}>
       <div style={{ padding: "16px 16px 12px" }}>
-        <h3 style={s.title}>Learn & Optimise</h3>
+        <h3 style={{ ...s.title, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E" }}>Learn & Optimise</h3>
         <p style={{ ...s.label, marginBottom: 0 }}>Knowledge synced to your cycle</p>
       </div>
 
@@ -1523,7 +1523,7 @@ function LearnScreen({ mode }) {
               { dot: "#5C9E6E", title: "Thyroid condition", body: "Affects metabolism and energy regulation significantly.\n\nImportant: Fasting can affect T3 levels. Always consult your doctor first. If you do fast, keep to 12–13h maximum and monitor how you feel closely." },
               { dot: "#9B7BC9", title: "Fibroids", body: "Non-cancerous growths in the uterus, often linked to estrogen dominance.\n\nTips: Reducing excess estrogen through diet and fasting may help. Focus on anti-inflammatory foods. 12–14h windows in the follicular phase are a gentle start." },
             ].map((item, i) => (
-              <div key={i} style={{ background: "#F8FAF8", borderRadius: 16, padding: "14px 16px", border: "0.5px solid #dce8dc" }}>
+              <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 16, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.15)" : "0.5px solid rgba(200,170,180,0.3)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                   <div style={{ width: 8, height: 8, borderRadius: "50%", background: item.dot, flexShrink: 0 }} />
                   <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: 0 }}>{item.title}</p>
@@ -1546,9 +1546,9 @@ function LearnScreen({ mode }) {
               { title: "🧠 Mental clarity + focus", body: "Ketones produced during fasting are a more efficient brain fuel than glucose. Many men report their sharpest thinking 14–18h into a fast.\n\nFasting increases BDNF which supports neuroplasticity, learning and mood regulation." },
               { title: "🔄 Autophagy + cellular repair", body: "Autophagy is your body's cellular clean-up process — damaged proteins get recycled and rebuilt. Kicks in around 16–18h of fasting.\n\nSupports joint health, reduces inflammation from heavy training, and is associated with slower cellular ageing." },
             ].map((item, i) => (
-              <div key={i} style={{ background: "#F8FAF8", borderRadius: 16, padding: "14px 16px", border: "0.5px solid #dce8dc" }}>
-                <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 6px" }}>{item.title}</p>
-                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0, lineHeight: 1.8, whiteSpace: "pre-line" }}>{item.body}</p>
+              <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 16, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.15)" : "0.5px solid rgba(200,170,180,0.3)" }}>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 6px" }}>{item.title}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#6b7b6b", margin: 0, lineHeight: 1.8, whiteSpace: "pre-line" }}>{item.body}</p>
               </div>
             ))}
           </div>
@@ -1567,9 +1567,9 @@ function LearnScreen({ mode }) {
               { title: "Autophagy", body: "Your body's cellular recycling system. Damaged cells get broken down and rebuilt. Activated around 16–18h of fasting. Linked to longevity and reduced inflammation." },
               { title: "BDNF", body: "Brain-derived neurotrophic factor. Supports brain cell growth, learning and mood. Fasting increases BDNF — which is why mental clarity often improves during a fast." },
             ].map((item, i) => (
-              <div key={i} style={{ background: "#F8FAF8", borderRadius: 16, padding: "14px 16px", border: "0.5px solid #dce8dc" }}>
-                <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 6px" }}>{item.title}</p>
-                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0, lineHeight: 1.8 }}>{item.body}</p>
+              <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 16, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.15)" : "0.5px solid rgba(200,170,180,0.3)" }}>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 6px" }}>{item.title}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#6b7b6b", margin: 0, lineHeight: 1.8 }}>{item.body}</p>
               </div>
             ))}
           </div>
@@ -1931,9 +1931,9 @@ function RecipesScreen({ phase, onNavigate, mode }) {
   const cravingKeys = Object.keys(CRAVINGS);
 
   return (
-    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif" }}>
-      <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: "#2D3B2E", margin: "0 0 4px" }}>Nourish ✨</h2>
-      <p style={{ fontSize: 13, color: "#8FA090", margin: "0 0 16px" }}>Food craving or soul craving?</p>
+    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: mode === "fast" ? "linear-gradient(160deg, #0c1410 0%, #141e16 50%, #1a2a0f 100%)" : "linear-gradient(160deg, #E8F5E9 0%, #F0F7EE 40%, #EAF2E4 100%)", minHeight: "100vh" }}>
+      <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 4px" }}>Nourish ✨</h2>
+      <p style={{ fontSize: 13, color: mode === "fast" ? "#3a5a3a" : "#8FA090", margin: "0 0 16px" }}>Food craving or soul craving?</p>
 
       {/* Two tappable sections */}
       <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
@@ -2004,13 +2004,13 @@ function RecipesScreen({ phase, onNavigate, mode }) {
             { icon: "⏰", title: "Best fasting windows", color: "#9B7BC9", bg: "#F5F0FF", tips: ["12:12 — great for beginners, fast overnight", "16:8 — most popular, eat between 12pm and 8pm", "18:6 — more fat burning, eat between 2pm and 8pm", "20:4 — advanced, one main meal plus a small window", "Listen to your body — consistency beats perfection"] },
             { icon: "🚫", title: "What breaks a fast", color: "#C97B7B", bg: "#FDEAEA", tips: ["Milk, cream, or sugar in coffee or tea", "Any food — even small amounts trigger insulin", "Juice, smoothies, or flavoured drinks", "Chewing gum with sugar", "BCAA supplements with calories"] },
           ].map((section, i) => (
-            <div key={i} style={{ background: section.bg, borderRadius: 18, padding: "16px", border: `0.5px solid ${section.color}33`, marginBottom: 12 }}>
+            <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : section.bg, borderRadius: 18, padding: "16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : `0.5px solid ${section.color}33`, marginBottom: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                 <span style={{ fontSize: 22 }}>{section.icon}</span>
-                <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: section.color, margin: 0 }}>{section.title}</p>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#C9A84C" : section.color, margin: 0 }}>{section.title}</p>
               </div>
               {section.tips.map((tip, j) => (
-                <p key={j} style={{ fontSize: 13, color: "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {tip}</p>
+                <p key={j} style={{ fontSize: 13, color: mode === "fast" ? "#a8c4a8" : "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {tip}</p>
               ))}
             </div>
           ))}
@@ -2037,6 +2037,8 @@ function RecipesScreen({ phase, onNavigate, mode }) {
         </div>
       )}
 
+      <AiNourishCard mode={mode} />
+
       {nourishTab === "cravings" && mode !== "fast" && (
       <div onClick={() => onNavigate && onNavigate("calendar")} style={{ background: "#F8F0FF", borderRadius: 18, padding: "16px", border: "0.5px solid #D4C5E9", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -2049,6 +2051,63 @@ function RecipesScreen({ phase, onNavigate, mode }) {
         </div>
         <span style={{ fontSize: 20, color: "#9B7BC9" }}>›</span>
       </div>
+      )}
+    </div>
+  );
+}
+
+function AiNourishCard({ mode }) {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [asked, setAsked] = useState(false);
+
+  const ask = async () => {
+    setLoading(true);
+    setAsked(true);
+    try {
+      const hour = new Date().getHours();
+      const timeOfDay = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+      const context = mode === "fast"
+        ? `The user is in fasting/men's mode. It is ${timeOfDay}. Give a very short (3-4 sentences), practical suggestion for what to eat to break a fast or support fasting goals right now. Include one specific meal idea and one key nutrient reason. Be direct and masculine in tone.`
+        : `The user is cycle tracking. It is ${timeOfDay}. Give a very short (3-4 sentences), nurturing suggestion for what to eat right now to support hormonal health and energy. Include one specific meal idea and one key nutrient reason. Be warm and supportive in tone.`;
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: context }],
+        }),
+      });
+      const data = await response.json();
+      const text = data.content?.find(b => b.type === "text")?.text || "Try a balanced meal with protein, healthy fats and complex carbs right now.";
+      setResult(text);
+    } catch {
+      setResult("Try a balanced meal with protein, healthy fats and complex carbs right now.");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ background: mode === "fast" ? "linear-gradient(135deg, #1a3a2a, #0f2a1a)" : "linear-gradient(135deg, #F5F0FF, #FFF0F5)", borderRadius: 18, padding: "18px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(180,140,200,0.3)", marginBottom: 16, marginTop: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        <span style={{ fontSize: 22 }}>✨</span>
+        <div>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: 0 }}>What should I eat right now?</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#3a5a3a" : "#9B7BC9", margin: 0 }}>AI-powered · phase-synced</p>
+        </div>
+      </div>
+      {!asked ? (
+        <button onClick={ask} style={{ width: "100%", padding: "11px", borderRadius: 12, border: "none", background: mode === "fast" ? "rgba(201,168,76,0.12)" : "rgba(155,123,201,0.12)", color: mode === "fast" ? "#C9A84C" : "#9B7BC9", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>
+          Ask Lumen ✦
+        </button>
+      ) : loading ? (
+        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#3a5a3a" : "#9B7BC9", margin: 0, textAlign: "center", padding: "8px 0" }}>✨ thinking...</p>
+      ) : (
+        <div>
+          <p style={{ fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#a8c4a8" : "#4a3a5a", margin: "0 0 10px", lineHeight: 1.7 }}>{result}</p>
+          <button onClick={ask} style={{ background: "none", border: "none", fontSize: 11, color: mode === "fast" ? "#3a5a3a" : "#b8a0c8", cursor: "pointer", padding: 0 }}>↺ Ask again</button>
+        </div>
       )}
     </div>
   );
