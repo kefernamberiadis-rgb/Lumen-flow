@@ -1854,76 +1854,76 @@ function RecipesScreen({ phase, onNavigate, mode }) {
   const [cravingType, setCravingType] = useState([]);
   const [nourishTab, setNourishTab] = useState("cravings");
 
-  const CRAVINGS = {
+const CRAVINGS = {
     "Sweet": {
       emoji: "🍰",
-      insight: "You may be needing energy, comfort, or a gentle reward. Sweet cravings sometimes show up when you feel emotionally drained, tired, or simply in need of something soft.",
-      nourish: ["A piece of dark chocolate with almond butter", "Greek yogurt with honey and berries", "A banana with peanut butter", "Dates with a small handful of nuts", "A warm chai or golden milk", "Oat energy balls with maple syrup", "Fresh fruit with coconut cream"],
-      pause: ["Drink a glass of water first and wait 5 minutes", "Take 3 slow deep breaths", "Place your hand on your heart and ask what you really need", "Name 3 things you are grateful for right now", "Unclench your jaw and relax your shoulders"],
-      romanticize: ["Make your snack beautiful — use a nice plate", "Light a candle and sit somewhere cozy", "Put on soft music while you eat", "Make a warm drink and wrap yourself in a blanket", "Give yourself full permission to enjoy it slowly"]
+      insight: "You may be needing energy, comfort, or a gentle reward. Sweet cravings often show up when you feel emotionally drained, tired, or simply in need of something soft.",
+      nourish: ["Greek yogurt with berries, honey, and granola", "Chia pudding with mango or mixed fruit", "Smoothie bowl with banana, nut butter, and seeds", "Cottage cheese with fruit and cinnamon", "Coconut yogurt with mango and toasted coconut", "Banana with peanut or almond butter", "Dates stuffed with almond butter", "Dark chocolate with walnuts or almonds", "A warm chai or golden milk if you want something cozy"],
+      pause: ["Drink a glass of water first and wait 5 minutes", "Take 3 slow deep breaths and place your hand on your heart", "Name 3 things you are grateful for right now"],
+      romanticize: ["Serve your snack in a pretty bowl with toppings arranged beautifully", "Light a candle and sit somewhere soft and cozy", "Put on music that feels like a warm hug"]
     },
     "Salty": {
       emoji: "🧂",
-      insight: "You may be craving something steady, grounding, or replenishing. Salty cravings can sometimes show up when you feel depleted, stressed, or in need of comfort.",
-      nourish: ["Try soup or broth", "Eggs with avocado and a pinch of sea salt", "Pickles with cheese or hummus", "Roasted potatoes with olive oil and sea salt", "Crackers with tuna, chicken, or cottage cheese", "Popcorn or salted roasted chickpeas", "A balanced meal with protein, carbs, and electrolytes"],
-      pause: ["Drink a glass of water", "Place your hands on your chest in a butterfly manner and tap in a rhythm", "Put both feet flat on the floor", "Take 5 slow breaths", "Name 5 things you can see", "Relax your shoulders and unclench your jaw"],
-      romanticize: ["Make soup in your favourite bowl", "Sit outside for 5 minutes", "Light a candle while you eat", "Put on soft music", "Make the snack feel intentional and slow"]
+      insight: "Salty cravings often show up when you feel depleted, stressed, or in need of something grounding and replenishing.",
+      nourish: ["Crispy Caesar salad with chicken and parmesan", "Cobb salad with eggs, avocado, chicken, turkey bacon, and greens", "Crackers with tuna, cottage cheese, or avocado", "Roasted chickpeas with sea salt and paprika", "Popcorn with olive oil and sea salt", "Cucumber or carrot sticks with hummus", "Kale chips with sea salt", "Chips plated in a bowl — pair with a protein side so it feels intentional", "Warm soup or bone broth with sea salt"],
+      pause: ["Drink a glass of water — salt cravings often come with dehydration", "Place both feet flat on the floor and breathe slowly", "Relax your shoulders and unclench your jaw"],
+      romanticize: ["Make soup in your favourite bowl and sit somewhere warm", "Plate your snack like a little spread — make it feel special", "Sit outside if you can, even for 5 minutes"]
     },
     "Crunchy": {
       emoji: "🥨",
       insight: "Crunchy cravings may sometimes be linked to stress or the need to release tension. Your body might be looking for something satisfying and grounding.",
-      nourish: ["Apple slices with almond butter", "Carrot and celery sticks with hummus", "Rice cakes with avocado", "Roasted chickpeas or edamame", "A handful of mixed nuts and seeds", "Cucumber slices with cottage cheese", "Whole grain crackers with smoked salmon"],
-      pause: ["Shake out your hands and roll your shoulders back", "Take 5 deep breaths through your nose", "Go for a 5 minute walk if you can", "Clench your fists tight then release slowly", "Splash cold water on your face or wrists"],
-      romanticize: ["Arrange your snack on a board like a little charcuterie", "Eat outside or near a window", "Put on a podcast or playlist you love", "Make it a proper snack moment — sit down and enjoy it", "Notice the textures slowly as you eat"]
+      nourish: ["Crispy chicken breast strips with a dipping sauce", "Kale chips with sea salt", "Roasted chickpeas or edamame", "Apple slices with almond butter", "Carrot, celery, or cucumber with hummus", "Rice cakes with avocado or cottage cheese", "Whole grain crackers with smoked salmon or tuna", "A handful of mixed nuts and seeds", "Chips plated in a bowl — enjoy slowly, pair with protein if needed"],
+      pause: ["Shake out your hands and roll your shoulders back", "Take 5 deep breaths through your nose", "Clench your fists tight then release — repeat 3 times"],
+      romanticize: ["Arrange your snack on a small board like a little charcuterie moment", "Eat near a window or outside if you can", "Put on a podcast or playlist you love and make it a proper break"]
     },
     "Creamy": {
       emoji: "🍦",
-      insight: "Creamy cravings may be your body asking for comfort, nourishment, or healthy fats. They often show up when you need something soothing and satisfying.",
-      nourish: ["Greek yogurt with granola and honey", "Avocado on toast with lemon", "A smoothie with banana, nut butter, and oat milk", "Cottage cheese with fruit", "Hummus with warm pita bread", "A warm bowl of oatmeal with cream and berries", "Coconut yogurt with mango"],
-      pause: ["Drink a glass of warm water or herbal tea", "Sit down and breathe slowly before eating", "Check in — are you hungry or emotionally reaching?", "Roll your neck gently side to side", "Close your eyes for 60 seconds"],
-      romanticize: ["Make a beautiful smoothie bowl and photograph it", "Eat your yogurt in a pretty glass", "Sit somewhere beautiful to enjoy your snack", "Put on ambient or café music", "Add toppings that make it feel special"]
+      insight: "Creamy cravings often show up when you need comfort, nourishment, or something deeply satisfying and soothing.",
+      nourish: ["Greek yogurt with granola, honey, and berries", "Avocado on sourdough toast with lemon and sea salt", "Smoothie with banana, nut butter, oat milk, and seeds", "Cottage cheese with fruit and a drizzle of honey", "Hummus with warm pita and vegetables", "Warm oatmeal with cream, cinnamon, and berries", "Coconut yogurt with mango and lime zest", "Crispy chicken Caesar salad with creamy yogurt dressing"],
+      pause: ["Drink a glass of warm water or herbal tea before eating", "Sit down, breathe slowly, and check in — are you hungry or emotionally reaching?", "Roll your neck gently side to side and drop your shoulders"],
+      romanticize: ["Make a beautiful smoothie bowl and take a moment to arrange it", "Eat from a pretty glass or bowl that feels special", "Put on ambient café music and let it feel like a real pause"]
     },
     "Carbs / Pastry": {
       emoji: "🥐",
-      insight: "You may be craving warmth, slowness, or a moment just for you. Carb cravings can sometimes mean your body needs energy or your heart needs comfort.",
-      nourish: ["Whole grain toast with nut butter and banana", "Oatmeal with cinnamon and maple syrup", "A small portion of pasta with olive oil and herbs", "Sweet potato with butter and sea salt", "Brown rice with roasted vegetables", "A warm croissant enjoyed slowly and mindfully", "Sourdough bread with avocado"],
-      pause: ["Ask yourself — am I hungry or am I tired?", "Drink a glass of water first", "Sit somewhere quiet for 5 minutes", "Breathe in for 4 counts, hold for 4, out for 4", "Check in with your energy level honestly"],
-      romanticize: ["Go to a café and enjoy a pastry slowly", "Make toast at home and eat it by a window", "Use your nicest mug for your coffee or tea", "Let it be a real break — no phone, just the moment", "Light something and make it feel like a ritual"]
+      insight: "Carb cravings often mean your body needs energy or your heart needs comfort. Both are valid.",
+      nourish: ["Sourdough toast with eggs and avocado", "Oatmeal with protein, nuts, and berries", "Sweet potato bowl with eggs or chicken", "Rice bowl with salmon, tofu, or chicken and roasted veg", "Whole grain wrap with turkey, chicken, and greens", "Lentil soup with crusty toast", "Banana protein pancakes", "A warm croissant or pastry — enjoy it slowly and without guilt"],
+      pause: ["Ask yourself — am I hungry or am I tired? Both are okay", "Drink a glass of water first and sit quietly for 2 minutes", "Breathe in for 4 counts, hold for 4, out for 4"],
+      romanticize: ["Go to a café and enjoy a pastry slowly — no phone, just the moment", "Make toast at home and eat it by a window with a warm drink", "Let it be a real break — intentional and unhurried"]
     },
     "Chocolate": {
       emoji: "🍫",
-      insight: "Chocolate cravings may sometimes be linked to a need for magnesium, pleasure, or emotional comfort. Your body or your mood might be asking for a gentle lift.",
-      nourish: ["A square or two of dark chocolate 70% or higher", "A chocolate smoothie with banana and cacao powder", "Dark chocolate with almonds or walnuts", "Cacao energy balls with dates and oats", "A warm mug of hot cacao", "Greek yogurt with cacao nibs and honey", "A small chocolate and nut butter snack"],
-      pause: ["Savour one piece slowly instead of eating quickly", "Breathe before you reach — check in first", "Drink a glass of water alongside it", "Notice how your body feels before and after", "Give yourself full permission so it does not feel like guilt"],
-      romanticize: ["Make a beautiful cup of hot chocolate", "Eat your chocolate with intention — slowly and peacefully", "Pair it with a book or journal", "Light a candle and make it a moment", "Choose quality over quantity and really enjoy it"]
+      insight: "Chocolate cravings are often linked to a need for magnesium, pleasure, or emotional comfort. Your body and mood may both be asking for a gentle lift.",
+      nourish: ["A square or two of dark chocolate 70% or higher", "Dark chocolate with almonds or walnuts", "A warm mug of hot cacao or dark hot chocolate", "Cacao energy balls with dates and oats", "Greek yogurt with cacao nibs, honey, and berries", "Chocolate smoothie with banana, cacao powder, and nut butter", "A small chocolate and nut butter snack — plated, enjoyed slowly"],
+      pause: ["Savour one piece slowly before reaching for more", "Drink a glass of water alongside it", "Give yourself full permission — eating with guilt adds stress, not joy"],
+      romanticize: ["Make a beautiful cup of hot chocolate and sit somewhere cozy", "Pair your chocolate with a book or journal", "Light a candle and make it a proper moment just for you"]
     },
     "Coffee / Café": {
       emoji: "☕",
       insight: "You may be craving atmosphere, ritual, a pause, or simply connection with yourself. This craving is often more about the feeling than the food.",
-      nourish: ["Make your coffee or tea at home beautifully", "Pair it with a small protein snack to balance energy", "Try a matcha latte if you want less caffeine", "Have a glass of water alongside your coffee", "A small oat milk latte with a date or piece of dark chocolate"],
-      pause: ["Ask — do I need energy or do I need a break?", "Sit somewhere away from your screen for 10 minutes", "Breathe slowly and let the warmth of the cup ground you", "Notice if you are tired and need rest not caffeine", "Take 5 minutes of complete stillness"],
-      romanticize: ["Go to your favourite café and sit without your phone", "Make a beautiful coffee at home with your best cup", "Journal or read while you drink it", "Put on ambient café sounds if you are at home", "Make it a proper ritual — slow and intentional"]
+      nourish: ["Coffee or matcha after eating — not on an empty stomach if you feel sensitive", "Latte with Greek yogurt and berries on the side", "Avocado toast with a poached egg and your favourite drink", "Boiled eggs with fruit and coffee", "Protein smoothie with a matcha latte", "Cottage cheese with fruit and a warm drink", "If you feel shaky, start with food before coffee"],
+      pause: ["Ask — do I need energy or do I need a break? Both are valid", "Sit somewhere away from your screen for 10 minutes", "Breathe slowly and let the warmth of the cup ground you"],
+      romanticize: ["Go to your favourite café and sit without your phone", "Make a beautiful coffee at home in your best cup", "Journal or read something you love while you drink it"]
     },
     "Full meal": {
       emoji: "🍽️",
-      insight: "Your body may genuinely be hungry and asking to be properly nourished. A full meal craving is worth honouring — try to make it balanced and satisfying.",
-      nourish: ["A plate with protein, complex carbs, and vegetables", "Soup with bread and a side salad", "Rice or pasta with a protein and roasted veg", "A nourishing bowl with grains, greens, and sauce", "Eggs any style with toast and fruit", "A warm homemade meal that feels like a hug", "Whatever sounds genuinely good and will satisfy you"],
-      pause: ["Sit down properly before you eat — no standing or rushing", "Take 3 breaths before your first bite", "Put your phone away during the meal", "Eat slowly and check in halfway through", "Notice when you feel satisfied not just full"],
-      romanticize: ["Set your table even if eating alone", "Light a candle for your meal", "Put on background music that feels good", "Cook something you love from scratch if you have time", "Make it a real moment — you deserve a proper meal"]
+      insight: "Your body may genuinely be hungry and asking to be properly nourished. A full meal craving is worth honouring.",
+      nourish: ["Rice or grain bowl with salmon, chicken, or tofu and roasted vegetables", "Crispy chicken breast with sweet potato and greens", "Eggs any style with sourdough toast and avocado", "Warm soup with bread and a side salad", "Pasta with olive oil, garlic, and a protein", "Stir fry with vegetables, protein, and rice or noodles", "A plate built with protein, complex carb, and something green"],
+      pause: ["Sit down properly before eating — no standing or rushing", "Take 3 slow breaths before your first bite", "Put your phone away and eat without distraction for even 5 minutes"],
+      romanticize: ["Set your table even if eating alone — it changes the energy", "Light a candle for your meal", "Cook something you love and let the process be part of the nourishment"]
     },
     "Something else": {
       emoji: "💭",
       insight: "Sometimes what we reach for is not really about food at all. You might be craving connection, rest, stimulation, comfort, or simply a change of scenery.",
-      nourish: ["Drink a glass of water first and check in", "Have a small balanced snack if you have not eaten recently", "Ask — when did I last eat a proper meal?", "Try a herbal tea and see if the craving shifts", "Give yourself something genuinely nourishing"],
-      pause: ["Sit quietly and ask — what do I actually need right now?", "Take 5 slow deep breaths", "Name the emotion you are feeling if you can", "Go outside for 5 minutes", "Rest if you are tired — sometimes cravings are just fatigue"],
-      romanticize: ["Journal for 5 minutes about how you are feeling", "Call or message someone you love", "Do one small thing that brings you joy", "Make your environment beautiful — tidy, light a candle, open a window", "Give yourself permission to just be for a moment"]
+      nourish: ["Drink a glass of water first and check in honestly", "Have a small balanced snack if you have not eaten recently", "Try herbal tea and see if the craving shifts", "A small protein snack — boiled egg, nuts, or cottage cheese", "Something warm if you feel emotionally tender"],
+      pause: ["Sit quietly and ask — what do I actually need right now?", "Take 5 slow deep breaths and name the feeling", "Go outside for 5 minutes if you can"],
+      romanticize: ["Journal for 5 minutes about how you are feeling", "Call or message someone you love", "Do one small thing that brings you genuine joy"]
     },
     "Not sure": {
       emoji: "❓",
-      insight: "Not knowing what you want is completely okay. Sometimes your body and mind are just asking you to slow down and check in with yourself gently.",
-      nourish: ["Start with a glass of water", "Have a small snack with protein and carbs", "Ask — am I actually hungry or am I bored, tired, or stressed?", "Try a piece of fruit and wait 10 minutes", "Make a warm drink and see how you feel"],
-      pause: ["Sit somewhere quiet for 5 minutes", "Take 3 slow breaths and check in with your body", "Name what you are feeling — even if it is just unsettled", "Stretch gently or shake out your body", "Rest if you need to — sometimes uncertainty is exhaustion"],
-      romanticize: ["Make yourself a warm drink and just sit", "Write one sentence about how you feel right now", "Do something small and gentle that feels good", "Give yourself permission to not know — that is okay", "Let this be a soft, slow moment with no pressure"]
+      insight: "Not knowing what you want is completely okay. Sometimes your body and mind are just asking you to slow down and check in gently.",
+      nourish: ["Start with a glass of water and wait a few minutes", "Have a small snack with protein and something you enjoy", "Try a piece of fruit or something light and see how you feel", "Make a warm drink and see if the craving becomes clearer", "A simple plate — crackers, cheese, fruit — low effort, nourishing"],
+      pause: ["Sit somewhere quiet for 5 minutes with no phone", "Take 3 slow breaths and check in with your body", "Stretch gently or shake out your body — sometimes it just needs movement"],
+      romanticize: ["Make yourself a warm drink and just sit — no agenda", "Write one sentence about how you feel right now", "Give yourself permission to not know — that is always okay"]
     }
   };
 
@@ -1931,7 +1931,7 @@ function RecipesScreen({ phase, onNavigate, mode }) {
   const cravingKeys = Object.keys(CRAVINGS);
 
   return (
-    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: mode === "fast" ? "linear-gradient(160deg, #0c1410 0%, #141e16 50%, #1a2a0f 100%)" : "linear-gradient(160deg, #E8F5E9 0%, #F0F7EE 40%, #EAF2E4 100%)", minHeight: "100vh" }}>
+    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: mode === "fast" ? "linear-gradient(160deg, #0c1410 0%, #141e16 50%, #1a2a0f 100%)" : "linear-gradient(160deg, #E8F5E9 0%, #F8F0F8 40%, #F5EAF0 100%)", minHeight: "100vh" }}>
       <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 4px" }}>Nourish ✨</h2>
       <p style={{ fontSize: 13, color: mode === "fast" ? "#3a5a3a" : "#8FA090", margin: "0 0 16px" }}>Food craving or soul craving?</p>
 
@@ -1966,35 +1966,46 @@ function RecipesScreen({ phase, onNavigate, mode }) {
           ))}
         </div>
       </div>}
-      {nourishTab === "cravings" && Array.isArray(cravingType) && cravingType.length > 0 && cravingType.map(key => { const craving = CRAVINGS[key]; if (!craving) return null; return (
-        <div>
-          <div style={{ background: "#F0F6F0", borderRadius: 18, padding: "16px", border: "0.5px solid #C5D9C5", marginBottom: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 24 }}>{craving.emoji}</span>
-              <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: 0 }}>Insight</p>
+      {nourishTab === "cravings" && Array.isArray(cravingType) && cravingType.length > 0 && (() => {
+        const selected = cravingType.map(k => CRAVINGS[k]).filter(Boolean);
+        if (!selected.length) return null;
+        const allNourish = [...new Set(selected.flatMap(c => c.nourish))].slice(0, 8);
+        const allPause = selected[0].pause;
+        const allRomanticize = selected[0].romanticize;
+        const emojis = selected.map(c => c.emoji).join(" ");
+        const insight = selected.length === 1
+          ? selected[0].insight
+          : `You are craving ${cravingType.join(" + ").toLowerCase()} — your body may be asking for something layered. ${selected[0].insight}`;
+        return (
+          <div>
+            <div style={{ background: "#F0F6F0", borderRadius: 18, padding: "16px", border: "0.5px solid #C5D9C5", marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <span style={{ fontSize: 22 }}>{emojis}</span>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: 0 }}>Insight</p>
+              </div>
+              <p style={{ fontSize: 13, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>{insight}</p>
             </div>
-            <p style={{ fontSize: 13, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>{craving.insight}</p>
+            <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 12 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#5C7F60", margin: "0 0 10px" }}>🍵 Nourish — feed the body</p>
+              {allNourish.map((item, i) => (
+                <p key={i} style={{ fontSize: 13, color: "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {item}</p>
+              ))}
+            </div>
+            <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 12 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#7BA8C9", margin: "0 0 10px" }}>💧 Pause — ground yourself</p>
+              {allPause.map((item, i) => (
+                <p key={i} style={{ fontSize: 13, color: "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {item}</p>
+              ))}
+            </div>
+            <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 16 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#9B7BC9", margin: "0 0 10px" }}>📖 Romanticize — feed the soul</p>
+              {allRomanticize.map((item, i) => (
+                <p key={i} style={{ fontSize: 13, color: "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {item}</p>
+              ))}
+            </div>
           </div>
-          <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 12 }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: "#5C7F60", margin: "0 0 10px" }}>🍵 Nourish — feed the body</p>
-            {craving.nourish.map((item, i) => (
-              <p key={i} style={{ fontSize: 13, color: "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {item}</p>
-            ))}
-          </div>
-          <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 12 }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: "#7BA8C9", margin: "0 0 10px" }}>💧 Pause — ground yourself</p>
-            {craving.pause.map((item, i) => (
-              <p key={i} style={{ fontSize: 13, color: "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {item}</p>
-            ))}
-          </div>
-          <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 16 }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: "#9B7BC9", margin: "0 0 10px" }}>📖 Romanticize — feed the soul</p>
-            {craving.romanticize.map((item, i) => (
-              <p key={i} style={{ fontSize: 13, color: "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {item}</p>
-            ))}
-          </div>
-        </div>
-      ); })}
+        );
+      })()}
       {nourishTab === "fasting" && (
         <div>
           {[
@@ -2037,7 +2048,7 @@ function RecipesScreen({ phase, onNavigate, mode }) {
         </div>
       )}
 
-      <AiNourishCard mode={mode} />
+      <AiNourishCard mode={mode} selectedCravings={cravingType} activeTab={nourishTab} />
 
       {nourishTab === "cravings" && mode !== "fast" && (
       <div onClick={() => onNavigate && onNavigate("calendar")} style={{ background: "#F8F0FF", borderRadius: 18, padding: "16px", border: "0.5px solid #D4C5E9", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
@@ -2056,167 +2067,170 @@ function RecipesScreen({ phase, onNavigate, mode }) {
   );
 }
 
-function AiNourishCard({ mode }) {
+
+      function AiNourishCard({ mode, selectedCravings, activeTab }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [asked, setAsked] = useState(false);
+  const [supportOption, setSupportOption] = useState(null);
+
+  const supportOptions = [
+    { id: "alkaline",  label: "Alkaline-Inspired", icon: "🌿" },
+    { id: "juice",     label: "Juice Ideas",        icon: "🍹" },
+    { id: "protein",   label: "Protein First",      icon: "🥚" },
+    { id: "breakfast", label: "Break-Fast Meal",    icon: "🍽️" },
+    { id: "fasting",   label: "Still Fasting",      icon: "💧" },
+  ];
+
+  const getCheckInContext = () => {
+    const today = new Date().toISOString().split("T")[0];
+    try {
+      const data = JSON.parse(localStorage.getItem(`lf_checkin_${today}`));
+      if (!data) return "";
+      const parts = [];
+      if (data.energy) parts.push(`energy: ${["very low","low","neutral","good","great"][data.energy-1]}`);
+      if (data.sleep)  parts.push(`sleep: ${["poor","light","fair","good","great"][data.sleep-1]}`);
+      if (data.namedMood) parts.push(`mood: ${data.namedMood}`);
+      if (data.symptoms?.length) parts.push(`symptoms: ${data.symptoms.slice(0,3).join(", ")}`);
+      if (data.gut?.length) parts.push(`gut: ${data.gut.filter(g => g !== "good").slice(0,2).join(", ")}`);
+      if (data.water) parts.push(`water: ${data.water} glasses`);
+      return parts.length ? `Today's check-in — ${parts.join("; ")}.` : "";
+    } catch (e) { return ""; }
+  };
+
+  const getFastingContext = () => {
+    const fastStart = localStorage.getItem("lf_fast_start");
+    if (!fastStart) return "Not currently fasting.";
+    const hours = ((Date.now() - Number(fastStart)) / 3600000).toFixed(1);
+    return `Currently ${hours} hours into a fast.`;
+  };
+
+  const getCycleContext = () => {
+    try {
+      const settings = JSON.parse(localStorage.getItem("lf_settings"));
+      if (!settings?.lastPeriod || mode === "fast") return "";
+      const diff = Math.floor((new Date() - new Date(settings.lastPeriod)) / 86400000);
+      const day = (diff % 28) + 1;
+      const phase = day <= 7 ? "Menstrual" : day <= 15 ? "Follicular" : day <= 17 ? "Ovulation" : "Luteal";
+      return `Cycle phase: ${phase} (day ${day}).`;
+    } catch (e) { return ""; }
+  };
+
+  const buildPrompt = () => {
+    const hour = new Date().getHours();
+    const timeOfDay = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+    const checkIn = getCheckInContext();
+    const fasting = getFastingContext();
+    const cycle = getCycleContext();
+    const cravings = selectedCravings?.length ? selectedCravings.join(", ") : "";
+    const supportLabel = supportOption ? supportOptions.find(o => o.id === supportOption)?.label : "";
+    return `You are Lumen, a warm wellness assistant. It is ${timeOfDay}. ${fasting} ${cycle} ${checkIn}
+${cravings ? `Selected cravings: ${cravings}.` : "No craving selected."}
+${supportLabel ? `Focus: ${supportLabel}.` : ""}
+
+Respond in exactly 4 sections with these exact headers on their own lines:
+Insight
+Nourish — feed the body
+Pause — ground yourself
+Romanticize — feed the soul
+
+Rules: Never shame cravings. No medical claims. If Still Fasting: water/tea/electrolytes only, no food. Under 180 words total. ${mode === "fast" ? "Tone: direct, practical." : "Tone: warm, nurturing."}`;
+  };
 
   const ask = async () => {
     setLoading(true);
-    setAsked(true);
+    setResult(null);
     try {
-      const hour = new Date().getHours();
-      const timeOfDay = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
-      const context = mode === "fast"
-        ? `The user is in fasting/men's mode. It is ${timeOfDay}. Give a very short (3-4 sentences), practical suggestion for what to eat to break a fast or support fasting goals right now. Include one specific meal idea and one key nutrient reason. Be direct and masculine in tone.`
-        : `The user is cycle tracking. It is ${timeOfDay}. Give a very short (3-4 sentences), nurturing suggestion for what to eat right now to support hormonal health and energy. Include one specific meal idea and one key nutrient reason. Be warm and supportive in tone.`;
       const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "anthropic-dangerous-direct-browser-access": "true" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 1000,
-          messages: [{ role: "user", content: context }],
+          messages: [{ role: "user", content: buildPrompt() }],
         }),
       });
       const data = await response.json();
-      const text = data.content?.find(b => b.type === "text")?.text || "Try a balanced meal with protein, healthy fats and complex carbs right now.";
-      setResult(text);
-    } catch {
-      setResult("Try a balanced meal with protein, healthy fats and complex carbs right now.");
+      const text = data.content?.find(b => b.type === "text")?.text || "";
+      setResult(text || "Choose a craving or support option so Lumen can suggest something more specific for you.");
+    } catch (e) {
+      setResult("Choose a craving or support option so Lumen can suggest something more specific for you.");
     }
     setLoading(false);
   };
 
+  const accentColor = mode === "fast" ? "#C9A84C" : "#9B7BC9";
+  const accentBg    = mode === "fast" ? "rgba(201,168,76,0.1)" : "rgba(155,123,201,0.1)";
+  const textColor   = mode === "fast" ? "#e8e0ce" : "#2D3B2E";
+  const subColor    = mode === "fast" ? "#7A9E7E" : "#9B7BC9";
+  const bodyColor   = mode === "fast" ? "#a8c4a8" : "#4a3a5a";
+  const cardBg      = mode === "fast" ? "linear-gradient(135deg, #1a3a2a, #0f2a1a)" : "linear-gradient(135deg, #F5F0FF, #FFF0F5)";
+  const cardBorder  = mode === "fast" ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(180,140,200,0.3)";
+  const resultBg    = mode === "fast" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.7)";
+
+  const sectionColors = { "Insight": mode === "fast" ? "#C9A84C" : "#9B7BC9", "Nourish": mode === "fast" ? "#7A9E7E" : "#5C7F60", "Pause": "#7BA8C9", "Romanticize": mode === "fast" ? "#C9A84C" : "#C97B7B" };
+  const parseSections = (text) => {
+    if (!text) return [];
+    const headers = ["Insight","Nourish","Pause","Romanticize"];
+    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+    const sections = [];
+    let current = null;
+    for (const line of lines) {
+      const clean = line.replace(/\*\*/g, "").replace(/^#+\s*/,"");
+      const matched = headers.find(h => clean.toLowerCase().includes(h.toLowerCase()) && clean.length < 60);
+      if (matched) { if (current) sections.push(current); current = { header: clean, color: sectionColors[matched] || accentColor, lines: [] }; }
+      else if (current) current.lines.push(clean);
+    }
+    if (current) sections.push(current);
+    return sections;
+  };
+  const sections = result ? parseSections(result) : [];
+
   return (
-    <div style={{ background: mode === "fast" ? "linear-gradient(135deg, #1a3a2a, #0f2a1a)" : "linear-gradient(135deg, #F5F0FF, #FFF0F5)", borderRadius: 18, padding: "18px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(180,140,200,0.3)", marginBottom: 16, marginTop: 8 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+    <div style={{ background: cardBg, borderRadius: 18, padding: "18px", border: cardBorder, marginBottom: 16, marginTop: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <span style={{ fontSize: 22 }}>✨</span>
         <div>
-          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: 0 }}>What should I eat right now?</p>
-          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#3a5a3a" : "#9B7BC9", margin: 0 }}>AI-powered · phase-synced</p>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: textColor, margin: 0 }}>What should I eat right now?</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: subColor, margin: 0 }}>AI-powered · craving-aware · phase-synced</p>
         </div>
       </div>
-      {!asked ? (
-        <button onClick={ask} style={{ width: "100%", padding: "11px", borderRadius: 12, border: "none", background: mode === "fast" ? "rgba(201,168,76,0.12)" : "rgba(155,123,201,0.12)", color: mode === "fast" ? "#C9A84C" : "#9B7BC9", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>
-          Ask Lumen ✦
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+        {supportOptions.map(opt => (
+          <button key={opt.id} onClick={() => setSupportOption(supportOption === opt.id ? null : opt.id)} style={{ padding: "6px 11px", borderRadius: 50, border: `0.5px solid ${supportOption === opt.id ? accentColor : "rgba(150,150,150,0.25)"}`, background: supportOption === opt.id ? accentBg : "rgba(255,255,255,0.05)", color: supportOption === opt.id ? accentColor : subColor, fontFamily: "sans-serif", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+            <span>{opt.icon}</span>{opt.label}
+          </button>
+        ))}
+      </div>
+      {(selectedCravings?.length > 0 || supportOption) && (
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: subColor, margin: "0 0 10px", lineHeight: 1.5 }}>
+          {selectedCravings?.length > 0 && `Craving: ${selectedCravings.join(", ")}. `}
+          {supportOption && `Focus: ${supportOptions.find(o => o.id === supportOption)?.label}.`}
+        </p>
+      )}
+      {!loading && (
+        <button onClick={ask} style={{ width: "100%", padding: "11px", borderRadius: 12, border: `0.5px solid ${accentColor}`, background: accentBg, color: accentColor, fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", fontWeight: 600, marginBottom: result ? 12 : 0 }}>
+          {result ? "↺ Ask again" : "Ask Lumen ✦"}
         </button>
-      ) : loading ? (
-        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#3a5a3a" : "#9B7BC9", margin: 0, textAlign: "center", padding: "8px 0" }}>✨ thinking...</p>
-      ) : (
-        <div>
-          <p style={{ fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#a8c4a8" : "#4a3a5a", margin: "0 0 10px", lineHeight: 1.7 }}>{result}</p>
-          <button onClick={ask} style={{ background: "none", border: "none", fontSize: 11, color: mode === "fast" ? "#3a5a3a" : "#b8a0c8", cursor: "pointer", padding: 0 }}>↺ Ask again</button>
+      )}
+      {loading && <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: subColor, margin: "8px 0", textAlign: "center" }}>✨ Lumen is thinking...</p>}
+      {!loading && sections.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+          {sections.map((sec, i) => (
+            <div key={i} style={{ background: resultBg, borderRadius: 12, padding: "12px 14px", borderLeft: `3px solid ${sec.color}` }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 12, color: sec.color, margin: "0 0 6px", fontWeight: 600 }}>{sec.header}</p>
+              {sec.lines.map((line, j) => <p key={j} style={{ fontFamily: "sans-serif", fontSize: 13, color: bodyColor, margin: "0 0 4px", lineHeight: 1.65 }}>{line}</p>)}
+            </div>
+          ))}
+        </div>
+      )}
+      {!loading && result && sections.length === 0 && (
+        <div style={{ background: resultBg, borderRadius: 12, padding: "12px 14px" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 13, color: bodyColor, margin: 0, lineHeight: 1.7 }}>{result}</p>
         </div>
       )}
     </div>
   );
 }
-
-function RecipesScreen_UNUSED({ phase }) {
-  const [dietFilter,  setDietFilter]  = useState("All");
-  const [phaseFilter, setPhaseFilter] = useState("All");
-  const [selected,    setSelected]    = useState(null);
-
-  const filtered = RECIPES.filter(r => {
-    const dOk = dietFilter  === "All" || r.diet   === dietFilter;
-    const pOk = phaseFilter === "All" || r.phases.includes(phaseFilter);
-    return dOk && pOk;
-  });
-
-  const phaseRecs = RECIPES.filter(r => r.phases.includes(phase)).slice(0, 5);
-
-  if (selected) {
-    const info = PHASE_INFO[selected.phases[0]];
-    return (
-      <div style={{ padding: "16px 16px 90px" }}>
-        <button onClick={() => setSelected(null)} style={{ background: "#EAF2EA", border: "none", borderRadius: 10, padding: "8px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#5C7F60", cursor: "pointer", marginBottom: 16 }}>← Back</button>
-        <div style={s.card}>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-            <span style={{ background: "#EAF2EA", color: "#5C7F60", borderRadius: 100, padding: "4px 12px", fontSize: 12, fontWeight: 600 }}>{selected.diet}</span>
-            <span style={{ background: "#EAF2EA", color: "#5C7F60", borderRadius: 100, padding: "4px 12px", fontSize: 12, fontWeight: 600 }}>⏱ {selected.time} min</span>
-            {selected.phases.map(p => (
-              <span key={p} style={{ background: PHASE_INFO[p].bg, color: PHASE_INFO[p].color, borderRadius: 100, padding: "4px 12px", fontSize: 12, fontWeight: 600 }}>{PHASE_INFO[p].emoji} {p}</span>
-            ))}
-          </div>
-          <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: "#2D3B2E", margin: "0 0 10px", fontWeight: 400 }}>{selected.name}</h2>
-          <div style={{ padding: "10px 14px", background: info.bg, borderRadius: 12, marginBottom: 16, borderLeft: `3px solid ${info.color}` }}>
-            <p style={{ fontFamily: "sans-serif", fontSize: 13, color: info.color, margin: 0 }}>🌿 {selected.tip}</p>
-          </div>
-          <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 10px" }}>Ingredients</p>
-          {selected.ingredients.map((ing, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, paddingBottom: 8, borderBottom: "1px solid #EAF2EA", marginBottom: 8 }}>
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#8FAF8F", flexShrink: 0 }} />
-              <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#6b7b6b", margin: 0 }}>{ing}</p>
-            </div>
-          ))}
-          <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "16px 0 10px" }}>Method</p>
-          {selected.steps.map((step, i) => (
-            <div key={i} style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-              <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#8FAF8F", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "sans-serif", fontSize: 12, fontWeight: 600, flexShrink: 0 }}>{i+1}</div>
-              <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#6b7b6b", lineHeight: 1.55, paddingTop: 3, margin: 0 }}>{step}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ padding: "0 0 90px" }}>
-      <div style={{ padding: "16px 16px 8px" }}>
-        <h3 style={s.title}>Recipes</h3>
-      </div>
-
-      <div style={{ marginBottom: 12 }}>
-        <p style={{ ...s.label, padding: "0 16px", marginBottom: 10 }}>✨ Best for your phase now</p>
-        <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "0 16px 4px", scrollbarWidth: "none" }}>
-          {phaseRecs.map(r => (
-            <button key={r.id} onClick={() => setSelected(r)} style={{ flexShrink: 0, width: 140, background: "#fff", borderRadius: 16, border: "none", boxShadow: "0 2px 12px rgba(122,158,126,0.13)", padding: 14, textAlign: "left", cursor: "pointer" }}>
-              <span style={{ background: PHASE_INFO[r.phases[0]].bg, color: PHASE_INFO[r.phases[0]].color, borderRadius: 100, padding: "3px 10px", fontSize: 11, fontWeight: 600 }}>{r.diet}</span>
-              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: "8px 0 4px", lineHeight: 1.3 }}>{r.name}</p>
-              <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: 0 }}>⏱ {r.time} min</p>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ display: "flex", gap: 6, overflowX: "auto", padding: "0 16px 8px", scrollbarWidth: "none" }}>
-        {PHASE_FILTERS.map(p => (
-          <button key={p} onClick={() => setPhaseFilter(p)} style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 100, border: "none", background: phaseFilter === p ? "#8FAF8F" : "#EAF2EA", color: phaseFilter === p ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{p}</button>
-        ))}
-      </div>
-
-      <div style={{ display: "flex", gap: 6, overflowX: "auto", padding: "0 16px 12px", scrollbarWidth: "none" }}>
-        {DIET_TYPES.map(d => (
-          <button key={d} onClick={() => setDietFilter(d)} style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 100, border: "none", background: dietFilter === d ? "#5C7F60" : "#EAF2EA", color: dietFilter === d ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{d}</button>
-        ))}
-      </div>
-
-      <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 10 }}>
-        {filtered.map(r => (
-          <button key={r.id} onClick={() => setSelected(r)} style={{ ...s.card, textAlign: "left", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
-                <span style={{ background: "#EAF2EA", color: "#5C7F60", borderRadius: 100, padding: "3px 10px", fontSize: 11, fontWeight: 600 }}>{r.diet}</span>
-                {r.phases.map(p => (
-                  <span key={p} style={{ background: PHASE_INFO[p].bg, color: PHASE_INFO[p].color, borderRadius: 100, padding: "3px 10px", fontSize: 11, fontWeight: 600 }}>{PHASE_INFO[p].emoji} {p}</span>
-                ))}
-              </div>
-              <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 2px" }}>{r.name}</p>
-              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: 0 }}>⏱ {r.time} min</p>
-            </div>
-            <span style={{ color: "#C5D9C5", fontSize: 20, marginLeft: 10 }}>›</span>
-          </button>
-        ))}
-        {filtered.length === 0 && (
-          <p style={{ fontFamily: "sans-serif", fontSize: 14, color: "#8FA090", textAlign: "center", padding: 20 }}>No recipes match this filter.</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ─────────────────────────────────────────────
 //  LEGAL SCREENS
 // ─────────────────────────────────────────────
