@@ -534,7 +534,7 @@ function CheckInScreen({ mode, onNavigate }) {
   const [notes,  setNotes]  = useState("");
 
   const save = () => {
-    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, movements, bodyCheck, weightUnit, namedMood, symptoms };
+    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, movements, bodyCheck, weightUnit, namedMood, symptoms, bowelCheck: { didPoopToday, bowelTime, bowelTexture, bowelNotes } };
     localStorage.setItem(key, JSON.stringify(data));
     setSaved(data);
   };
@@ -561,6 +561,11 @@ function CheckInScreen({ mode, onNavigate }) {
   const [bodyCheck, setBodyCheck] = useState("");
   const [symptoms, setSymptoms] = useState([]);
   const [weightUnit, setWeightUnit] = useState("lbs");
+  const [showBowelCheck, setShowBowelCheck] = useState(false);
+  const [didPoopToday, setDidPoopToday] = useState(false);
+  const [bowelTime, setBowelTime] = useState("");
+  const [bowelTexture, setBowelTexture] = useState("");
+  const [bowelNotes, setBowelNotes] = useState("");
   const ratingEmojis = ["😞","😔","😐","🙂","😄"];
   const [namedMood, setNamedMood] = useState(null);
 
@@ -1047,6 +1052,33 @@ if (saved) {
           </div>
         ))}
         <button onClick={addMovement} style={{ width: "100%", padding: 10, borderRadius: 12, border: "1px dashed #C5D9C5", background: "none", color: "#7A9E7E", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>+ Add movement</button>
+      </div>
+
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🚽 Bowel Check</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Optional — helps Lumen support your digestion</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          <button onClick={() => { setDidPoopToday(true); setShowBowelCheck(true); }} style={{ padding: "8px 16px", borderRadius: 50, border: "none", background: didPoopToday ? "#7A9E7E" : "#EAF2EA", color: didPoopToday ? "#fff" : "#5C7F60", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>✅ Yes, I pooped</button>
+          <button onClick={() => { setDidPoopToday(false); setShowBowelCheck(false); }} style={{ padding: "8px 16px", borderRadius: 50, border: "none", background: !didPoopToday ? "#C97B7B" : "#FDEAEA", color: !didPoopToday ? "#fff" : "#C97B7B", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>🚫 Not today</button>
+        </div>
+        {didPoopToday && (
+          <div>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>When?</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+              {["🌅 Morning","☀️ Afternoon","🌆 Evening","🌙 Night"].map(t => (
+                <button key={t} onClick={() => setBowelTime(t)} style={{ padding: "6px 14px", borderRadius: 50, border: "none", background: bowelTime === t ? "#7A9E7E" : "#EAF2EA", color: bowelTime === t ? "#fff" : "#5C7F60", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{t}</button>
+              ))}
+            </div>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Texture?</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+              {["🪨 Rocky / hard","🌰 Small pellets","✅ Normal","🟤 Soft","🫠 Semi-liquid","💧 Liquid","😣 Painful","🚧 Straining"].map(t => (
+                <button key={t} onClick={() => setBowelTexture(t)} style={{ padding: "6px 14px", borderRadius: 50, border: "none", background: bowelTexture === t ? "#7A9E7E" : "#EAF2EA", color: bowelTexture === t ? "#fff" : "#5C7F60", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{t}</button>
+              ))}
+            </div>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Any notes?</p>
+            <input value={bowelNotes} onChange={e => setBowelNotes(e.target.value)} placeholder="Optional — anything you want to remember" style={{ ...s.input, marginBottom: 0 }} />
+          </div>
+        )}
       </div>
 
       <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
@@ -1853,6 +1885,7 @@ const PHASE_FILTERS = ["All","Menstrual","Follicular","Ovulation","Luteal"];
 function RecipesScreen({ phase, onNavigate, mode }) {
   const [cravingType, setCravingType] = useState([]);
   const [nourishTab, setNourishTab] = useState("cravings");
+  const [nourishSupportFilter, setNourishSupportFilter] = useState(null);
 
 const CRAVINGS = {
     "Sweet": {
@@ -1950,7 +1983,7 @@ const CRAVINGS = {
           fontFamily: "Georgia, serif", fontSize: 13, fontWeight: 600,
         }}>💧 Fasting Support</button>
       </div>
-      {nourishTab === "cravings" && <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 16 }}>
+      {nourishTab === "cravings" && <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.75)", borderRadius: 18, padding: "16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : "0.5px solid rgba(180,160,200,0.3)", marginBottom: 16 }}>
         <p style={{ fontSize: 13, color: "#2D3B2E", fontWeight: 600, margin: "0 0 12px" }}>What are you craving right now?</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {cravingKeys.map(key => (
@@ -2048,7 +2081,7 @@ const CRAVINGS = {
         </div>
       )}
 
-      <AiNourishCard mode={mode} selectedCravings={cravingType} activeTab={nourishTab} />
+      <LumenSuggests mode={mode} selectedCravings={cravingType} supportFilter={nourishSupportFilter} setSupportFilter={setNourishSupportFilter} activeTab={nourishTab} />
 
       {nourishTab === "cravings" && mode !== "fast" && (
       <div onClick={() => onNavigate && onNavigate("calendar")} style={{ background: "#F8F0FF", borderRadius: 18, padding: "16px", border: "0.5px solid #D4C5E9", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
@@ -2068,7 +2101,164 @@ const CRAVINGS = {
 }
 
 
-      function AiNourishCard({ mode, selectedCravings, activeTab }) {
+      function LumenSuggests({ mode, selectedCravings, supportFilter, setSupportFilter, activeTab }) {
+  const supportOptions = [
+    { id: "alkaline",   label: "Alkaline-Inspired", icon: "🌿" },
+    { id: "juice",      label: "Juice Ideas",        icon: "🍹" },
+    { id: "protein",    label: "Protein First",      icon: "🥚" },
+    { id: "breakfast",  label: "Break-Fast Meal",    icon: "🍽️" },
+    { id: "fasting",    label: "Still Fasting",      icon: "💧" },
+    { id: "digestion",  label: "Digestion Support",  icon: "🌱" },
+  ];
+
+  const getContext = () => {
+    const today = new Date().toISOString().split("T")[0];
+    try { return JSON.parse(localStorage.getItem(`lf_checkin_${today}`)) || {}; } catch (e) { return {}; }
+  };
+
+  const getFasting = () => {
+    const fs = localStorage.getItem("lf_fast_start");
+    if (!fs) return null;
+    return ((Date.now() - Number(fs)) / 3600000).toFixed(1);
+  };
+
+  const getSuggestion = () => {
+    const ctx = getContext();
+    const hours = getFasting();
+    const cravings = selectedCravings || [];
+    const filter = supportFilter;
+    const has = (...keys) => keys.some(k => cravings.map(c => c.toLowerCase()).some(c => c.includes(k)));
+
+    if (filter === "fasting") return {
+      label: "💧 Still Fasting",
+      why: "You are fasting — your body is doing great work. Stay supported without breaking your window.",
+      items: ["Water — drink consistently throughout your fast", "Plain herbal tea or green tea — no sweeteners", "Black coffee if tolerated", "Sparkling water if you need something different", "A pinch of sea salt in water for electrolytes", "Rest, breathe, and ground yourself", "If you feel weak, shaky, dizzy, or unwell — break your fast and eat first"],
+    };
+
+    if (filter === "digestion") {
+      const bowel = ctx.bowelCheck;
+      const hard = bowel?.bowelTexture?.includes("Rocky") || bowel?.bowelTexture?.includes("pellets") || bowel?.bowelTexture?.includes("Straining") || bowel?.bowelTexture?.includes("Painful");
+      return {
+        label: "🌱 Digestion Support",
+        why: hard ? "Your bowel check suggests things may be moving slowly. These options may help support regularity gently." : "These gentle options may support your digestion today.",
+        items: ["Warm water with lemon first thing", "Oatmeal with chia seeds and berries", "Prunes or prune juice — a small amount goes a long way", "Pear, apple, or kiwi — all high in gut-supportive fibre", "Greek yogurt with berries and a sprinkle of flaxseed", "Lentil soup or bean-based meal", "Sweet potato with leafy greens", "A gentle 10-15 minute walk after eating", "Stay well hydrated throughout the day"],
+        note: "This is wellness support, not medical advice. If symptoms are severe, persistent, or unusual — speak with a healthcare provider.",
+      };
+    }
+
+    if (filter === "juice") return {
+      label: "🍹 Juice Ideas",
+      why: "Juices are best enjoyed when breaking your fast or during your eating window — not while fasting.",
+      items: ["Green juice with cucumber, celery, spinach, lemon, and ginger", "Watermelon and mint juice — hydrating and light", "Carrot, apple, and ginger juice", "Beet, orange, and lemon juice", "Coconut water with lime — gentle electrolyte boost", "Smoothie with banana, berries, Greek yogurt, and chia seeds"],
+    };
+
+    if (filter === "breakfast") return {
+      label: "🍽️ Break-Fast Meal",
+      why: "Breaking your fast gently helps your digestion wake up. Start light and protein-forward.",
+      items: ["2-3 eggs any style with avocado and sourdough toast", "Greek yogurt with berries, granola, and honey", "Bone broth first, then a small protein meal", "Oatmeal with nuts, seeds, and fruit", "Cottage cheese with fruit and a drizzle of honey", "Banana with almond butter and a warm drink"],
+    };
+
+    if (filter === "alkaline") return {
+      label: "🌿 Alkaline-Inspired",
+      why: "Plant-rich and mineral-dense options to nourish your body.",
+      items: ["Big leafy green salad with cucumber, avocado, lemon dressing", "Smoothie with spinach, banana, almond milk, and chia", "Steamed broccoli, sweet potato, and quinoa bowl", "Celery and cucumber sticks with hummus", "Warm lemon water to start", "Watermelon, berries, or melon as a snack", "Vegetable soup with leafy greens and legumes"],
+    };
+
+    if (filter === "protein") {
+      if (has("salty","crunchy","creamy")) return {
+        label: "🥚 Protein First — Salty + Crunchy + Creamy",
+        why: "You chose salty, crunchy, and creamy — these options give texture, comfort, and steady protein.",
+        items: ["Crispy Caesar salad with chicken and creamy yogurt dressing", "Cobb salad with eggs, avocado, chicken, cucumber, and greens", "Crispy chicken breast strips with creamy dip", "Kale chips with Greek yogurt dip", "Crackers with tuna, cottage cheese, or avocado", "Chips plated in a bowl with a protein side"],
+      };
+      return {
+        label: "🥚 Protein First",
+        why: "Leading with protein supports steady energy and satiety.",
+        items: ["Eggs any style — scrambled, boiled, poached", "Grilled or baked chicken breast with vegetables", "Greek yogurt with granola and berries", "Cottage cheese with fruit", "Tuna or salmon with crackers or salad", "Lentil or bean soup with a protein side"],
+      };
+    }
+
+    if (cravings.length === 0) return null;
+
+    // Combined craving logic
+    const items = [];
+    if (has("salty") && has("crunchy") && has("creamy")) {
+      items.push("Crispy Caesar salad with creamy yogurt dressing", "Cobb salad with avocado, eggs, chicken, and creamy dressing", "Crunchy chicken wrap with yogurt ranch", "Kale chips with Greek yogurt dip", "Crackers with cottage cheese, tuna, or avocado", "Chips plated in a bowl with a protein side");
+    } else if (has("salty") && has("crunchy")) {
+      items.push("Crispy Caesar salad with chicken and parmesan", "Kale chips with sea salt", "Roasted chickpeas with paprika", "Popcorn with olive oil and sea salt", "Crackers with tuna or avocado", "Chips plated and paired with protein");
+    } else if (has("sweet") && has("creamy")) {
+      items.push("Greek yogurt with berries, honey, and granola", "Chia pudding with mango or mixed fruit", "Smoothie bowl with banana and nut butter", "Cottage cheese with fruit and cinnamon", "Banana with peanut butter", "Dark chocolate with almonds");
+    } else if (has("carbs","pastry") && has("full meal","full")) {
+      items.push("Sourdough toast with eggs and avocado", "Sweet potato bowl with eggs or chicken", "Rice bowl with salmon, tofu, or chicken", "Whole grain wrap with turkey and greens", "Lentil soup with crusty toast", "Oatmeal with protein, nuts, and berries");
+    } else if (has("chocolate")) {
+      items.push("A square or two of dark chocolate 70% or higher", "Hot cacao or dark hot chocolate", "Greek yogurt with cacao nibs and berries", "Chocolate smoothie with banana and nut butter", "Cacao energy balls with dates and oats");
+    } else if (has("coffee","café","cafe")) {
+      items.push("Coffee or matcha after eating — not on an empty stomach", "Latte with Greek yogurt and berries on the side", "Avocado toast with a poached egg and your drink", "Protein smoothie with a matcha latte");
+    } else if (has("sweet")) {
+      items.push("Greek yogurt with berries and honey", "Chia pudding with fruit", "Banana with almond butter", "Dates with nut butter", "Dark chocolate with nuts", "Warm chai or golden milk");
+    } else if (has("salty")) {
+      items.push("Warm soup or bone broth", "Crackers with hummus or cottage cheese", "Roasted chickpeas", "Popcorn with sea salt", "Cucumber with hummus");
+    } else if (has("crunchy")) {
+      items.push("Apple slices with almond butter", "Carrot and celery with hummus", "Rice cakes with avocado", "Roasted chickpeas or edamame", "Mixed nuts and seeds");
+    } else if (has("creamy")) {
+      items.push("Greek yogurt with granola", "Avocado toast", "Smoothie with banana and nut butter", "Hummus with warm pita", "Warm oatmeal with cream and berries");
+    } else if (has("full meal","full")) {
+      items.push("Rice bowl with salmon or chicken and roasted veg", "Eggs with sourdough toast and avocado", "Warm soup with bread", "Stir fry with vegetables and protein", "A plate with protein, complex carb, and something green");
+    } else {
+      items.push("A glass of water first and check in — are you truly hungry?", "Something small and protein-rich — egg, nuts, or yogurt", "Warm herbal tea if you need a moment", "A simple plate — crackers, fruit, and something you enjoy");
+    }
+
+    const cravingLabel = cravings.join(" + ");
+    return {
+      label: cravingLabel,
+      why: `You chose ${cravingLabel.toLowerCase()} — here are options that match what your body is asking for right now.`,
+      items,
+    };
+  };
+
+  const suggestion = getSuggestion();
+  const accentColor = mode === "fast" ? "#C9A84C" : "#9B7BC9";
+  const subColor    = mode === "fast" ? "#7A9E7E" : "#9B7BC9";
+  const cardBg      = mode === "fast" ? "linear-gradient(135deg, #1a3a2a, #0f2a1a)" : "linear-gradient(135deg, #F5F0FF, #FFF0F5)";
+  const cardBorder  = mode === "fast" ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(180,140,200,0.3)";
+  const bodyColor   = mode === "fast" ? "#a8c4a8" : "#4a3a5a";
+  const resultBg    = mode === "fast" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.75)";
+  const textColor   = mode === "fast" ? "#e8e0ce" : "#2D3B2E";
+
+  return (
+    <div style={{ background: cardBg, borderRadius: 18, padding: "18px", border: cardBorder, marginBottom: 16, marginTop: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <span style={{ fontSize: 22 }}>✨</span>
+        <div>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: textColor, margin: 0 }}>Lumen Suggests</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: subColor, margin: 0 }}>Craving-aware · fasting-aware · phase-synced</p>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+        {supportOptions.map(opt => (
+          <button key={opt.id} onClick={() => setSupportFilter(supportFilter === opt.id ? null : opt.id)} style={{ padding: "6px 11px", borderRadius: 50, border: `0.5px solid ${supportFilter === opt.id ? accentColor : "rgba(150,150,150,0.25)"}`, background: supportFilter === opt.id ? (mode === "fast" ? "rgba(201,168,76,0.15)" : "rgba(155,123,201,0.12)") : "rgba(255,255,255,0.05)", color: supportFilter === opt.id ? accentColor : subColor, fontFamily: "sans-serif", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
+            >
+            <span>{opt.icon}</span>{opt.label}
+          </button>
+        ))}
+      </div>
+      {suggestion && (
+        <div id="lumen-suggests-result" style={{ background: resultBg, borderRadius: 14, padding: "14px 16px", borderLeft: `3px solid ${accentColor}` }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: accentColor, margin: "0 0 6px", fontWeight: 600 }}>{suggestion.label}</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: bodyColor, margin: "0 0 10px", lineHeight: 1.6, fontStyle: "italic" }}>{suggestion.why}</p>
+          {suggestion.items.map((item, i) => (
+            <p key={i} style={{ fontFamily: "sans-serif", fontSize: 13, color: bodyColor, margin: "0 0 5px", lineHeight: 1.6 }}>• {item}</p>
+          ))}
+          {suggestion.note && <p style={{ fontFamily: "sans-serif", fontSize: 11, color: subColor, margin: "10px 0 0", lineHeight: 1.6 }}>⚠️ {suggestion.note}</p>}
+        </div>
+      )}
+      {!suggestion && (
+        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: subColor, textAlign: "center", padding: "8px 0" }}>Select a craving or filter above and Lumen will suggest something for you.</p>
+      )}
+    </div>
+  );
+}
+
+function AiNourishCard({ mode, selectedCravings, activeTab }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [supportOption, setSupportOption] = useState(null);
