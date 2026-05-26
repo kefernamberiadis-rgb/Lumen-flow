@@ -678,9 +678,9 @@ if (saved) {
           </div>
         )}
         {saved.symptoms && saved.symptoms.length > 0 && (
-          <div style={{ background: "#FDEAEA", borderRadius: 14, border: "0.5px solid rgba(201,123,123,0.2)", padding: "10px 12px" }}>
-            <p style={{ fontSize: 10, color: "#C97B7B", margin: "0 0 4px" }}>🩺 Symptoms</p>
-            <p style={{ fontSize: 12, color: "#C97B7B", fontWeight: 600, margin: 0 }}>{saved.symptoms.slice(0,2).join(", ")}</p>
+          <div style={{ background: mode === "fast" ? "rgba(122,158,126,0.1)" : "#FDEAEA", borderRadius: 14, border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid rgba(201,123,123,0.2)", padding: "10px 12px" }}>
+            <p style={{ fontSize: 10, color: mode === "fast" ? "#7A9E7E" : "#C97B7B", margin: "0 0 4px" }}>🩺 Symptoms</p>
+            <p style={{ fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#C97B7B", fontWeight: 600, margin: 0 }}>{saved.symptoms.slice(0,2).join(", ")}</p>
           </div>
         )}
       </div>
@@ -747,6 +747,33 @@ if (saved) {
           ); })}
         </div>
       </div>
+      <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "#fff", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+        <p style={{ fontSize: 11, color: "#7A9E7E", fontWeight: 600, margin: "0 0 10px" }}>🚽 Bowel Movement — last 7 days</p>
+        <div style={{ display: "flex", gap: 4 }}>
+          {days7.map((day, i) => {
+            const bowel = day.data?.bowelCheck;
+            const didPoop = bowel?.didPoopToday;
+            const texture = bowel?.bowelTexture || "";
+            const color = texture.includes("Rocky") || texture.includes("pellets") || texture.includes("Straining") || texture.includes("Painful") ? "#C97B7B" : texture.includes("Liquid") || texture.includes("Semi-liquid") ? "#7BA8C9" : texture.includes("Normal") || texture.includes("Soft") ? "#7A9E7E" : didPoop ? "#C9A87B" : "transparent";
+            const emoji = didPoop === false ? "🚫" : didPoop === true ? "✅" : "·";
+            return (
+              <div key={i} style={{ flex: 1, textAlign: "center" }}>
+                <div style={{ width: "100%", height: 24, borderRadius: 6, background: color, border: "0.5px solid rgba(150,150,150,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>{emoji}</div>
+                <div style={{ fontSize: 8, color: "#A8BEA8", marginTop: 3 }}>{day.label}</div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
+          {[["#7A9E7E","Normal / Soft"],["#C97B7B","Hard / Straining"],["#7BA8C9","Loose / Liquid"],["#C9A87B","Logged"]].map(([color, label]) => (
+            <div key={label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <div style={{ width: 8, height: 8, borderRadius: 2, background: color }} />
+              <span style={{ fontFamily: "sans-serif", fontSize: 9, color: "#6b7b6b" }}>{label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div style={{ background: "#F8F0FF", borderRadius: 18, border: "0.5px solid rgba(155,123,201,0.2)", padding: 16, marginBottom: 16 }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#9B7BC9", margin: "0 0 8px" }}>Today's Lumen Note ✦</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>{insight}</p>
