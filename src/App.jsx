@@ -574,9 +574,9 @@ function CheckInScreen({ mode, onNavigate }) {
     "Calm":        { emoji: "😌", color: "#7BA8C9", bg: "#EAF2F9", message: "You're in a peaceful place. This is a good time to rest into yourself.", actions: ["Open Nourish", "Add Note"] },
     "Energized":   { emoji: "⚡", color: "#C9A87B", bg: "#FDF6EA", message: "Your energy is high. Use it with intention — move, create, or connect.", actions: ["Log a fast", "Add Note"] },
     "Tired":       { emoji: "😴", color: "#8FA090", bg: "#F0F6F0", message: "Your body is asking for rest. One small gentle choice is enough today.", actions: ["Open Nourish", "Ground Me", "Add Note"] },
-    "Sad":         { emoji: "🥺", color: "#C97B7B", bg: "#FDEAEA", message: "You're feeling tender today. Start with one small supportive choice.", actions: ["Open Nourish", "Ground Me", "Journal Prompt", "Add Note"] },
+    "Sad":         { emoji: "🥺", color: "#9B7BC9", bg: "#F5F0FF", message: "You're feeling tender today. Start with one small supportive choice.", actions: ["Open Nourish", "Ground Me", "Journal Prompt", "Add Note"] },
     "Anxious":     { emoji: "😰", color: "#9B7BC9", bg: "#F5F0FF", message: "Your nervous system needs softness right now. You are safe and you are okay.", actions: ["Ground Me", "Open Nourish", "Add Note"] },
-    "Irritated":   { emoji: "😤", color: "#C97B7B", bg: "#FDEAEA", message: "Something is asking for your attention. Be gentle with yourself first.", actions: ["Ground Me", "Open Nourish", "Add Note"] },
+    "Irritated":   { emoji: "😤", color: "#C9A87B", bg: "#FDF6EA", message: "Something is asking for your attention. Be gentle with yourself first.", actions: ["Ground Me", "Open Nourish", "Add Note"] },
     "Emotional":   { emoji: "🥹", color: "#9B7BC9", bg: "#F5F0FF", message: "Feeling deeply is not a weakness. Let yourself feel without judgment.", actions: ["Journal Prompt", "Open Nourish", "Ground Me", "Add Note"] },
     "Unmotivated": { emoji: "😶", color: "#8FA090", bg: "#F0F6F0", message: "Low motivation is often your body asking for something. Rest counts too.", actions: ["Open Nourish", "Ground Me", "Add Note"] },
     "Overwhelmed": { emoji: "😵", color: "#C9A87B", bg: "#FDF6EA", message: "One thing at a time. You don't have to do everything today.", actions: ["Ground Me", "Journal Prompt", "Add Note"] },
@@ -687,7 +687,7 @@ if (saved) {
       <button onClick={() => setSaved(null)} style={{ width: "100%", padding: "10px", borderRadius: 50, border: "0.5px solid #dce8dc", background: "#fff", color: "#5C7F60", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", marginBottom: 20 }}>✎ Edit Check-In</button>
       <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>Your Lumen Trends ✦</p>
       <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Last 7 days</p>
-      <div style={{ background: mode === "fast" ? "linear-gradient(135deg, #0f2a1a, #1a3a2a)" : "linear-gradient(135deg, #F0F8F0, #fff)", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.4)" : "0.5px solid rgba(122,158,126,0.3)", padding: "14px 16px", marginBottom: 12 }}>
+      <div style={{ background: "linear-gradient(135deg, #F0F8F0, #fff)", borderRadius: 18, border: "0.5px solid rgba(122,158,126,0.3)", padding: "14px 16px", marginBottom: 12 }}>
         <p style={{ fontSize: 11, color: "#7A9E7E", fontWeight: 600, margin: "0 0 10px" }}>⚡ Energy</p>
         <svg width="100%" height="80" viewBox="0 0 300 80" preserveAspectRatio="none">
           {days7.map((day, i) => { const val = day.data?.energy || 0; const x = (i/6)*260+20; const y = val ? 70-((val-1)/4)*55 : null; return y ? <circle key={i} cx={x} cy={y} r="4" fill={i===6?"#7A9E7E":"#C5D9C5"} /> : null; })}
@@ -737,7 +737,7 @@ if (saved) {
         </div>
       )}
       <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
-        <p style={{ fontSize: 11, color: "#C97B7B", fontWeight: 600, margin: "0 0 10px" }}>💭 Mood this week</p>
+        <p style={{ fontSize: 11, color: mode === "fast" ? "#7A9E7E" : "#C97B7B", fontWeight: 600, margin: "0 0 10px" }}>💭 Mood this week</p>
         <div style={{ display: "flex", gap: 4 }}>
           {days7.map((day, i) => { const moods=day.data?.namedMoods||[]; const moodMap={Happy:"😊",Calm:"😌",Energized:"⚡",Tired:"😴",Sad:"🥺",Anxious:"😰",Irritated:"😤",Emotional:"🥹",Unmotivated:"😶",Overwhelmed:"😵"}; const emoji=moods.length>0?(moodMap[moods[0]]||"🌿"):day.data?.namedMood?(moodMap[day.data.namedMood]||"🌿"):"·"; return (
             <div key={i} style={{ flex: 1, textAlign: "center" }}>
@@ -930,6 +930,7 @@ if (saved) {
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Select all that apply today</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {[
+            { val: "none",          label: "None today",     emoji: "✅" },
             { val: "headache",      label: "Headache",       emoji: "🤕" },
             { val: "fatigue",       label: "Fatigue",        emoji: "🔋" },
             { val: "brain fog",     label: "Brain fog",      emoji: "🧠" },
@@ -957,6 +958,7 @@ if (saved) {
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Select all that apply today</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {[
+            { val: "none",              label: "None today",        emoji: "✅" },
             { val: "cramps",            label: "Cramps",            emoji: "⚡" },
             { val: "headache",          label: "Headache",          emoji: "🤕" },
             { val: "breast tenderness", label: "Breast tenderness", emoji: "💗" },
@@ -1059,7 +1061,7 @@ if (saved) {
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Optional — helps Lumen support your digestion</p>
         <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
           <button onClick={() => { setDidPoopToday(true); setShowBowelCheck(true); }} style={{ padding: "8px 16px", borderRadius: 50, border: "none", background: didPoopToday ? "#7A9E7E" : "#EAF2EA", color: didPoopToday ? "#fff" : "#5C7F60", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>✅ Yes, I pooped</button>
-          <button onClick={() => { setDidPoopToday(false); setShowBowelCheck(false); }} style={{ padding: "8px 16px", borderRadius: 50, border: "none", background: !didPoopToday ? "#C97B7B" : "#FDEAEA", color: !didPoopToday ? "#fff" : "#C97B7B", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>🚫 Not today</button>
+          <button onClick={() => { setDidPoopToday(false); setShowBowelCheck(false); }} style={{ padding: "8px 16px", borderRadius: 50, border: "none", background: !didPoopToday ? "#8FA090" : "#F0F6F0", color: !didPoopToday ? "#fff" : "#8FA090", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>🚫 Not today</button>
         </div>
         {didPoopToday && (
           <div>
@@ -1400,7 +1402,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
             {periodMsg}
           </div>
         )}
-        <button onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }} style={{ width: 52, height: 52, borderRadius: "50%", background: "#C97B7B", border: "none", color: "#fff", fontSize: 26, cursor: "pointer", boxShadow: "0 4px 16px rgba(201,123,123,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <button onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }} style={{ width: 52, height: 52, borderRadius: "50%", background: mode === "fast" ? "#5C7F60" : "#C97B7B", border: "none", color: "#fff", fontSize: 26, cursor: "pointer", boxShadow: mode === "fast" ? "0 4px 16px rgba(92,127,96,0.4)" : "0 4px 16px rgba(201,123,123,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           +
         </button>
       </div>
