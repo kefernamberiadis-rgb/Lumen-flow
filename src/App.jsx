@@ -524,6 +524,15 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
 function CheckInScreen({ mode, onNavigate, onNourishDigestion }) {
   const today = new Date().toISOString().split("T")[0];
   const key   = `lf_checkin_${today}`;
+  const autoSave = (() => { try { return JSON.parse(localStorage.getItem("lf_settings"))?.autoSave; } catch (e) { return false; } })();
+
+  const autoSaveData = (updates) => {
+    if (!autoSave) return;
+    try {
+      const existing = JSON.parse(localStorage.getItem(key)) || {};
+      localStorage.setItem(key, JSON.stringify({ ...existing, ...updates, date: today }));
+    } catch (e) {}
+  };
 
   const [saved,  setSaved]  = useState(() => {
     try { return JSON.parse(localStorage.getItem(key)) || null; } catch { return null; }
@@ -546,6 +555,8 @@ function CheckInScreen({ mode, onNavigate, onNourishDigestion }) {
   const [workout, setWorkout] = useState(3);
   const [sleep, setSleep] = useState(3);
   const [water, setWater] = useState(() => parseInt(localStorage.getItem("lf_water_today") || "0"));
+
+  
   const [movement, setMovement] = useState("none");
   const [movements, setMovements] = useState([]);
   const MOVEMENT_TYPES = ["🚶 Walk","🏃 Run","🏋️ Weights","🧘 Yoga","⚡ HIIT","🚴 Cycling","🏊 Swimming","🏀 Sport","💃 Dance","🤸 Stretching","🌀 Mobility","🧘 Pilates","🌿 Yard work","🔨 Carpentry","🎨 Painting","🧹 Cleaning","📦 Moving","🛒 Errands","🪴 Gardening","🛌 None today","🌙 Rest day"];
@@ -1882,6 +1893,17 @@ function SettingsScreen({ settings, onSave }) {
         </button>
       </div>
 
+      <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>💾 Auto-save check-in</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 14px" }}>When on, your check-in saves automatically as you log. Resets at midnight each day.</p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E" }}>{settings.autoSave ? "✅ Auto-save is on" : "⭕ Auto-save is off"}</span>
+          <button onClick={() => onSave({ ...settings, autoSave: !settings.autoSave })} style={{ padding: "8px 18px", borderRadius: 50, border: "none", background: settings.autoSave ? "#7A9E7E" : "#EAF2EA", color: settings.autoSave ? "#fff" : "#5C7F60", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>
+            {settings.autoSave ? "Turn off" : "Turn on"}
+          </button>
+        </div>
+      </div>
+
       <div style={{ ...s.card, textAlign: "center" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>⚡ Switch experience</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 12px" }}>Currently using: {settings.mode === "fast" ? "Fasting focus" : "Cycle tracking"}</p>
@@ -2618,6 +2640,20 @@ function getGreeting() {
 //  ROOT APP
 // ─────────────────────────────────────────────
 export default function App() {
+  useEffect(() => {
+    const checkMidnight = () => {
+      const lastDate = localStorage.getItem("lf_last_date");
+      const today = new Date().toISOString().split("T")[0];
+      if (lastDate && lastDate !== today) {
+        localStorage.setItem("lf_water_today", "0");
+      }
+      localStorage.setItem("lf_last_date", today);
+    };
+    checkMidnight();
+    const interval = setInterval(checkMidnight, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   const [settings, setSettings] = useState(() => {
     try {
       const saved = localStorage.getItem("lf_settings");
