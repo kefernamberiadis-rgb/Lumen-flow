@@ -521,7 +521,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
 // ─────────────────────────────────────────────
 //  CHECK-IN SCREEN
 // ─────────────────────────────────────────────
-function CheckInScreen({ mode, onNavigate }) {
+function CheckInScreen({ mode, onNavigate, onNourishDigestion }) {
   const today = new Date().toISOString().split("T")[0];
   const key   = `lf_checkin_${today}`;
 
@@ -534,7 +534,7 @@ function CheckInScreen({ mode, onNavigate }) {
   const [notes,  setNotes]  = useState("");
 
   const save = () => {
-    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, movements, bodyCheck, weightUnit, namedMood, symptoms, bowelCheck: { didPoopToday, bowelTime, bowelTexture, bowelNotes } };
+    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, movements, bodyCheck, weightUnit, namedMood, symptoms, bowelCheck: { entries: bowelEntries, didPoopToday: bowelEntries.length > 0 } };
     localStorage.setItem(key, JSON.stringify(data));
     setSaved(data);
   };
@@ -561,8 +561,8 @@ function CheckInScreen({ mode, onNavigate }) {
   const [bodyCheck, setBodyCheck] = useState("");
   const [symptoms, setSymptoms] = useState([]);
   const [weightUnit, setWeightUnit] = useState("lbs");
-  const [showBowelCheck, setShowBowelCheck] = useState(false);
-  const [didPoopToday, setDidPoopToday] = useState(false);
+  const [bowelEntries, setBowelEntries] = useState([]);
+  const [showBowelForm, setShowBowelForm] = useState(false);
   const [bowelTime, setBowelTime] = useState("");
   const [bowelTexture, setBowelTexture] = useState("");
   const [bowelNotes, setBowelNotes] = useState("");
@@ -748,17 +748,24 @@ if (saved) {
         </div>
       </div>
       <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "#fff", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
-        <p style={{ fontSize: 11, color: "#7A9E7E", fontWeight: 600, margin: "0 0 10px" }}>🚽 Bowel Movement — last 7 days</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <p style={{ fontSize: 11, color: "#7A9E7E", fontWeight: 600, margin: 0 }}>🚽 Bowel Movement — last 7 days</p>
+          <button onClick={() => onNourishDigestion && onNourishDigestion()} style={{ background: "rgba(122,158,126,0.1)", border: "0.5px solid rgba(122,158,126,0.3)", borderRadius: 50, padding: "4px 10px", fontFamily: "sans-serif", fontSize: 10, color: "#7A9E7E", cursor: "pointer" }}>🌱 Get support ›</button>
+        </div>
         <div style={{ display: "flex", gap: 4 }}>
           {days7.map((day, i) => {
             const bowel = day.data?.bowelCheck;
-            const didPoop = bowel?.didPoopToday;
-            const texture = bowel?.bowelTexture || "";
-            const color = texture.includes("Rocky") || texture.includes("pellets") || texture.includes("Straining") || texture.includes("Painful") ? "#C97B7B" : texture.includes("Liquid") || texture.includes("Semi-liquid") ? "#7BA8C9" : texture.includes("Normal") || texture.includes("Soft") ? "#7A9E7E" : didPoop ? "#C9A87B" : "transparent";
-            const emoji = didPoop === false ? "🚫" : didPoop === true ? "✅" : "·";
+            const entries = bowel?.entries || [];
+            const count = entries.length;
+            const didPoop = bowel?.didPoopToday || count > 0;
+            const textures = entries.map(e => e.texture || "");
+            const hasHard = textures.some(t => t.includes("Rocky") || t.includes("pellets") || t.includes("Straining") || t.includes("Painful"));
+            const hasLoose = textures.some(t => t.includes("Liquid") || t.includes("Semi-liquid"));
+            const color = count === 0 ? "rgba(150,150,150,0.08)" : hasHard ? "#C97B7B" : hasLoose ? "#7BA8C9" : "#7A9E7E";
+            const display = count === 0 ? "·" : count > 1 ? `${count}x` : "✅";
             return (
               <div key={i} style={{ flex: 1, textAlign: "center" }}>
-                <div style={{ width: "100%", height: 24, borderRadius: 6, background: color, border: "0.5px solid rgba(150,150,150,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>{emoji}</div>
+                <div style={{ width: "100%", height: 28, borderRadius: 6, background: color, border: "0.5px solid rgba(150,150,150,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: count > 1 ? 10 : 12, fontWeight: count > 1 ? 700 : 400, color: count > 0 ? "#fff" : "#A8BEA8", fontFamily: "sans-serif" }}>{display}</div>
                 <div style={{ fontSize: 8, color: "#A8BEA8", marginTop: 3 }}>{day.label}</div>
               </div>
             );
@@ -1085,13 +1092,23 @@ if (saved) {
 
       <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🚽 Bowel Check</p>
-        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Optional — helps Lumen support your digestion</p>
-        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-          <button onClick={() => { setDidPoopToday(true); setShowBowelCheck(true); }} style={{ padding: "8px 16px", borderRadius: 50, border: "none", background: didPoopToday ? "#7A9E7E" : "#EAF2EA", color: didPoopToday ? "#fff" : "#5C7F60", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>✅ Yes, I pooped</button>
-          <button onClick={() => { setDidPoopToday(false); setShowBowelCheck(false); }} style={{ padding: "8px 16px", borderRadius: 50, border: "none", background: !didPoopToday ? "#8FA090" : "#F0F6F0", color: !didPoopToday ? "#fff" : "#8FA090", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>🚫 Not today</button>
-        </div>
-        {didPoopToday && (
-          <div>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Log each bowel movement separately — you can add as many as needed</p>
+        {bowelEntries.length > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            {bowelEntries.map((entry, i) => (
+              <div key={i} style={{ background: "#F0F6F0", borderRadius: 12, padding: "10px 12px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#2D3B2E", margin: 0, fontWeight: 600 }}>{entry.texture || "Logged"} · {entry.time || "—"}</p>
+                  {entry.notes && <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "2px 0 0" }}>{entry.notes}</p>}
+                </div>
+                <button onClick={() => setBowelEntries(prev => prev.filter((_, idx) => idx !== i))} style={{ background: "none", border: "none", color: "#C97B7B", fontSize: 11, cursor: "pointer", fontFamily: "sans-serif" }}>Remove</button>
+              </div>
+            ))}
+          </div>
+        )}
+        <button onClick={() => setShowBowelForm(!showBowelForm)} style={{ width: "100%", padding: 10, borderRadius: 12, border: "1px dashed #C5D9C5", background: "none", color: "#7A9E7E", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", marginBottom: showBowelForm ? 12 : 0 }}>+ Log bowel movement</button>
+        {showBowelForm && (
+          <div style={{ background: "#F0F6F0", borderRadius: 14, padding: 12, marginTop: 8 }}>
             <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>When?</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
               {["🌅 Morning","☀️ Afternoon","🌆 Evening","🌙 Night"].map(t => (
@@ -1105,7 +1122,16 @@ if (saved) {
               ))}
             </div>
             <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Any notes?</p>
-            <input value={bowelNotes} onChange={e => setBowelNotes(e.target.value)} placeholder="Optional — anything you want to remember" style={{ ...s.input, marginBottom: 0 }} />
+            <input value={bowelNotes} onChange={e => setBowelNotes(e.target.value)} placeholder="Optional — anything you want to remember" style={{ ...s.input, marginBottom: 12 }} />
+            <button onClick={() => {
+              if (bowelTime || bowelTexture) {
+                setBowelEntries(prev => [...prev, { time: bowelTime, texture: bowelTexture, notes: bowelNotes }]);
+                setBowelTime("");
+                setBowelTexture("");
+                setBowelNotes("");
+                setShowBowelForm(false);
+              }
+            }} style={{ ...s.btn, fontSize: 13, padding: "10px 0", background: "#7A9E7E" }}>+ Add this entry</button>
           </div>
         )}
       </div>
@@ -1911,10 +1937,18 @@ const RECIPES = [
 const DIET_TYPES    = ["All","High Protein","Low Carb","High Carb","Keto","Carnivore","Vegan","Vegetarian","Mediterranean","Paleo","Gluten-Free","Caribbean"];
 const PHASE_FILTERS = ["All","Menstrual","Follicular","Ovulation","Luteal"];
 
-function RecipesScreen({ phase, onNavigate, mode }) {
+function RecipesScreen({ phase, onNavigate, mode, digestionPreset, onClearDigestionPreset }) {
   const [cravingType, setCravingType] = useState([]);
   const [nourishTab, setNourishTab] = useState("cravings");
-  const [nourishSupportFilter, setNourishSupportFilter] = useState(null);
+  const [nourishSupportFilter, setNourishSupportFilter] = useState(digestionPreset ? "digestion" : null);
+  const [cravingOverride, setCravingOverride] = useState(false);
+
+  useEffect(() => {
+    if (digestionPreset) {
+      setNourishSupportFilter("digestion");
+      onClearDigestionPreset && onClearDigestionPreset();
+    }
+  }, [digestionPreset]);
 
 const CRAVINGS = {
     "Sweet": {
@@ -2016,7 +2050,7 @@ const CRAVINGS = {
         <p style={{ fontSize: 13, color: "#2D3B2E", fontWeight: 600, margin: "0 0 12px" }}>What are you craving right now?</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {cravingKeys.map(key => (
-            <button key={key} onClick={() => setCravingType(prev => Array.isArray(prev) ? (prev.includes(key) ? prev.filter(x => x !== key) : [...prev, key]) : [key])} style={{
+            <button key={key} onClick={() => { setCravingType(prev => Array.isArray(prev) ? (prev.includes(key) ? prev.filter(x => x !== key) : [...prev, key]) : [key]); setNourishSupportFilter(null); }} style={{
               padding: "8px 14px", borderRadius: 50, border: "0.5px solid #dce8dc",
               background: (Array.isArray(cravingType) ? cravingType.includes(key) : cravingType === key) ? "#7A9E7E" : "#F8FAF8",
               color: (Array.isArray(cravingType) ? cravingType.includes(key) : cravingType === key) ? "#fff" : "#4a5a4b",
@@ -2166,11 +2200,12 @@ const CRAVINGS = {
 
     if (filter === "digestion") {
       const bowel = ctx.bowelCheck;
-      const didPoop = bowel?.didPoopToday;
-      const texture = bowel?.bowelTexture || "";
-      const hard = texture.includes("Rocky") || texture.includes("pellets") || texture.includes("Straining") || texture.includes("Painful");
-      const loose = texture.includes("Semi-liquid") || texture.includes("Liquid");
-      const noPoop = didPoop === false;
+      const entries = bowel?.entries || [];
+      const didPoop = bowel?.didPoopToday || entries.length > 0;
+      const noPoop = !didPoop && bowel !== undefined;
+      const textures = entries.map(e => e.texture || "").join(" ");
+      const hard = textures.includes("Rocky") || textures.includes("pellets") || textures.includes("Straining") || textures.includes("Painful");
+      const loose = textures.includes("Semi-liquid") || textures.includes("Liquid");
       const why = noPoop || hard
         ? "Your check-in suggests things may be moving slowly today. These options may gently support your digestion."
         : loose
@@ -2592,6 +2627,7 @@ export default function App() {
 
   const [screen, setScreen] = useState("home");
   const [showWaitlist, setShowWaitlist] = useState(false);
+  const [nourishDigestionPreset, setNourishDigestionPreset] = useState(false);
 
   const saveSettings = (data) => {
     setSettings(data);
@@ -2633,8 +2669,8 @@ export default function App() {
       <div style={s.container}>
         {screen === "home"     && <HomeScreen     name={settings.name} lastPeriod={settings.lastPeriod} mode={settings.mode || "cycle"} settings={settings} />}
         {screen === "calendar" && <CalendarScreen lastPeriod={settings.lastPeriod} cycleLength={settings.cycleLength || 28} periodLength={settings.periodLength || 7} mode={settings.mode || "cycle"} onSave={(date, cycleLen, periodLen) => saveSettings({...settings, lastPeriod: date, cycleLength: cycleLen || settings.cycleLength || 28, periodLength: periodLen || settings.periodLength || 7})} onNavigate={setScreen} />}
-       {screen === "recipes"  && <RecipesScreen phase={getPhase(getCycleDay(settings.lastPeriod))} onNavigate={setScreen} mode={settings.mode || "cycle"} />}
-        {screen === "checkin"  && <CheckInScreen mode={settings.mode || "cycle"} onNavigate={setScreen} />}
+       {screen === "recipes"  && <RecipesScreen phase={getPhase(getCycleDay(settings.lastPeriod))} onNavigate={setScreen} mode={settings.mode || "cycle"} digestionPreset={nourishDigestionPreset} onClearDigestionPreset={() => setNourishDigestionPreset(false)} />}
+        {screen === "checkin"  && <CheckInScreen mode={settings.mode || "cycle"} onNavigate={setScreen} onNourishDigestion={() => { setScreen("recipes"); setNourishDigestionPreset(true); }} />}
         {screen === "learn"    && <LearnScreen mode={settings.mode || "cycle"} />}
         {screen === "settings" && <SettingsScreen settings={settings} onSave={saveSettings} />}
 
