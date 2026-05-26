@@ -545,7 +545,7 @@ function CheckInScreen({ mode, onNavigate }) {
   const [clarity, setClarity] = useState(3);
   const [workout, setWorkout] = useState(3);
   const [sleep, setSleep] = useState(3);
-  const [water, setWater] = useState(0);
+  const [water, setWater] = useState(() => parseInt(localStorage.getItem("lf_water_today") || "0"));
   const [movement, setMovement] = useState("none");
   const [movements, setMovements] = useState([]);
   const MOVEMENT_TYPES = ["🚶 Walk","🏃 Run","🏋️ Weights","🧘 Yoga","⚡ HIIT","🚴 Cycling","🏊 Swimming","🏀 Sport","💃 Dance","🤸 Stretching","🌀 Mobility","🧘 Pilates","🌿 Yard work","🔨 Carpentry","🎨 Painting","🧹 Cleaning","📦 Moving","🛒 Errands","🪴 Gardening","🛌 None today","🌙 Rest day"];
@@ -628,8 +628,8 @@ if (saved) {
       return "Every check-in is a small act of self-awareness. You are building a picture of your body over time — that is powerful.";
     })();
     return (
-    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: "linear-gradient(160deg, #E8EAF6 0%, #F3E5F5 35%, #FCE4EC 65%, #FFF8E7 100%)", minHeight: "100vh" }}>
-      <div style={{ background: "rgba(255,255,255,0.75)", borderRadius: 20, padding: 20, marginBottom: 16, textAlign: "center", border: "0.5px solid rgba(180,160,210,0.3)" }}>
+    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: mode === "fast" ? "linear-gradient(180deg, #0c1410 0%, #141e16 40%, #0f1a12 100%)" : "linear-gradient(160deg, #E8EAF6 0%, #F3E5F5 35%, #FCE4EC 65%, #FFF8E7 100%)", minHeight: "100vh" }}>
+      <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.75)", borderRadius: 20, padding: 20, marginBottom: 16, textAlign: "center", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid rgba(180,160,210,0.3)" }}>
         <p style={{ fontSize: 28, marginBottom: 6 }}>✦</p>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 18, color: "#2D3B2E", marginBottom: 4 }}>Today's check-in saved!</p>
         <p style={{ fontSize: 12, color: "#8FA090" }}>Come back tomorrow 🌿</p>
@@ -687,7 +687,7 @@ if (saved) {
       <button onClick={() => setSaved(null)} style={{ width: "100%", padding: "10px", borderRadius: 50, border: "0.5px solid #dce8dc", background: "#fff", color: "#5C7F60", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", marginBottom: 20 }}>✎ Edit Check-In</button>
       <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>Your Lumen Trends ✦</p>
       <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Last 7 days</p>
-      <div style={{ background: "linear-gradient(135deg, #F0F8F0, #fff)", borderRadius: 18, border: "0.5px solid rgba(122,158,126,0.3)", padding: "14px 16px", marginBottom: 12 }}>
+      <div style={{ background: mode === "fast" ? "linear-gradient(135deg, #0f2a1a, #1a3a2a)" : "linear-gradient(135deg, #F0F8F0, #fff)", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.4)" : "0.5px solid rgba(122,158,126,0.3)", padding: "14px 16px", marginBottom: 12 }}>
         <p style={{ fontSize: 11, color: "#7A9E7E", fontWeight: 600, margin: "0 0 10px" }}>⚡ Energy</p>
         <svg width="100%" height="80" viewBox="0 0 300 80" preserveAspectRatio="none">
           {days7.map((day, i) => { const val = day.data?.energy || 0; const x = (i/6)*260+20; const y = val ? 70-((val-1)/4)*55 : null; return y ? <circle key={i} cx={x} cy={y} r="4" fill={i===6?"#7A9E7E":"#C5D9C5"} /> : null; })}
@@ -2137,12 +2137,50 @@ const CRAVINGS = {
 
     if (filter === "digestion") {
       const bowel = ctx.bowelCheck;
-      const hard = bowel?.bowelTexture?.includes("Rocky") || bowel?.bowelTexture?.includes("pellets") || bowel?.bowelTexture?.includes("Straining") || bowel?.bowelTexture?.includes("Painful");
+      const didPoop = bowel?.didPoopToday;
+      const texture = bowel?.bowelTexture || "";
+      const hard = texture.includes("Rocky") || texture.includes("pellets") || texture.includes("Straining") || texture.includes("Painful");
+      const loose = texture.includes("Semi-liquid") || texture.includes("Liquid");
+      const noPoop = didPoop === false;
+      const why = noPoop || hard
+        ? "Your check-in suggests things may be moving slowly today. These options may gently support your digestion."
+        : loose
+        ? "Your check-in suggests your digestion may need something settling and nourishing today."
+        : "These gentle options may support your digestion today.";
+      const items = noPoop || hard ? [
+        "Warm water with lemon first thing — may help get things moving",
+        "Oatmeal with chia seeds and berries",
+        "Prunes or prune juice — a small amount goes a long way",
+        "Pear, apple, or kiwi — high in gut-supportive fibre",
+        "Greek yogurt with berries and a sprinkle of flaxseed",
+        "Lentil or bean-based soup or meal",
+        "Sweet potato with leafy greens",
+        "A gentle 10–15 minute walk after eating may help",
+        "Stay well hydrated — warm water works especially well",
+      ] : loose ? [
+        "Plain rice or plain toast — gentle and settling",
+        "Banana — easy on the gut",
+        "Boiled or scrambled eggs",
+        "Plain Greek yogurt with no added fruit",
+        "Warm broth or plain soup",
+        "Avoid raw vegetables, spicy food, and caffeine today",
+        "Stay hydrated with water and plain herbal tea",
+        "Rest if your body is asking for it",
+      ] : [
+        "Warm water with lemon first thing",
+        "Oatmeal with chia seeds and berries",
+        "Prunes, pear, apple, or kiwi",
+        "Greek yogurt with berries and flaxseed",
+        "Lentil soup or bean-based meal",
+        "Sweet potato with leafy greens",
+        "A gentle walk after eating",
+        "Stay well hydrated throughout the day",
+      ];
       return {
         label: "🌱 Digestion Support",
-        why: hard ? "Your bowel check suggests things may be moving slowly. These options may help support regularity gently." : "These gentle options may support your digestion today.",
-        items: ["Warm water with lemon first thing", "Oatmeal with chia seeds and berries", "Prunes or prune juice — a small amount goes a long way", "Pear, apple, or kiwi — all high in gut-supportive fibre", "Greek yogurt with berries and a sprinkle of flaxseed", "Lentil soup or bean-based meal", "Sweet potato with leafy greens", "A gentle 10-15 minute walk after eating", "Stay well hydrated throughout the day"],
-        note: "This is wellness support, not medical advice. If symptoms are severe, persistent, or unusual — speak with a healthcare provider.",
+        why,
+        items,
+        note: "Wellness support only — not medical advice. If symptoms are severe, persistent, include blood, fever, or vomiting, please contact a healthcare provider.",
       };
     }
 
