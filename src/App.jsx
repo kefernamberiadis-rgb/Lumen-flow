@@ -580,6 +580,7 @@ function CheckInScreen({ mode, onNavigate, onNourishDigestion }) {
   const [bowelDate, setBowelDate] = useState(today);
   const ratingEmojis = ["😞","😔","😐","🙂","😄"];
   const [namedMood, setNamedMood] = useState(null);
+  const [showLogPreview, setShowLogPreview] = useState(false);
 
   const NAMED_MOODS = {
     "Happy":       { emoji: "😊", color: "#7A9E7E", bg: "#F0F6F0", message: "You're glowing today. Let that energy carry you gently through the day.", actions: ["Open Nourish", "Log a fast", "Add Note"] },
@@ -818,8 +819,46 @@ if (saved) {
   }
   return (
     <div style={{ padding: "16px 16px 90px", background: mode === "fast" ? "linear-gradient(160deg, #1a2f1e 0%, #1e3524 40%, #162a1a 100%)" : "linear-gradient(160deg, #E8EAF6 0%, #F3E5F5 30%, #FCE4EC 60%, #FFF8E7 100%)", minHeight: "100vh" }}>
-      <h3 style={{ ...s.title, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E" }}>Daily Check-In {mode !== "fast" ? "🌸" : ""}</h3>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+        <h3 style={{ ...s.title, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: 0 }}>Daily Check-In {mode !== "fast" ? "🌸" : ""}</h3>
+        <button onClick={() => setShowLogPreview(true)} style={{ background: mode === "fast" ? "rgba(201,168,76,0.1)" : "rgba(155,123,201,0.1)", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(155,123,201,0.3)", borderRadius: 50, padding: "6px 12px", fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", cursor: "pointer" }}>📋 View log</button>
+      </div>
       <p style={{ ...s.label, marginBottom: 20 }}>How are you feeling today?</p>
+
+      {showLogPreview && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setShowLogPreview(false)}>
+          <div style={{ background: mode === "fast" ? "#1a2f1e" : "#fff", borderRadius: 24, padding: 24, width: "100%", maxWidth: 400, position: "relative" }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowLogPreview(false)} style={{ position: "absolute", top: 12, right: 16, background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#8FA090" }}>✕</button>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 16px" }}>📋 Today so far</p>
+            {(() => {
+              try {
+                const existing = JSON.parse(localStorage.getItem(key)) || {};
+                if (Object.keys(existing).length === 0) return <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#8FA090", textAlign: "center" }}>Nothing logged yet today.</p>;
+                return (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    {[
+                      { label: "⚡ Energy", value: existing.energy ? ["Very low","Low","Neutral","Good","Great"][existing.energy-1] : "—" },
+                      { label: "🌙 Sleep", value: existing.sleep ? ["Poor","Light","Fair","Good","Great"][existing.sleep-1] : "—" },
+                      { label: "💧 Water", value: existing.water ? `${existing.water} glasses` : "—" },
+                      { label: "💭 Mood", value: existing.namedMood || "—" },
+                      { label: "🚽 Bowel", value: existing.bowelCheck?.entries?.length ? `${existing.bowelCheck.entries.length} logged` : "—" },
+                      { label: "🩺 Symptoms", value: existing.symptoms?.length ? existing.symptoms.slice(0,2).join(", ") : "—" },
+                      { label: "🌿 Body", value: existing.bodyCheck ? `${existing.bodyCheck} ${existing.weightUnit||"lbs"}` : "—" },
+                      { label: "🏃 Movement", value: existing.movements?.length ? `${existing.movements.length} logged` : "—" },
+                    ].map((item, i) => (
+                      <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "#F8FAF8", borderRadius: 10, padding: "8px 10px", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.2)" : "0.5px solid #dce8dc" }}>
+                        <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 3px" }}>{item.label}</p>
+                        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", fontWeight: 600, margin: 0 }}>{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                );
+              } catch (e) { return null; }
+            })()}
+            <button onClick={() => setShowLogPreview(false)} style={{ ...s.btn, marginTop: 16, background: mode === "fast" ? "#7A9E7E" : "linear-gradient(135deg, #C4809A, #A87898)", fontSize: 13 }}>Close</button>
+          </div>
+        </div>
+      )}
 
       <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>⚡ Energy</p>
