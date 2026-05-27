@@ -577,6 +577,7 @@ function CheckInScreen({ mode, onNavigate, onNourishDigestion }) {
   const [bowelTime, setBowelTime] = useState("");
   const [bowelTexture, setBowelTexture] = useState("");
   const [bowelNotes, setBowelNotes] = useState("");
+  const [bowelDate, setBowelDate] = useState(today);
   const ratingEmojis = ["😞","😔","😐","🙂","😄"];
   const [namedMood, setNamedMood] = useState(null);
 
@@ -1120,6 +1121,8 @@ if (saved) {
         <button onClick={() => setShowBowelForm(!showBowelForm)} style={{ width: "100%", padding: 10, borderRadius: 12, border: "1px dashed #C5D9C5", background: "none", color: "#7A9E7E", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", marginBottom: showBowelForm ? 12 : 0 }}>+ Log bowel movement</button>
         {showBowelForm && (
           <div style={{ background: "#F0F6F0", borderRadius: 14, padding: 12, marginTop: 8 }}>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Which day?</p>
+            <input type="date" value={bowelDate} max={today} onChange={e => setBowelDate(e.target.value)} style={{ ...s.input, marginBottom: 12 }} />
             <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>When?</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
               {["🌅 Morning","☀️ Afternoon","🌆 Evening","🌙 Night"].map(t => (
@@ -1136,10 +1139,21 @@ if (saved) {
             <input value={bowelNotes} onChange={e => setBowelNotes(e.target.value)} placeholder="Optional — anything you want to remember" style={{ ...s.input, marginBottom: 12 }} />
             <button onClick={() => {
               if (bowelTime || bowelTexture) {
-                setBowelEntries(prev => [...prev, { time: bowelTime, texture: bowelTexture, notes: bowelNotes }]);
+                const entry = { time: bowelTime, texture: bowelTexture, notes: bowelNotes, date: bowelDate };
+                if (bowelDate === today) {
+                  setBowelEntries(prev => [...prev, entry]);
+                } else {
+                  const pastKey = `lf_checkin_${bowelDate}`;
+                  try {
+                    const existing = JSON.parse(localStorage.getItem(pastKey)) || {};
+                    const existingEntries = existing.bowelCheck?.entries || [];
+                    localStorage.setItem(pastKey, JSON.stringify({ ...existing, date: bowelDate, bowelCheck: { entries: [...existingEntries, entry], didPoopToday: true } }));
+                  } catch (e) {}
+                }
                 setBowelTime("");
                 setBowelTexture("");
                 setBowelNotes("");
+                setBowelDate(today);
                 setShowBowelForm(false);
               }
             }} style={{ ...s.btn, fontSize: 13, padding: "10px 0", background: "#7A9E7E" }}>+ Add this entry</button>
