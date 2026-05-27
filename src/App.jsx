@@ -1491,11 +1491,54 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
 // ─────────────────────────────────────────────
 //  LEARN SCREEN
 // ─────────────────────────────────────────────
+function MoveMapCard({ item, mode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : item.bg, borderRadius: 16, border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.15)" : `0.5px solid ${item.color}33`, overflow: "hidden" }}>
+      <button onClick={() => setOpen(!open)} style={{ width: "100%", padding: "14px 16px", background: "none", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", textAlign: "left" }}>
+        <div>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : item.color, margin: "0 0 2px" }}>{item.group}</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#7A9E7E" : "#8FA090", margin: 0 }}>{item.phase}</p>
+        </div>
+        <span style={{ fontSize: 18, color: mode === "fast" ? "#C9A84C" : item.color }}>{open ? "▴" : "▾"}</span>
+      </button>
+      {open && (
+        <div style={{ padding: "0 16px 16px" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : item.color, margin: "0 0 12px", lineHeight: 1.6 }}>⚡ Fasting: {item.fasting}</p>
+          {item.exercises.map((ex, i) => (
+            <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.7)", borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: 0 }}>{ex.name}</p>
+                <span style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#C9A84C" : item.color, background: mode === "fast" ? "rgba(201,168,76,0.1)" : `${item.color}22`, borderRadius: 50, padding: "2px 8px", whiteSpace: "nowrap", marginLeft: 8 }}>{ex.level}</span>
+              </div>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#5C7F60", margin: "0 0 4px" }}>🔁 {ex.reps}</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#a8c4a8" : "#6b7b6b", margin: "0 0 4px" }}>🛠️ {ex.equipment}</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#a8c4a8" : "#6b7b6b", margin: 0, fontStyle: "italic" }}>💡 {ex.tip}</p>
+            </div>
+          ))}
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : item.color, margin: "8px 0 0", lineHeight: 1.6 }}>⚠️ {item.note}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LearnScreen({ mode }) {
   const [tab, setTab] = useState(mode === "fast" ? "Fasting" : "Phases");
   const tabs = mode === "fast" 
-    ? ["Fasting", "Men", "Glossary", "Workouts", "Nutrition", "Cravings", "Grooming", "Gut Health"]
-    : ["Fasting", "Phases", "Conditions", "Men", "Glossary", "Workouts", "Nutrition", "Blood Color", "Cravings", "Cycle Guide", "Gut Health"];
+    ? ["Fasting", "Move Map", "Men", "Glossary", "Workouts", "Nutrition", "Cravings", "Grooming", "Gut Health"]
+    : ["Fasting", "Move Map", "Phases", "Conditions", "Men", "Glossary", "Workouts", "Nutrition", "Blood Color", "Cravings", "Cycle Guide", "Gut Health"];
+
+  const MOVE_MAP = [
+    { group: "🔥 Core", color: "#C9A87B", bg: "#FDF6EA", phase: "All phases — gentler in Menstrual and Luteal", fasting: "Core work is great fasted — low intensity, high focus", exercises: [{ name: "Dead bug", reps: "8–10 reps each side", equipment: "None", level: "Beginner", tip: "Press lower back into floor throughout" }, { name: "Plank hold", reps: "20–40 seconds", equipment: "None", level: "Beginner", tip: "Keep hips level, breathe steadily" }, { name: "Bird dog", reps: "8 reps each side", equipment: "None", level: "Beginner", tip: "Move slowly and with control" }, { name: "Hollow hold", reps: "15–20 seconds", equipment: "None", level: "Intermediate", tip: "Press ribs down, avoid holding your breath" }, { name: "Pallof press", reps: "10 reps each side", equipment: "Resistance band", level: "Intermediate", tip: "Resist rotation — that is the work" }], note: "Avoid heavy core work during heavy flow days. Listen to your body." },
+    { group: "🍑 Glutes", color: "#C97B7B", bg: "#FDEAEA", phase: "Best in Follicular and Ovulation — lighter in Luteal and Menstrual", fasting: "Moderate intensity glute work is fine fasted — stay hydrated", exercises: [{ name: "Glute bridge", reps: "15 reps", equipment: "None", level: "Beginner", tip: "Squeeze at the top for 2 seconds" }, { name: "Clamshell", reps: "15 reps each side", equipment: "Optional band", level: "Beginner", tip: "Keep hips stacked, move from the hip not the waist" }, { name: "Side lying leg raise", reps: "12 reps each side", equipment: "None", level: "Beginner", tip: "Slow and controlled beats fast" }, { name: "Hip thrust", reps: "10–12 reps", equipment: "Bench and weight optional", level: "Intermediate", tip: "Drive through heels, not toes" }, { name: "Bulgarian split squat", reps: "8 reps each side", equipment: "Chair or bench", level: "Intermediate", tip: "Keep front knee tracking over toes" }], note: "Heavy glute work near your period may increase cramping for some. Adjust accordingly." },
+    { group: "🦵 Legs", color: "#9B7BC9", bg: "#F5F0FF", phase: "Peak performance in Ovulation — gentle in Menstrual", fasting: "Keep leg sessions moderate when fasted — heavy squats fed is better", exercises: [{ name: "Bodyweight squat", reps: "15 reps", equipment: "None", level: "Beginner", tip: "Sit back into hips, chest tall" }, { name: "Reverse lunge", reps: "10 reps each side", equipment: "None", level: "Beginner", tip: "Step back not forward — easier on the knee" }, { name: "Wall sit", reps: "30–45 seconds", equipment: "Wall", level: "Beginner", tip: "Thighs parallel to floor, back flat" }, { name: "Goblet squat", reps: "10–12 reps", equipment: "One weight or bottle", level: "Intermediate", tip: "Keep elbows inside knees at the bottom" }, { name: "Romanian deadlift", reps: "10 reps", equipment: "Weights optional", level: "Intermediate", tip: "Hinge at hips, soft knee, feel the hamstring stretch" }], note: "Leg DOMS can feel worse in the Luteal phase. Reduce volume if you feel unusually sore." },
+    { group: "🔙 Back", color: "#7BA8C9", bg: "#EAF2F9", phase: "Good in all phases — keep it gentle in Menstrual", fasting: "Back work is well suited to fasted training — posture focus", exercises: [{ name: "Cat cow stretch", reps: "10 slow cycles", equipment: "None", level: "Beginner", tip: "Breathe in on the arch, out on the round" }, { name: "Superman hold", reps: "8–10 reps, 3 second hold", equipment: "None", level: "Beginner", tip: "Lift from the back not the neck" }, { name: "Resistance band row", reps: "12 reps", equipment: "Resistance band", level: "Beginner", tip: "Pull elbows back, squeeze shoulder blades" }, { name: "Single arm dumbbell row", reps: "10 reps each side", equipment: "One weight", level: "Intermediate", tip: "Keep back flat, pull to hip not shoulder" }, { name: "Lat pulldown", reps: "10–12 reps", equipment: "Cable or band", level: "Intermediate", tip: "Pull bar to chest, lean back slightly" }], note: "If you experience lower back pain during your period, stick to gentle stretching only." },
+    { group: "💪 Arms", color: "#7A9E7E", bg: "#F0F6F0", phase: "Great in Follicular and Ovulation — lighter in Luteal", fasting: "Arm work fasted is fine — great for morning sessions", exercises: [{ name: "Wall push up", reps: "12–15 reps", equipment: "Wall", level: "Beginner", tip: "Keep body in a straight line" }, { name: "Bicep curl", reps: "12 reps", equipment: "Weights or water bottles", level: "Beginner", tip: "Slow on the way down — that is where the work happens" }, { name: "Tricep dip", reps: "10 reps", equipment: "Chair", level: "Beginner", tip: "Keep elbows pointing back not out" }, { name: "Hammer curl", reps: "10 reps", equipment: "Weights", level: "Intermediate", tip: "Neutral grip targets forearms and biceps together" }, { name: "Overhead tricep extension", reps: "12 reps", equipment: "One weight", level: "Intermediate", tip: "Keep elbows close to your head" }], note: "Arms are generally safe to train in all cycle phases. Go lighter if fatigue is high." },
+    { group: "🏔️ Shoulders", color: "#C9A87B", bg: "#FDF6EA", phase: "Best in Follicular and Ovulation", fasting: "Shoulder work fasted is well tolerated — keep weight moderate", exercises: [{ name: "Shoulder circles", reps: "10 forward, 10 back", equipment: "None", level: "Beginner", tip: "Warm up before any shoulder work" }, { name: "Lateral raise", reps: "12 reps", equipment: "Light weights", level: "Beginner", tip: "Lead with elbows not wrists, stop at shoulder height" }, { name: "Front raise", reps: "10 reps", equipment: "Light weights", level: "Beginner", tip: "Controlled — avoid swinging" }, { name: "Arnold press", reps: "10 reps", equipment: "Weights", level: "Intermediate", tip: "Rotate palms as you press up" }, { name: "Face pull", reps: "12 reps", equipment: "Resistance band", level: "Intermediate", tip: "Pull to face height, elbows high and wide" }], note: "Warm up thoroughly and avoid heavy overhead pressing during high fatigue days." },
+    { group: "💎 Chest", color: "#7BA8C9", bg: "#EAF2F9", phase: "Strongest in Follicular and Ovulation", fasting: "Chest work fasted is fine for moderate sessions", exercises: [{ name: "Incline push up", reps: "12–15 reps", equipment: "Elevated surface", level: "Beginner", tip: "Hands on a bench or step — easier than floor" }, { name: "Knee push up", reps: "10–12 reps", equipment: "None", level: "Beginner", tip: "Keep hips down, full range of motion" }, { name: "Chest squeeze", reps: "15 reps", equipment: "None", level: "Beginner", tip: "Press palms together at chest height and hold 2 seconds" }, { name: "Dumbbell chest press", reps: "10–12 reps", equipment: "Weights and floor or bench", level: "Intermediate", tip: "Lower slowly, press up with control" }, { name: "Resistance band chest fly", reps: "12 reps", equipment: "Resistance band", level: "Intermediate", tip: "Slight bend in elbows throughout" }], note: "Chest sensitivity can increase before your period. Reduce pressure or skip if uncomfortable." },
+    { group: "✨ Full Body", color: "#8FAF8F", bg: "#EAF2EA", phase: "Best in Ovulation — gentle version in all phases", fasting: "Full body fasted is manageable at low intensity — keep sessions under 30 minutes", exercises: [{ name: "Inchworm", reps: "6–8 reps", equipment: "None", level: "Beginner", tip: "Walk hands out slowly, feel the stretch" }, { name: "Squat to press", reps: "10 reps", equipment: "Light weights optional", level: "Beginner", tip: "Squat down, press up as you stand" }, { name: "Reverse lunge with curl", reps: "8 reps each side", equipment: "Light weights optional", level: "Intermediate", tip: "Curl on the way down, stand tall on the way up" }, { name: "Low impact burpee", reps: "8–10 reps", equipment: "None", level: "Intermediate", tip: "Step feet back instead of jumping — same benefit, gentler on joints" }, { name: "Dumbbell swing", reps: "12 reps", equipment: "One weight", level: "Intermediate", tip: "Hinge at hips, drive with glutes — not a squat" }], note: "Full body sessions are intense. In Menstrual phase, replace with a gentle walk or yoga instead." },
+  ];
 
   const BLOOD_COLORS = [
     { color: "#B22222", label: "Bright Red",    note: "Fresh flow. Healthy and normal at peak flow." },
@@ -1583,6 +1626,16 @@ function LearnScreen({ mode }) {
             <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: "0 0 4px" }}>🏋️ <b>Move:</b> {info.move}</p>
           </div>
         ))}
+
+        {tab === "Move Map" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 16, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.15)" : "0.5px solid rgba(200,170,180,0.3)" }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 6px" }}>🗺️ Move Map</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#6b7b6b", margin: 0, lineHeight: 1.7 }}>Select a muscle group to see exercises matched to your cycle phase, energy level, and fasting window.</p>
+            </div>
+            {MOVE_MAP.map((item, idx) => <MoveMapCard key={idx} item={item} mode={mode} />)}
+          </div>
+        )}
 
         {tab === "Fasting" && FASTING_INFO.map((f, i) => (
           <div key={i} style={{ ...s.card, textAlign: "left" }}>
