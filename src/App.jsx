@@ -1601,6 +1601,26 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
 // ─────────────────────────────────────────────
 //  LEARN SCREEN
 // ─────────────────────────────────────────────
+function PremiumLock({ tier = "premium", mode }) {
+  const isPlus = tier === "plus";
+  const isPartner = tier === "partner";
+  const color = mode === "fast" ? "#C9A84C" : isPlus ? "#9B7BC9" : "#7A9E7E";
+  const bg = mode === "fast" ? "rgba(201,168,76,0.08)" : isPlus ? "rgba(155,123,201,0.08)" : "rgba(122,158,126,0.08)";
+  const border = mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : isPlus ? "0.5px solid rgba(155,123,201,0.2)" : "0.5px solid rgba(122,158,126,0.2)";
+  const title = isPartner ? "Partner Sharing Coming Soon" : isPlus ? "Coming Soon to Lumen Flow Plus" : "Unlock with Lumen Flow Premium";
+  const body = isPartner ? "Supportive rhythm tools for men and partners are planned for a future Lumen Flow update." : isPlus ? "Moon reflections, emotional patterns, rituals, and deeper wellness tools are being built for a future update." : "Go deeper with full check-ins, cycle insights, Nourish support, trend charts, movement guidance, and gentle fasting tools.";
+  return (
+    <div style={{ background: bg, borderRadius: 16, padding: "16px", border, marginBottom: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        <span style={{ fontSize: 18 }}>{isPlus ? "✨" : isPartner ? "🤝" : "🔒"}</span>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color, margin: 0 }}>{title}</p>
+      </div>
+      <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#a8c4a8" : "#6b7b6b", margin: "0 0 10px", lineHeight: 1.7 }}>{body}</p>
+      <p style={{ fontFamily: "sans-serif", fontSize: 11, color, margin: 0, fontStyle: "italic" }}>🌿 Free during beta — premium coming soon</p>
+    </div>
+  );
+}
+
 function LumenLifeCard({ section, mode }) {
   const [open, setOpen] = useState(false);
   return (
@@ -1965,6 +1985,7 @@ function LearnScreen({ mode }) {
 
         {tab === "Partner Wellness" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <PremiumLock tier="partner" mode={mode} />
             {[
               { title: "🧬 Testosterone + fasting", body: "Short-term fasting increases testosterone by reducing insulin, which suppresses sex hormone binding globulin (SHBG). Lower SHBG means more free testosterone available to your cells.\n\nPractical tip: 16h fasts 3–4 times a week can meaningfully improve free testosterone levels over time." },
               { title: "📈 Growth hormone spike", body: "Growth hormone can increase up to 5x baseline after extended fasting. Even 16–18h fasts produce a significant spike.\n\nWhy it matters for muscle: GH stimulates muscle protein synthesis and accelerates fat burning. It is your body's natural anabolic hormone — fasting amplifies it." },
