@@ -1601,6 +1601,28 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
 // ─────────────────────────────────────────────
 //  LEARN SCREEN
 // ─────────────────────────────────────────────
+function LumenLifeCard({ section, mode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : section.bg, borderRadius: 16, border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.15)" : `0.5px solid ${section.color}33`, overflow: "hidden" }}>
+      <button onClick={() => setOpen(!open)} style={{ width: "100%", padding: "14px 16px", background: "none", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", textAlign: "left" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : section.color, margin: 0 }}>{section.title}</p>
+        <span style={{ fontSize: 18, color: mode === "fast" ? "#C9A84C" : section.color }}>{open ? "▴" : "▾"}</span>
+      </button>
+      {open && (
+        <div style={{ padding: "0 16px 16px" }}>
+          {section.content.map((item, i) => (
+            <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.75)", borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : section.color, margin: "0 0 4px", fontWeight: 600, textTransform: item.phase.startsWith("Prompt") || item.phase.startsWith("Step") ? "none" : "none" }}>{item.phase.startsWith("Prompt") || item.phase.startsWith("Step") ? "" : item.phase}</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#a8c4a8" : "#4a3a5a", margin: 0, lineHeight: 1.7 }}>{item.text}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MoveMapCard({ item, mode }) {
   const [open, setOpen] = useState(false);
   return (
@@ -1635,9 +1657,9 @@ function MoveMapCard({ item, mode }) {
 
 function LearnScreen({ mode }) {
   const [tab, setTab] = useState(mode === "fast" ? "Fasting" : "Phases");
-  const tabs = mode === "fast" 
-    ? ["Fasting", "Move Map", "Men", "Glossary", "Workouts", "Nutrition", "Cravings", "Grooming", "Gut Health"]
-    : ["Fasting", "Move Map", "Phases", "Conditions", "Men", "Glossary", "Workouts", "Nutrition", "Blood Color", "Cravings", "Cycle Guide", "Gut Health"];
+  const tabs = mode === "fast"
+    ? ["Lumen Life", "Fasting Basics", "Movement Map", "Partner Wellness", "Body Glossary", "Cycle Workouts", "Craving Wisdom", "Grooming", "Gut + Cycle Health"]
+    : ["Lumen Life", "Fasting Basics", "Cycle Phases", "Health Conditions", "Partner Wellness", "Body Glossary", "Cycle Workouts", "Cycle Nutrition", "Period Blood Guide", "Craving Wisdom", "Cycle Guide", "Gut + Cycle Health", "Movement Map"];
 
   const MOVE_MAP = [
     { group: "🔥 Core", color: "#C9A87B", bg: "#FDF6EA", phase: "All phases — gentler in Menstrual and Luteal", fasting: "Core work is great fasted — low intensity, high focus", exercises: [{ name: "Dead bug", reps: "8–10 reps each side", equipment: "None", level: "Beginner", tip: "Press lower back into floor throughout" }, { name: "Plank hold", reps: "20–40 seconds", equipment: "None", level: "Beginner", tip: "Keep hips level, breathe steadily" }, { name: "Bird dog", reps: "8 reps each side", equipment: "None", level: "Beginner", tip: "Move slowly and with control" }, { name: "Hollow hold", reps: "15–20 seconds", equipment: "None", level: "Intermediate", tip: "Press ribs down, avoid holding your breath" }, { name: "Pallof press", reps: "10 reps each side", equipment: "Resistance band", level: "Intermediate", tip: "Resist rotation — that is the work" }], note: "Avoid heavy core work during heavy flow days. Listen to your body." },
@@ -1726,7 +1748,7 @@ function LearnScreen({ mode }) {
       </div>
 
       <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 12 }}>
-        {tab === "Phases" && Object.entries(PHASE_INFO).map(([name, info]) => (
+        {tab === "Cycle Phases" && Object.entries(PHASE_INFO).map(([name, info]) => (
           <div key={name} style={{ ...s.card, background: info.bg, border: `1px solid ${info.color}22`, textAlign: "left" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
               <span style={{ fontSize: 24 }}>{info.emoji}</span>
@@ -1737,7 +1759,7 @@ function LearnScreen({ mode }) {
           </div>
         ))}
 
-        {tab === "Move Map" && (
+        {tab === "Movement Map" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 16, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.15)" : "0.5px solid rgba(200,170,180,0.3)" }}>
               <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 6px" }}>🗺️ Move Map</p>
@@ -1747,28 +1769,157 @@ function LearnScreen({ mode }) {
           </div>
         )}
 
-        {tab === "Fasting" && FASTING_INFO.map((f, i) => (
+        {tab === "Lumen Life" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg, #F5F0FF, #FFF0F5)", borderRadius: 18, padding: "18px 16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : "0.5px solid rgba(180,140,200,0.3)" }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 20, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 6px" }}>🌿 Lumen Life</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: 0, lineHeight: 1.7 }}>Use your cycle to plan, protect your energy, and move through life with more self-trust.</p>
+            </div>
+            {[
+              {
+                title: "📅 Plan With Your Cycle", color: "#7BA8C9", bg: "#EAF2F9",
+                content: [
+                  { phase: "🌑 Menstrual", text: "Review, rest, and reflect. This is a time to look back, release what is not working, and restore your energy. Say no to big decisions." },
+                  { phase: "🌒 Follicular", text: "Start, plan, and learn. Your energy is rising. This is a good time to set intentions, begin new projects, and absorb new information." },
+                  { phase: "🌕 Ovulation", text: "Speak, connect, and launch. Your communication and confidence may feel strongest here. Share ideas, have important conversations, show up." },
+                  { phase: "🌗 Luteal", text: "Finish, organize, and simplify. Wrap up what you started. Clear your space. Say no to new commitments and protect your energy." },
+                ]
+              },
+              {
+                title: "⚡ Energy Budget", color: "#C9A87B", bg: "#FDF6EA",
+                content: [
+                  { phase: "💚 High energy", text: "One body task: move or stretch. One home task: tackle something you have been putting off. One work task: create or lead. One emotional task: connect with someone you love." },
+                  { phase: "🌿 Medium energy", text: "One body task: gentle walk or short workout. One home task: tidy one area. One work task: respond and organise. One emotional task: check in with yourself." },
+                  { phase: "🌙 Low energy", text: "One body task: rest or breathe. One home task: dishes only. One work task: one small thing. One emotional task: be gentle with yourself." },
+                  { phase: "🌸 Sensitive energy", text: "One body task: warmth and comfort. One home task: soft lighting, clean space. One work task: only what is essential. One emotional task: protect your peace." },
+                  { phase: "😴 Rest day", text: "Permission to do nothing. Your only task is to rest. Everything else can wait." },
+                ]
+              },
+              {
+                title: "🛡️ Boundary Check", color: "#C97B7B", bg: "#FDEAEA",
+                content: [
+                  { phase: "Prompt 1", text: "Where did I say yes when I meant no?" },
+                  { phase: "Prompt 2", text: "What drained me today?" },
+                  { phase: "Prompt 3", text: "What do I need less of right now?" },
+                  { phase: "Prompt 4", text: "What conversation am I avoiding?" },
+                  { phase: "Prompt 5", text: "What boundary would protect my peace?" },
+                ]
+              },
+              {
+                title: "💬 Speak Your Truth", color: "#9B7BC9", bg: "#F5F0FF",
+                content: [
+                  { phase: "Prompt 1", text: "What truth am I avoiding right now?" },
+                  { phase: "Prompt 2", text: "What do I want to say clearly?" },
+                  { phase: "Prompt 3", text: "Where can I stop shrinking?" },
+                  { phase: "Prompt 4", text: "What would I choose if I trusted myself?" },
+                  { phase: "Prompt 5", text: "What do I need to stop explaining?" },
+                ]
+              },
+              {
+                title: "🏠 Home Flow", color: "#7A9E7E", bg: "#F0F6F0",
+                content: [
+                  { phase: "🌑 Menstrual", text: "Dishes, laundry, soft lighting, rest. Keep your home warm and gentle. Do the minimum and honour your need for stillness." },
+                  { phase: "🌒 Follicular", text: "Declutter, rearrange, start projects. Your energy for new things is rising — use it to refresh your space." },
+                  { phase: "🌕 Ovulation", text: "Decorate, host, beautify. This may feel like a good time to have people over, freshen up your home, and enjoy your space." },
+                  { phase: "🌗 Luteal", text: "Deep clean, organise, meal prep, simplify. Clear the clutter, prepare for the week ahead, and create calm." },
+                ]
+              },
+              {
+                title: "💸 Money Mood", color: "#C9A87B", bg: "#FDF6EA",
+                content: [
+                  { phase: "Prompt 1", text: "Did I spend to soothe today?" },
+                  { phase: "Prompt 2", text: "Did I avoid checking my money today?" },
+                  { phase: "Prompt 3", text: "What purchase actually supported me?" },
+                  { phase: "Prompt 4", text: "What purchase can wait?" },
+                  { phase: "Prompt 5", text: "What one small money action would make me feel safer?" },
+                ]
+              },
+              {
+                title: "🎨 Create With Your Cycle", color: "#9B7BC9", bg: "#F5F0FF",
+                content: [
+                  { phase: "🌑 Menstrual", text: "Review, rest, reflect, analyse. Look at what you have made. Notice what is working and what is not. Let ideas come without forcing them." },
+                  { phase: "🌒 Follicular", text: "Brainstorm, outline, start. Your creativity and curiosity are building. Begin the thing you have been putting off." },
+                  { phase: "🌕 Ovulation", text: "Post, film, pitch, interview, present. Share your work. Your confidence and communication may feel strongest here." },
+                  { phase: "🌗 Luteal", text: "Edit, schedule, organise, finish. Refine what you have made. Prepare and complete rather than start something new." },
+                ]
+              },
+              {
+                title: "🛁 Care Rituals", color: "#C97B7B", bg: "#FDEAEA",
+                content: [
+                  { phase: "For your body", text: "Hair wash day · scalp massage · skincare reset · bath or shower ritual · body oil · gentle stretching" },
+                  { phase: "For your space", text: "Clean sheets · soft lighting · cozy clothes · a nourishing meal · tidy one corner" },
+                  { phase: "For your rest", text: "Early bedtime · no screens one hour before sleep · warm drink · quiet music · breathe slowly" },
+                  { phase: "For your energy", text: "One thing that fills you up. Not productive. Not useful. Just for you." },
+                ]
+              },
+              {
+                title: "💞 Relationship Reflection", color: "#C97B7B", bg: "#FDEAEA",
+                content: [
+                  { phase: "Prompt 1", text: "Did I feel heard today?" },
+                  { phase: "Prompt 2", text: "Did I over-explain myself?" },
+                  { phase: "Prompt 3", text: "Did I ignore a feeling that was trying to tell me something?" },
+                  { phase: "Prompt 4", text: "Did I ask clearly for what I needed?" },
+                  { phase: "Prompt 5", text: "Did I feel safe being myself around this person?" },
+                  { phase: "Prompt 6", text: "What did my body feel around this person?" },
+                ]
+              },
+              {
+                title: "🌱 Soft Reset", color: "#7A9E7E", bg: "#F0F6F0",
+                content: [
+                  { phase: "Step 1", text: "Breathe. In for 4, hold for 4, out for 4. Just once is enough." },
+                  { phase: "Step 2", text: "Drink a glass of water slowly." },
+                  { phase: "Step 3", text: "Unclench your jaw. Drop your shoulders. Exhale." },
+                  { phase: "Step 4", text: "Write one sentence about how you feel right now." },
+                  { phase: "Step 5", text: "Choose one small next step — not a whole plan, just one thing." },
+                  { phase: "Step 6", text: "Do that one small thing. That is enough." },
+                ]
+              },
+            ].map((section, idx) => (
+              <LumenLifeCard key={idx} section={section} mode={mode} />
+            ))}
+            <div style={{ background: "linear-gradient(135deg, #F5F0FF, #FFF0F5)", borderRadius: 18, padding: "18px 16px", border: "0.5px solid rgba(180,140,200,0.3)", marginTop: 4 }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 4px" }}>✨ More coming to Lumen Life</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#9B7BC9", margin: "0 0 16px", lineHeight: 1.6 }}>Moon reflections, emotional patterns, rituals, and deeper wellness tools are being built.</p>
+              {[
+                { title: "🪞 Lumen Mirror", desc: "Emotional pattern tracking and private reflection — journal, year in pixels, moon journal, cycle-matched prompts.", tag: "Plus · Coming Soon" },
+                { title: "🕯️ Lumen Ritual", desc: "Moon, cycle, and spiritual reflection tools — moon phase display, release rituals, womb-space reflection, astrology.", tag: "Plus · Coming Soon" },
+                { title: "⚡ Lumen Drive", desc: "Men's rhythm and partner wellness — testosterone window, morning report, drive check-in, performance patterns.", tag: "Coming Soon" },
+                { title: "🛍️ Lumen Market", desc: "Period cups, discs, underwear, wellness and fasting-friendly products.", tag: "Coming Soon" },
+              ].map((card, i) => (
+                <div key={i} style={{ background: "rgba(255,255,255,0.7)", borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: "0.5px solid rgba(180,140,200,0.2)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                    <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: 0 }}>{card.title}</p>
+                    <span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#9B7BC9", background: "rgba(155,123,201,0.1)", borderRadius: 50, padding: "2px 8px", whiteSpace: "nowrap", marginLeft: 8 }}>{card.tag}</span>
+                  </div>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{card.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab === "Fasting Basics" && FASTING_INFO.map((f, i) => (
           <div key={i} style={{ ...s.card, textAlign: "left" }}>
             <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 6px" }}>{f.phase}</p>
             <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{f.tip}</p>
           </div>
         ))}
 
-        {tab === "Workouts" && WORKOUT_INFO.map((w, i) => (
+        {tab === "Cycle Workouts" && WORKOUT_INFO.map((w, i) => (
           <div key={i} style={{ ...s.card, textAlign: "left" }}>
             <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 6px" }}>{w.phase}</p>
             <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{w.tip}</p>
           </div>
         ))}
 
-        {tab === "Nutrition" && NUTRITION_INFO.map((n, i) => (
+        {tab === "Cycle Nutrition" && NUTRITION_INFO.map((n, i) => (
           <div key={i} style={{ ...s.card, textAlign: "left" }}>
             <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 6px" }}>{n.phase}</p>
             <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{n.tip}</p>
           </div>
         ))}
 
-        {tab === "Blood Color" && (
+        {tab === "Period Blood Guide" && (
           <>
             <div style={{ ...s.card, background: "#EAF2EA", textAlign: "left" }}>
               <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 6px" }}>What does blood color tell you?</p>
@@ -1788,7 +1939,7 @@ function LearnScreen({ mode }) {
           </>
         )}
 
-        {tab === "Conditions" && (
+        {tab === "Health Conditions" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {[
               { dot: "#4A90D9", title: "PCOS", body: "Polycystic ovary syndrome affects insulin and androgen levels. Many people with PCOS have insulin resistance.\n\nHow fasting helps: Improves insulin sensitivity, helps regulate cycles and reduce androgens. Start with gentle 12–14h windows and build slowly." },
@@ -1809,7 +1960,7 @@ function LearnScreen({ mode }) {
           </div>
         )}
 
-        {tab === "Men" && (
+        {tab === "Partner Wellness" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {[
               { title: "🧬 Testosterone + fasting", body: "Short-term fasting increases testosterone by reducing insulin, which suppresses sex hormone binding globulin (SHBG). Lower SHBG means more free testosterone available to your cells.\n\nPractical tip: 16h fasts 3–4 times a week can meaningfully improve free testosterone levels over time." },
@@ -1829,7 +1980,7 @@ function LearnScreen({ mode }) {
           </div>
         )}
 
-        {tab === "Glossary" && (
+        {tab === "Body Glossary" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {[
               { title: "Insulin", body: "A hormone that lets cells absorb glucose for energy. High insulin blocks fat burning — fasting lowers it and resets your metabolic baseline." },
@@ -1850,7 +2001,7 @@ function LearnScreen({ mode }) {
           </div>
         )}
 
-        {tab === "Cravings" && (
+        {tab === "Craving Wisdom" && (
           <>
             <div style={{ ...s.card, background: "#EAF2EA", textAlign: "left" }}>
               <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 6px" }}>Why you crave what you crave</p>
@@ -1901,7 +2052,7 @@ function LearnScreen({ mode }) {
           </>
         )}
 
-        {tab === "Gut Health" && mode !== "fast" && (
+        {tab === "Gut + Cycle Health" && mode !== "fast" && (
           <>
             {[
               { icon: "🦠", title: "Your gut and your cycle", tip: "Hormones directly affect gut motility. Many women experience bloating, constipation, or diarrhea at specific points in their cycle. Progesterone in the luteal phase slows digestion — this is why bloating often peaks before your period." },
@@ -1945,7 +2096,7 @@ function LearnScreen({ mode }) {
           </>
         )}
 
-        {tab === "Gut Health" && mode === "fast" && (
+        {tab === "Gut + Cycle Health" && mode === "fast" && (
           <>
             {[
               { icon: "🦠", title: "The gut-hormone connection", tip: "Your gut microbiome directly influences testosterone and estrogen levels. A healthy gut produces neurotransmitters that affect mood, energy, and hormonal balance." },
