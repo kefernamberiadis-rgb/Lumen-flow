@@ -2745,6 +2745,33 @@ function getGreeting() {
 // ─────────────────────────────────────────────
 //  ROOT APP
 // ─────────────────────────────────────────────
+function useSwipeNavigation(screen, setScreen) {
+  const screens = ["home", "calendar", "checkin", "recipes", "learn", "settings"];
+  useEffect(() => {
+    let startX = 0;
+    let startY = 0;
+    const onTouchStart = (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    };
+    const onTouchEnd = (e) => {
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) < 50) return;
+      if (Math.abs(dx) < Math.abs(dy) * 2) return;
+      const idx = screens.indexOf(screen);
+      if (dx < 0 && idx < screens.length - 1) setScreen(screens[idx + 1]);
+      if (dx > 0 && idx > 0) setScreen(screens[idx - 1]);
+    };
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [screen]);
+}
+
 export default function App() {
   useEffect(() => {
     const checkMidnight = () => {
@@ -2770,6 +2797,7 @@ export default function App() {
   const [screen, setScreen] = useState("home");
   const [showWaitlist, setShowWaitlist] = useState(false);
   const [nourishDigestionPreset, setNourishDigestionPreset] = useState(false);
+  useSwipeNavigation(screen, setScreen);
 
   const saveSettings = (data) => {
     setSettings(data);
