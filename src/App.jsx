@@ -796,6 +796,57 @@ if (saved) {
         </div>
       </div>
 
+      <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "#fff", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+        <p style={{ fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", fontWeight: 600, margin: "0 0 12px" }}>✦ Today's wellness snapshot</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <svg width="90" height="90" viewBox="0 0 90 90">
+            {(() => {
+              const segments = [
+                { label: "Energy", value: saved.energy || 0, max: 5, color: "#7A9E7E" },
+                { label: "Sleep", value: saved.sleep || 0, max: 5, color: "#9B7BC9" },
+                { label: "Water", value: Math.min(saved.water || 0, 8), max: 8, color: "#7BA8C9" },
+                { label: "Mood", value: saved.namedMood ? 1 : 0, max: 1, color: "#C9A87B" },
+                { label: "Movement", value: saved.movements?.length ? 1 : 0, max: 1, color: "#C97B7B" },
+              ];
+              const total = segments.reduce((a, s) => a + s.max, 0);
+              const filled = segments.reduce((a, s) => a + s.value, 0);
+              const pct = Math.round((filled / total) * 100);
+              let offset = 0;
+              const circ = 2 * Math.PI * 35;
+              return (
+                <>
+                  <circle cx="45" cy="45" r="35" fill="none" stroke={mode === "fast" ? "rgba(255,255,255,0.06)" : "#F0F6F0"} strokeWidth="14" />
+                  {segments.map((seg, i) => {
+                    const segPct = seg.value / total;
+                    const segLen = segPct * circ;
+                    const segOffset = -(offset * circ / total) + circ / 4;
+                    offset += seg.value;
+                    if (seg.value === 0) return null;
+                    return <circle key={i} cx="45" cy="45" r="35" fill="none" stroke={seg.color} strokeWidth="14" strokeDasharray={`${segLen} ${circ}`} strokeDashoffset={segOffset} transform="rotate(-90 45 45)" />;
+                  })}
+                  <text x="45" y="42" textAnchor="middle" fontSize="13" fontWeight="600" fill={mode === "fast" ? "#e8e0ce" : "#2D3B2E"}>{pct}%</text>
+                  <text x="45" y="54" textAnchor="middle" fontSize="8" fill="#8FA090">logged</text>
+                </>
+              );
+            })()}
+          </svg>
+          <div style={{ flex: 1 }}>
+            {[
+              { label: "⚡ Energy", value: saved.energy ? ["Very low","Low","Neutral","Good","Great"][saved.energy-1] : "—", color: "#7A9E7E" },
+              { label: "🌙 Sleep", value: saved.sleep ? ["Poor","Light","Fair","Good","Great"][saved.sleep-1] : "—", color: "#9B7BC9" },
+              { label: "💧 Water", value: saved.water ? `${saved.water} glasses` : "—", color: "#7BA8C9" },
+              { label: "💭 Mood", value: saved.namedMood || "—", color: "#C9A87B" },
+              { label: "🏃 Movement", value: saved.movements?.length ? `${saved.movements.length} logged` : "—", color: "#C97B7B" },
+            ].map((item, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
+                <span style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090" }}>{item.label}</span>
+                <span style={{ fontFamily: "sans-serif", fontSize: 11, color: item.value === "—" ? "#d0d0d0" : item.color, fontWeight: 600 }}>{item.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div style={{ background: "#F8F0FF", borderRadius: 18, border: "0.5px solid rgba(155,123,201,0.2)", padding: 16, marginBottom: 16 }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#9B7BC9", margin: "0 0 8px" }}>Today's Lumen Note ✦</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>{insight}</p>
