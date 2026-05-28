@@ -543,7 +543,7 @@ function CheckInScreen({ mode, onNavigate, onNourishDigestion }) {
   const [notes,  setNotes]  = useState("");
 
   const save = () => {
-    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, movements, bodyCheck, weightUnit, namedMood, symptoms, bowelCheck: { entries: bowelEntries, didPoopToday: bowelEntries.length > 0 } };
+    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, movements, bodyCheck, weightUnit, namedMood, moodNote, symptoms, bowelCheck: { entries: bowelEntries, didPoopToday: bowelEntries.length > 0 } };
     localStorage.setItem(key, JSON.stringify(data));
     setSaved(data);
   };
@@ -561,7 +561,7 @@ function CheckInScreen({ mode, onNavigate, onNourishDigestion }) {
   const [movements, setMovements] = useState([]);
   const MOVEMENT_TYPES = ["🚶 Walk","🏃 Run","🏋️ Weights","🧘 Yoga","⚡ HIIT","🚴 Cycling","🏊 Swimming","🏀 Sport","💃 Dance","🤸 Stretching","🌀 Mobility","🧘 Pilates","🌿 Yard work","🔨 Carpentry","🎨 Painting","🧹 Cleaning","📦 Moving","🛒 Errands","🪴 Gardening","🛌 None today","🌙 Rest day"];
   const INTENSITIES = ["🌿 Gentle","🚶 Moderate","💪 Strong","🔥 Intense","🌙 Recovery"];
-  const DURATIONS = ["5 min","10 min","15 min","20 min","30 min","45 min","60 min","90 min"];
+  const DURATIONS = ["5 min","10 min","15 min","20 min","30 min","45 min","60 min","90 min","2 hours","2.5 hours","3 hours","4 hours","5 hours","6 hours","7 hours","8 hours"];
   const DISTANCES = ["0.5 km","1 km","2 km","5 km","10 km"];
   const BODY_FOCUS = ["💪 Upper body","🦵 Lower body","✨ Full body","🔥 Core","❤️ Cardio","🌿 Flexibility","⚖️ Balance","🌙 Recovery"];
   const addMovement = () => setMovements(prev => [...prev, { type: "", intensity: "🌿 Gentle", duration: "20 min", distance: "", bodyFocus: "", lbs: "" }]);
@@ -580,6 +580,8 @@ function CheckInScreen({ mode, onNavigate, onNourishDigestion }) {
   const [bowelDate, setBowelDate] = useState(today);
   const ratingEmojis = ["😞","😔","😐","🙂","😄"];
   const [namedMood, setNamedMood] = useState(null);
+  const [moodNote, setMoodNote] = useState("");
+  const [showMoodNote, setShowMoodNote] = useState(false);
   const [showLogPreview, setShowLogPreview] = useState(false);
 
   const NAMED_MOODS = {
@@ -894,9 +896,24 @@ if (saved) {
                   if (action === "Ground Me") setShowGround(!showGround);
                   else if (action === "Journal Prompt") setShowJournal(!showJournal);
                   else if (action === "Open Nourish" && onNavigate) onNavigate("recipes");
-                }} style={{ padding: "6px 12px", borderRadius: 50, border: `0.5px solid ${NAMED_MOODS[namedMood].color}`, background: "#fff", color: NAMED_MOODS[namedMood].color, fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{action}</button>
+                  else if (action === "Add Note") setShowMoodNote(!showMoodNote);
+                }} style={{ padding: "6px 12px", borderRadius: 50, border: `0.5px solid ${NAMED_MOODS[namedMood].color}`, background: "#fff", color: NAMED_MOODS[namedMood].color, fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{action === "Add Note" ? (showMoodNote ? "✕ Close note" : "📝 Add note") : action}</button>
               ))}
             </div>
+            {showMoodNote && (
+              <div style={{ marginTop: 10 }}>
+                <textarea
+                  value={moodNote}
+                  onChange={e => { setMoodNote(e.target.value); autoSaveData({ moodNote: e.target.value }); }}
+                  placeholder="Write how you are feeling right now... this is just for you."
+                  spellCheck={true}
+                  autoCorrect="on"
+                  autoCapitalize="sentences"
+                  style={{ ...s.input, height: 80, resize: "none", fontFamily: "sans-serif", marginBottom: 6 }}
+                />
+                {moodNote && <p style={{ fontFamily: "sans-serif", fontSize: 10, color: NAMED_MOODS[namedMood]?.color || "#8FA090", margin: 0 }}>✅ Note saved with your check-in</p>}
+              </div>
+            )}
             {showGround && (
               <div style={{ marginTop: 10, background: "#fff", borderRadius: 10, padding: "10px 12px" }}>
                 <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>🌿 {groundPrompt}</p>
@@ -1234,6 +1251,9 @@ if (saved) {
           value={notes}
           onChange={e => setNotes(e.target.value)}
           placeholder="How are you feeling? Any symptoms?"
+          spellCheck={true}
+          autoCorrect="on"
+          autoCapitalize="sentences"
           style={{ ...s.input, height: 80, resize: "none", fontFamily: "sans-serif" }}
         />
       </div>
