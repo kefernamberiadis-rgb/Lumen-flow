@@ -28,10 +28,10 @@ function getPhase(day, periodLength = 7) {
   return "Luteal";
 }
 const PHASE_INFO = {
-  Menstrual:  { emoji: "🌑", color: "#C97B7B", bg: "#FDEAEA", fast: "12–14h – keep it gentle",    move: "Gentle yoga or rest" },
-  Follicular: { emoji: "🌒", color: "#7BA8C9", bg: "#EAF2F9", fast: "14–16h – energy is rising",  move: "Strength training & cardio" },
-  Ovulation:  { emoji: "🌕", color: "#C9A87B", bg: "#F9F4EA", fast: "16–18h – peak flexibility",  move: "HIIT, lift heavy, compete" },
-  Luteal:     { emoji: "🌗", color: "#9B7BC9", bg: "#F2EAFA", fast: "12–14h – be gentle again",   move: "Walks, pilates, slow down" },
+  Menstrual:  { emoji: "🌑", color: "#C97B7B", bg: "#FDEAEA", fast: "12–14h if comfortable — skip fasting if your body needs food", move: "Rest, gentle stretching, slow walks, or restorative movement" },
+  Follicular: { emoji: "🌒", color: "#7BA8C9", bg: "#EAF2F9", fast: "14–16h if it feels supportive", move: "Light strength, cardio, Pilates, walking, or trying something new" },
+  Ovulation:  { emoji: "🌕", color: "#C9A87B", bg: "#F9F4EA", fast: "14–16h, or up to 18h only if it feels good", move: "Strength, cardio, dance, circuits, or higher-energy movement if it feels good" },
+  Luteal:     { emoji: "🌗", color: "#9B7BC9", bg: "#F2EAFA", fast: "12–14h, especially in late luteal — break early if you feel shaky, irritable, or overly hungry", move: "Walking, Pilates, mobility, stretching, or lower intensity movement" },
 };
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -1682,13 +1682,13 @@ function LearnScreen({ mode }) {
   ];
 
   const CRAVINGS = [
-    { craving: "🍫 Chocolate",       why: "Magnesium deficiency. Your body needs this mineral for mood and muscle function." },
-    { craving: "🧂 Salty / Crunchy", why: "Aldosterone fluctuates before your period, triggering salt cravings." },
-    { craving: "🍬 Sugar / Sweets",  why: "Falling hormones affect serotonin and blood sugar regulation." },
-    { craving: "🍞 Carbs / Bread",   why: "Rising progesterone increases your metabolic rate – you need more energy." },
-    { craving: "🥩 Red Meat",        why: "Iron and zinc are depleted through blood loss. Your body seeks them instinctively." },
-    { craving: "🥑 Fatty Foods",     why: "Prostaglandins are high. Healthy fats support pain modulation." },
-    { craving: "😶 No Appetite",     why: "Peak estrogen at ovulation naturally suppresses appetite. Totally normal." },
+    { craving: "🍫 Chocolate",       why: "Chocolate cravings may be linked to comfort, mood, blood sugar shifts, or a desire for magnesium-rich foods. Your body is communicating something — it is worth listening to without judgment." },
+    { craving: "🧂 Salty / Crunchy", why: "Salt cravings may show up when you feel depleted, stressed, or when your body is asking for minerals and grounding. They often come with dehydration too." },
+    { craving: "🍬 Sugar / Sweets",  why: "Sweet cravings may be connected to energy needs, mood shifts, comfort seeking, or blood sugar fluctuations. They are especially common in the luteal phase." },
+    { craving: "🍞 Carbs / Bread",   why: "Carb cravings are often your body asking for energy, warmth, or comfort. Rising progesterone in the luteal phase may increase your appetite and energy needs." },
+    { craving: "🥩 Red Meat",        why: "Cravings for red meat may reflect your body's awareness of iron and zinc needs, especially around menstruation. These are real nutritional needs worth honouring." },
+    { craving: "🥑 Fatty Foods",     why: "Cravings for fatty or rich foods may be your body asking for sustained energy, warmth, or comfort. Healthy fats support hormones, mood, and satiety." },
+    { craving: "😶 No Appetite",     why: "Lower appetite is common around ovulation for some people. If you are not hungry, gentle nourishment is still supportive — small meals, easy foods, and hydration." },
   ];
 
   const FASTING_INFO = mode === "fast" ? [
@@ -1699,10 +1699,10 @@ function LearnScreen({ mode }) {
     { phase: "Peak Window",   tip: "Your testosterone peaks in the morning. Breaking your fast with protein within 30-60 minutes of waking optimises muscle synthesis." },
     { phase: "Sleep Fasting",  tip: "Your longest natural fast happens during sleep. Going to bed slightly hungry extends your fast and boosts overnight growth hormone." },
   ] : [
-    { phase: "Menstrual 🌑",  tip: "Shorter windows (12–14h). Your body needs steady energy during bleeding." },
-    { phase: "Follicular 🌒", tip: "Rising estrogen supports metabolic flexibility. 14–16h windows feel natural." },
-    { phase: "Ovulation 🌕",  tip: "Peak performance phase. 16–18h may feel manageable. Stay hydrated." },
-    { phase: "Luteal 🌗",     tip: "Progesterone affects blood sugar. Shorter 12–14h windows feel better." },
+    { phase: "Menstrual 🌑",  tip: "12–14h if comfortable, or skip fasting if your body needs food. During bleeding your body may need more regular nourishment — honour that." },
+    { phase: "Follicular 🌒", tip: "14–16h if it feels supportive. Energy often rises in this phase and gentle fasting may feel more natural." },
+    { phase: "Ovulation 🌕",  tip: "14–16h, or up to 18h only if it feels good. Stay well hydrated. Never push through dizziness, shakiness, or weakness." },
+    { phase: "Luteal 🌗",     tip: "12–14h, especially in late luteal. Break your fast early if you feel shaky, irritable, weak, or overly hungry. Your body may genuinely need more food in this phase." },
   ];
 
   const WORKOUT_INFO = mode === "fast" ? [
@@ -1711,10 +1711,10 @@ function LearnScreen({ mode }) {
     { phase: "Morning Peak",    tip: "Testosterone peaks 30-60 minutes after waking. Morning workouts in this window maximise muscle building response." },
     { phase: "Recovery",        tip: "Sleep is when growth hormone peaks naturally. Prioritise 7-9 hours. Poor sleep reduces testosterone by up to 15%." },
   ] : [
-    { phase: "Menstrual 🌑",  tip: "Gentle yoga, slow walks, or full rest. Listen above all else." },
-    { phase: "Follicular 🌒", tip: "Strength training, cardio, and HIIT workouts thrive now." },
-    { phase: "Ovulation 🌕",  tip: "Your absolute peak. Lift heavy, go fast, compete." },
-    { phase: "Luteal 🌗",     tip: "Moderate cardio and pilates. Late luteal – slow right down." },
+    { phase: "Menstrual 🌑",  tip: "Rest, gentle stretching, slow walks, or restorative movement. Full rest is always valid. Listen to your body above anything else." },
+    { phase: "Follicular 🌒", tip: "Light strength, cardio, Pilates, walking, or trying something new. Energy may be building — follow what feels good." },
+    { phase: "Ovulation 🌕",  tip: "Strength, cardio, dance, circuits, or higher-energy movement if it feels good. Some people feel strongest here — enjoy it if you do." },
+    { phase: "Luteal 🌗",     tip: "Walking, Pilates, mobility, stretching, or lower intensity movement. Late luteal especially — slow down, reduce intensity, and rest when needed." },
   ];
 
   const NUTRITION_INFO = mode === "fast" ? [
@@ -1733,7 +1733,10 @@ function LearnScreen({ mode }) {
     <div style={{ padding: "0 0 90px", background: mode === "fast" ? "linear-gradient(180deg, #0c1410 0%, #141e16 100%)" : "linear-gradient(160deg, #F5EDE8 0%, #F9EEF2 40%, #F2EDF5 100%)", minHeight: "100vh" }}>
       <div style={{ padding: "16px 16px 12px" }}>
         <h3 style={{ ...s.title, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E" }}>Learn & Optimise</h3>
-        <p style={{ ...s.label, marginBottom: 0 }}>Knowledge synced to your cycle</p>
+        <p style={{ ...s.label, marginBottom: 12 }}>Knowledge for your body, your cycle, and your rhythm.</p>
+        <div style={{ background: mode === "fast" ? "rgba(201,168,76,0.08)" : "rgba(155,123,201,0.08)", borderRadius: 14, padding: "12px 14px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : "0.5px solid rgba(155,123,201,0.2)" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", margin: 0, lineHeight: 1.7 }}>📚 Educational only — not medical advice. If you have a diagnosed condition, are pregnant, breastfeeding, underweight, recovering from disordered eating, or managing thyroid or blood sugar concerns, speak with a healthcare provider before fasting or making changes to your routine.</p>
+        </div>
       </div>
 
       <div style={{ display: "flex", overflowX: "auto", gap: 8, padding: "0 16px 14px", scrollbarWidth: "none" }}>
@@ -1942,12 +1945,12 @@ function LearnScreen({ mode }) {
         {tab === "Health Conditions" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {[
-              { dot: "#4A90D9", title: "PCOS", body: "Polycystic ovary syndrome affects insulin and androgen levels. Many people with PCOS have insulin resistance.\n\nHow fasting helps: Improves insulin sensitivity, helps regulate cycles and reduce androgens. Start with gentle 12–14h windows and build slowly." },
-              { dot: "#C97B7B", title: "Endometriosis", body: "An inflammatory condition where tissue similar to the uterine lining grows outside the uterus.\n\nHow fasting helps: Anti-inflammatory effects may reduce estrogen dominance. Avoid aggressive fasting during flares — gentle 12–14h windows work best." },
-              { dot: "#E0904A", title: "Perimenopause", body: "The transition before menopause, often beginning in the 40s, when hormones become irregular.\n\nTips: 12–14h windows support metabolic health without stressing shifting hormones. Prioritise protein and strength training." },
-              { dot: "#C9A030", title: "Menopause", body: "After 12 months without a period. Estrogen is consistently low, metabolism slows and body composition shifts.\n\nTips: 12–16h windows improve insulin sensitivity and support weight management. Combine with resistance training." },
-              { dot: "#5C9E6E", title: "Thyroid condition", body: "Affects metabolism and energy regulation significantly.\n\nImportant: Fasting can affect T3 levels. Always consult your doctor first. If you do fast, keep to 12–13h maximum and monitor how you feel closely." },
-              { dot: "#9B7BC9", title: "Fibroids", body: "Non-cancerous growths in the uterus, often linked to estrogen dominance.\n\nTips: Reducing excess estrogen through diet and fasting may help. Focus on anti-inflammatory foods. 12–14h windows in the follicular phase are a gentle start." },
+              { dot: "#4A90D9", title: "PCOS", body: "Polycystic ovary syndrome is a hormonal condition that affects many people differently. Some people with PCOS experience insulin resistance, irregular cycles, or androgen-related symptoms.\n\nGentle note: Some people may find that consistent sleep, nourishing food, and gentle movement support their energy and cycle awareness. If you are considering fasting with PCOS, speak with a healthcare provider first — care should be personalised to you." },
+              { dot: "#C97B7B", title: "Endometriosis", body: "An inflammatory condition where tissue similar to the uterine lining grows in other areas of the body. Symptoms vary widely and can include pain, fatigue, and digestive changes.\n\nGentle note: During flares or high-symptom days, prioritise rest, warmth, regular nourishment, and hydration. Avoid aggressive fasting when pain, fatigue, or nausea are high. Always work with a specialist for endometriosis care." },
+              { dot: "#E0904A", title: "Perimenopause", body: "The transition before menopause, often beginning in the 40s, when hormones shift and cycles become irregular. Symptoms may include sleep changes, mood shifts, and energy fluctuations.\n\nGentle note: Gentle overnight fasting may feel supportive for some people during this time. Prioritise protein, strength, and rest. Listen to your body — it is changing and deserves extra care." },
+              { dot: "#C9A030", title: "Menopause", body: "After 12 months without a period. Hormonal shifts affect energy, sleep, body composition, and mood in different ways for different people.\n\nGentle note: Regular nourishment, strength movement, and quality sleep are all supportive. Some people find gentle fasting helpful — speak with a healthcare provider about what may work for your body." },
+              { dot: "#5C9E6E", title: "Thyroid condition", body: "Thyroid conditions affect metabolism, energy, temperature regulation, and mood. There are many different types and they are managed differently.\n\nImportant: Fasting may affect thyroid hormone levels. Always speak with your doctor before fasting if you have a thyroid condition. This is not an area to self-manage without professional guidance." },
+              { dot: "#9B7BC9", title: "Fibroids", body: "Fibroids are non-cancerous growths in or around the uterus. They affect people differently — some have no symptoms, others experience heavy bleeding, pain, or pressure.\n\nGentle note: Anti-inflammatory foods, regular movement, and stress support may all be helpful. Speak with a healthcare provider for guidance specific to your situation." },
             ].map((item, i) => (
               <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 16, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.15)" : "0.5px solid rgba(200,170,180,0.3)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
