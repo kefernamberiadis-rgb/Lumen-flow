@@ -929,6 +929,23 @@ if (saved) {
         </div>
       </div>
 
+      {mode === "fast" && <div style={{ ...s.card, background: "rgba(201,168,76,0.08)", border: "0.5px solid rgba(201,168,76,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: "#C9A84C", margin: "0 0 4px" }}>⚡ Quick Report</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#7A9E7E", margin: "0 0 12px" }}>Morning signal · Drive · Alcohol · Sunlight</p>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {["✅ Strong","〰️ Partial","❌ No signal"].map(opt => (
+            <button key={opt} onClick={() => setMorningSignal(morningSignal === opt ? null : opt)} style={{ padding: "5px 10px", borderRadius: 50, border: "none", background: morningSignal === opt ? "#7A9E7E" : "rgba(255,255,255,0.06)", color: morningSignal === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{opt}</button>
+          ))}
+          <span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#3a5a3a", padding: "5px 4px" }}>signal</span>
+        </div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+          {["🔥 High","⚡ Medium","💤 Low","— None"].map(opt => (
+            <button key={opt} onClick={() => setDriveLevel(driveLevel === opt ? null : opt)} style={{ padding: "5px 10px", borderRadius: 50, border: "none", background: driveLevel === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: driveLevel === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{opt}</button>
+          ))}
+          <span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#3a5a3a", padding: "5px 4px" }}>drive</span>
+        </div>
+      </div>}
+
       <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>💭 How are you feeling?</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: namedMood ? 12 : 0 }}>
@@ -1091,7 +1108,7 @@ if (saved) {
           ))}
         </div>
 
-        {(morningSignal || driveLevel || hadAlcohol) && (
+        {(morningSignal || driveLevel || hadAlcohol || gotSunlight) && (morningSignal || driveLevel || hadAlcohol === "1–2 drinks" || hadAlcohol === "3+ drinks" || gotSunlight === "❌ Stayed in") && (
           <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: "12px 14px", marginTop: 10, borderLeft: "3px solid #C9A84C" }}>
             <p style={{ fontFamily: "Georgia, serif", fontSize: 12, color: "#C9A84C", margin: "0 0 6px" }}>⚡ What your data says</p>
             {hadAlcohol && hadAlcohol !== "None" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🍺 Alcohol affects testosterone and sleep quality. You may notice lower drive or energy today.</p>}
