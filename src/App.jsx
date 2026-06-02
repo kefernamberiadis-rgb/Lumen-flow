@@ -258,33 +258,41 @@ function BotanicalAccent({ phase }) {
     </svg>
   );
   if (p === "Menstrual") return (
-    <svg style={style} viewBox="0 0 120 120">
-      <g transform="translate(85,20)">
-        <line x1="0" y1="0" x2="0" y2="35" stroke="#93c5fd" strokeWidth="1.2"/>
-        <path d="M0,12 C-8,6 -12,12 -6,16Z" fill="#bfdbfe"/>
-        <path d="M0,20 C8,14 12,20 6,24Z" fill="#bfdbfe"/>
+    <svg style={{ position: "fixed", top: 8, right: 8, width: 160, height: 160, opacity: 0.35, pointerEvents: "none", zIndex: 1 }} viewBox="0 0 160 160">
+      <g transform="translate(110,15)">
+        <line x1="0" y1="0" x2="0" y2="55" stroke="#93c5fd" strokeWidth="2"/>
+        <line x1="0" y1="15" x2="-18" y2="30" stroke="#93c5fd" strokeWidth="1.5"/>
+        <line x1="0" y1="25" x2="16" y2="38" stroke="#93c5fd" strokeWidth="1.5"/>
+        <line x1="0" y1="35" x2="-14" y2="46" stroke="#93c5fd" strokeWidth="1.2"/>
+        <line x1="-18" y1="30" x2="-26" y2="24" stroke="#93c5fd" strokeWidth="1"/>
+        <line x1="-18" y1="30" x2="-28" y2="35" stroke="#93c5fd" strokeWidth="1"/>
+        <line x1="16" y1="38" x2="24" y2="32" stroke="#93c5fd" strokeWidth="1"/>
+        <line x1="16" y1="38" x2="26" y2="44" stroke="#93c5fd" strokeWidth="1"/>
+        <circle cx="0" cy="0" r="4" fill="#e0f2fe"/>
+        <circle cx="-4" cy="-4" r="2" fill="#bfdbfe"/>
+        <circle cx="4" cy="-4" r="2" fill="#bfdbfe"/>
+        <circle cx="0" cy="-7" r="2" fill="#bfdbfe"/>
+        <circle cx="-26" cy="24" r="2.5" fill="#bfdbfe"/>
+        <circle cx="-28" cy="35" r="2" fill="#e0f2fe"/>
+        <circle cx="24" cy="32" r="2.5" fill="#bfdbfe"/>
+        <circle cx="26" cy="44" r="2" fill="#e0f2fe"/>
+      </g>
+      <g transform="translate(40,80)">
+        <line x1="0" y1="0" x2="0" y2="42" stroke="#93c5fd" strokeWidth="1.8"/>
+        <line x1="0" y1="12" x2="-14" y2="24" stroke="#93c5fd" strokeWidth="1.3"/>
+        <line x1="0" y1="22" x2="12" y2="32" stroke="#93c5fd" strokeWidth="1.3"/>
+        <line x1="0" y1="30" x2="-10" y2="38" stroke="#93c5fd" strokeWidth="1"/>
+        <line x1="-14" y1="24" x2="-20" y2="19" stroke="#93c5fd" strokeWidth="0.9"/>
+        <line x1="-14" y1="24" x2="-22" y2="28" stroke="#93c5fd" strokeWidth="0.9"/>
         <circle cx="0" cy="0" r="3" fill="#e0f2fe"/>
         <circle cx="-3" cy="-3" r="1.5" fill="#bfdbfe"/>
         <circle cx="3" cy="-3" r="1.5" fill="#bfdbfe"/>
-        <circle cx="0" cy="-5" r="1.5" fill="#bfdbfe"/>
+        <circle cx="-20" cy="19" r="2" fill="#bfdbfe"/>
+        <circle cx="-22" cy="28" r="2" fill="#e0f2fe"/>
       </g>
-      <g transform="translate(108,65)">
-        <line x1="0" y1="0" x2="0" y2="26" stroke="#93c5fd" strokeWidth="1"/>
-        <path d="M0,9 C-6,4 -9,9 -4,12Z" fill="#bfdbfe"/>
-        <path d="M0,16 C6,11 9,16 4,19Z" fill="#bfdbfe"/>
-        <circle cx="0" cy="0" r="2.5" fill="#e0f2fe"/>
-        <circle cx="-2" cy="-2" r="1.2" fill="#bfdbfe"/>
-        <circle cx="2" cy="-2" r="1.2" fill="#bfdbfe"/>
-      </g>
-      <g transform="translate(55,90)">
-        <line x1="0" y1="0" x2="0" y2="22" stroke="#93c5fd" strokeWidth="0.9"/>
-        <path d="M0,8 C-5,3 -8,8 -4,11Z" fill="#bfdbfe"/>
-        <circle cx="0" cy="0" r="2" fill="#e0f2fe"/>
-        <circle cx="-2" cy="-2" r="1" fill="#bfdbfe"/>
-        <circle cx="2" cy="-2" r="1" fill="#bfdbfe"/>
-      </g>
-      <circle cx="40" cy="30" r="1.5" fill="#bfdbfe" opacity="0.4"/>
-      <circle cx="110" cy="100" r="1.5" fill="#bfdbfe" opacity="0.3"/>
+      <circle cx="145" cy="120" r="2" fill="#bfdbfe" opacity="0.5"/>
+      <circle cx="20" cy="30" r="2" fill="#bfdbfe" opacity="0.4"/>
+      <circle cx="155" cy="55" r="1.5" fill="#bfdbfe" opacity="0.3"/>
     </svg>
   );
   return null;
