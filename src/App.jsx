@@ -929,21 +929,43 @@ if (saved) {
         </div>
       </div>
 
-      {mode === "fast" && <div style={{ ...s.card, background: "rgba(201,168,76,0.08)", border: "0.5px solid rgba(201,168,76,0.25)" }}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: "#C9A84C", margin: "0 0 4px" }}>⚡ Quick Report</p>
-        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#7A9E7E", margin: "0 0 12px" }}>Morning signal · Drive · Alcohol · Sunlight</p>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {["✅ Strong","〰️ Partial","❌ No signal"].map(opt => (
-            <button key={opt} onClick={() => setMorningSignal(morningSignal === opt ? null : opt)} style={{ padding: "5px 10px", borderRadius: 50, border: "none", background: morningSignal === opt ? "#7A9E7E" : "rgba(255,255,255,0.06)", color: morningSignal === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{opt}</button>
+      {mode === "fast" && <div style={{ ...s.card, background: "rgba(255,255,255,0.07)", border: "0.5px solid rgba(122,158,126,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#C9A84C", margin: "0 0 4px" }}>⚡ Morning Report</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#7A9E7E", margin: "0 0 12px" }}>Your daily performance signals — private, data only, no judgment.</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🌅 Morning signal</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+          {["✅ Strong","〰️ Partial","❌ None","💤 Didn't notice"].map(opt => (
+            <button key={opt} onClick={() => setMorningSignal(morningSignal === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: morningSignal === opt ? "#7A9E7E" : "rgba(255,255,255,0.06)", color: morningSignal === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
           ))}
-          <span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#3a5a3a", padding: "5px 4px" }}>signal</span>
         </div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🔥 Drive today</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
           {["🔥 High","⚡ Medium","💤 Low","— None"].map(opt => (
-            <button key={opt} onClick={() => setDriveLevel(driveLevel === opt ? null : opt)} style={{ padding: "5px 10px", borderRadius: 50, border: "none", background: driveLevel === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: driveLevel === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{opt}</button>
+            <button key={opt} onClick={() => setDriveLevel(driveLevel === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: driveLevel === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: driveLevel === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
           ))}
-          <span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#3a5a3a", padding: "5px 4px" }}>drive</span>
         </div>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🍺 Alcohol yesterday</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+          {["None","1–2 drinks","3+ drinks"].map(opt => (
+            <button key={opt} onClick={() => setHadAlcohol(hadAlcohol === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: hadAlcohol === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: hadAlcohol === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🌞 Sunlight today</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+          {["✅ Got outside","❌ Stayed in"].map(opt => (
+            <button key={opt} onClick={() => setGotSunlight(gotSunlight === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: gotSunlight === opt ? "#7A9E7E" : "rgba(255,255,255,0.06)", color: gotSunlight === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+        {(morningSignal || driveLevel || hadAlcohol === "1–2 drinks" || hadAlcohol === "3+ drinks" || gotSunlight === "❌ Stayed in") && (
+          <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: "12px 14px", marginTop: 10, borderLeft: "3px solid #C9A84C" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 12, color: "#C9A84C", margin: "0 0 6px" }}>⚡ What your data says</p>
+            {hadAlcohol && hadAlcohol !== "None" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🍺 Alcohol affects testosterone and sleep quality. You may notice lower drive or energy today.</p>}
+            {morningSignal === "❌ None" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🌅 No morning signal can be linked to poor sleep, stress, alcohol, or low testosterone. Track it over time.</p>}
+            {(driveLevel === "💤 Low" || driveLevel === "— None") && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🔥 Low drive is often linked to poor sleep, high stress, or low zinc and magnesium. Fasting may help restore it over time.</p>}
+            {gotSunlight === "❌ Stayed in" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🌞 Morning sunlight supports testosterone and circadian rhythm. Even 10 minutes outside makes a difference.</p>}
+            {driveLevel === "🔥 High" && morningSignal === "✅ Strong" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#7A9E7E", margin: 0, lineHeight: 1.6 }}>💪 Strong signal and high drive — your testosterone window looks good today. Good day to train hard.</p>}
+          </div>
+        )}
       </div>}
 
       <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
@@ -1075,9 +1097,9 @@ if (saved) {
       </div>
       )}
 
-      {mode === "fast" && (
+      {mode === "fast" && false && (
       <div style={{ ...s.card, background: "rgba(255,255,255,0.07)", border: "0.5px solid rgba(201,168,76,0.25)" }}>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#e8eaf0", margin: "0 0 4px" }}>⚡ Morning Report</p>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#e8eaf0", margin: "0 0 4px" }}>⚡ Morning Report OLD</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#7A9E7E", margin: "0 0 14px" }}>Your daily performance signals — private, data only, no judgment.</p>
 
         <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🌅 Morning signal</p>
