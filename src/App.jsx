@@ -587,6 +587,7 @@ function CheckInScreen({ mode, onNavigate, onNourishDigestion }) {
   const [hadAlcohol, setHadAlcohol] = useState(null);
   const [gotSunlight, setGotSunlight] = useState(null);
   const [showLogPreview, setShowLogPreview] = useState(false);
+  const [selectedPastDay, setSelectedPastDay] = useState(null);
 
   const NAMED_MOODS = {
     "Happy":       { emoji: "😊", color: "#7A9E7E", bg: "#F0F6F0", message: "You're glowing today. Let that energy carry you gently through the day.", actions: ["Open Nourish", "Log a fast", "Add Note"] },
@@ -859,14 +860,17 @@ if (saved) {
         <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
           <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>Recent Check-Ins ✦</p>
           {history.slice(0,3).map((entry, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? "0.5px solid #EAF2EA" : "none" }}>
+            <div key={i} onClick={() => setSelectedPastDay(entry)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? "0.5px solid #EAF2EA" : "none", cursor: "pointer" }}>
               <div>
                 <p style={{ fontSize: 11, color: "#8FA090", margin: "0 0 2px" }}>{new Date(entry.dk + "T12:00:00").toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" })}</p>
                 <p style={{ fontSize: 13, color: "#2D3B2E", margin: 0 }}>{["Very low","Low","Neutral","Good","Great"][(entry.energy||3)-1]} · {entry.water||0} glasses</p>
               </div>
-              <span style={{ fontSize: 11, color: "#C97B7B", background: "#FDEAEA", padding: "3px 8px", borderRadius: 50 }}>
-                {(entry.symptoms||[]).length > 0 ? entry.symptoms[0] : (entry.namedMoods||[])[0] || entry.namedMood || "—"}
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 11, color: "#C97B7B", background: "#FDEAEA", padding: "3px 8px", borderRadius: 50 }}>
+                  {(entry.symptoms||[]).length > 0 ? entry.symptoms[0] : (entry.namedMoods||[])[0] || entry.namedMood || "—"}
+                </span>
+                <span style={{ fontSize: 14, color: "#8FA090" }}>›</span>
+              </div>
             </div>
           ))}
         </div>
