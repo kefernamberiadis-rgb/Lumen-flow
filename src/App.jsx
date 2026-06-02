@@ -154,37 +154,51 @@ function BotanicalAccent({ phase }) {
   const style = { position: "fixed", top: 8, right: 8, width: 120, height: 120, opacity: 0.25, pointerEvents: "none", zIndex: 1 };
   if (p === "Follicular") return (
     <svg style={style} viewBox="0 0 120 120">
-      <g transform="translate(80,25)">
-        <path d="M0,0 C-6,-14 -18,-12 -14,0 C-18,12 -6,14 0,0Z" fill="#f472b6"/>
-        <path d="M0,0 C6,-14 18,-12 14,0 C18,12 6,14 0,0Z" fill="#f9a8c9"/>
-        <path d="M0,0 C-12,-6 -12,6 0,0Z" fill="#fce7f3"/>
-        <path d="M0,0 C12,-6 12,6 0,0Z" fill="#fce7f3"/>
-        <circle cx="0" cy="0" r="3" fill="#fde68a"/>
-        <line x1="0" y1="3" x2="0" y2="22" stroke="#86efac" strokeWidth="1.2"/>
-        <path d="M0,12 C-7,8 -10,13 -5,16Z" fill="#86efac"/>
-        <path d="M0,17 C7,13 10,18 5,21Z" fill="#86efac"/>
+      <g transform="translate(75,20)">
+        <path d="M0,-2 C-12,-18 -22,-8 -12,2 C-22,12 -12,20 0,4Z" fill="#f472b6"/>
+        <path d="M0,-2 C12,-18 22,-8 12,2 C22,12 12,20 0,4Z" fill="#fce7f3"/>
+        <path d="M0,4 C-8,10 -14,6 -10,14Z" fill="#f9a8c9"/>
+        <path d="M0,4 C8,10 14,6 10,14Z" fill="#fbcfe8"/>
+        <line x1="0" y1="-2" x2="0" y2="16" stroke="#9d174d" strokeWidth="0.8"/>
+        <line x1="0" y1="-2" x2="-3" y2="-8" stroke="#9d174d" strokeWidth="0.7"/>
+        <line x1="0" y1="-2" x2="3" y2="-8" stroke="#9d174d" strokeWidth="0.7"/>
       </g>
-      <g transform="translate(105,65)">
-        <path d="M0,0 C-5,-11 -14,-9 -11,0 C-14,9 -5,11 0,0Z" fill="#fce7f3"/>
-        <path d="M0,0 C5,-11 14,-9 11,0 C14,9 5,11 0,0Z" fill="#f9a8c9"/>
-        <circle cx="0" cy="0" r="2.5" fill="#fde68a"/>
-        <line x1="0" y1="2" x2="0" y2="16" stroke="#86efac" strokeWidth="1"/>
+      <g transform="translate(100,60)">
+        <path d="M0,-2 C-9,-14 -17,-6 -9,2 C-17,9 -9,15 0,3Z" fill="#fce7f3"/>
+        <path d="M0,-2 C9,-14 17,-6 9,2 C17,9 9,15 0,3Z" fill="#f9a8c9"/>
+        <path d="M0,3 C-6,8 -10,5 -8,11Z" fill="#fbcfe8"/>
+        <path d="M0,3 C6,8 10,5 8,11Z" fill="#fce7f3"/>
+        <line x1="0" y1="-2" x2="0" y2="12" stroke="#9d174d" strokeWidth="0.7"/>
+        <line x1="0" y1="-2" x2="-2" y2="-7" stroke="#9d174d" strokeWidth="0.6"/>
+        <line x1="0" y1="-2" x2="2" y2="-7" stroke="#9d174d" strokeWidth="0.6"/>
       </g>
-      <g transform="translate(55,85)">
-        <path d="M0,0 C-4,-9 -12,-8 -9,0 C-12,8 -4,9 0,0Z" fill="#f472b6"/>
-        <path d="M0,0 C4,-9 12,-8 9,0 C12,8 4,9 0,0Z" fill="#fce7f3"/>
-        <circle cx="0" cy="0" r="2" fill="#fde68a"/>
-        <line x1="0" y1="2" x2="0" y2="12" stroke="#86efac" strokeWidth="0.8"/>
+      <g transform="translate(45,75)">
+        <path d="M0,-2 C-8,-12 -15,-5 -8,2 C-15,8 -8,13 0,3Z" fill="#f472b6"/>
+        <path d="M0,-2 C8,-12 15,-5 8,2 C15,8 8,13 0,3Z" fill="#fbcfe8"/>
+        <path d="M0,3 C-5,7 -8,4 -6,9Z" fill="#f9a8c9"/>
+        <path d="M0,3 C5,7 8,4 6,9Z" fill="#fce7f3"/>
+        <line x1="0" y1="-2" x2="0" y2="10" stroke="#9d174d" strokeWidth="0.6"/>
+        <line x1="0" y1="-2" x2="-2" y2="-6" stroke="#9d174d" strokeWidth="0.5"/>
+        <line x1="0" y1="-2" x2="2" y2="-6" stroke="#9d174d" strokeWidth="0.5"/>
       </g>
-      <g transform="translate(70,50)">
-        <path d="M0,-8 C3,-4 3,4 0,8 C-3,4 -3,-4 0,-8Z" fill="#f472b6" opacity="0.6"/>
-        <path d="M-8,0 C-4,-3 4,-3 8,0 C4,3 -4,3 -8,0Z" fill="#f9a8c9" opacity="0.5"/>
-        <ellipse cx="3" cy="-5" rx="2" ry="1.2" fill="#f472b6" transform="rotate(30 3 -5)" opacity="0.7"/>
-        <ellipse cx="-3" cy="-5" rx="2" ry="1.2" fill="#fce7f3" transform="rotate(-30 -3 -5)" opacity="0.7"/>
-        <ellipse cx="3" cy="5" rx="1.5" ry="1" fill="#f9a8c9" transform="rotate(-20 3 5)" opacity="0.6"/>
-        <ellipse cx="-3" cy="5" rx="1.5" ry="1" fill="#fce7f3" transform="rotate(20 -3 5)" opacity="0.6"/>
-        <line x1="0" y1="-8" x2="-3" y2="-12" stroke="#6b7280" strokeWidth="0.6"/>
-        <line x1="0" y1="-8" x2="3" y2="-12" stroke="#6b7280" strokeWidth="0.6"/>
+      <g transform="translate(70,95)">
+        <path d="M0,-2 C-7,-10 -13,-4 -7,2 C-13,7 -7,11 0,3Z" fill="#fce7f3"/>
+        <path d="M0,-2 C7,-10 13,-4 7,2 C13,7 7,11 0,3Z" fill="#f472b6"/>
+        <line x1="0" y1="-2" x2="0" y2="9" stroke="#9d174d" strokeWidth="0.6"/>
+        <line x1="0" y1="-2" x2="-2" y2="-5" stroke="#9d174d" strokeWidth="0.5"/>
+        <line x1="0" y1="-2" x2="2" y2="-5" stroke="#9d174d" strokeWidth="0.5"/>
+      </g>
+      <g transform="translate(25,45)">
+        <path d="M0,-2 C-6,-9 -11,-3 -6,2 C-11,6 -6,10 0,3Z" fill="#f9a8c9"/>
+        <path d="M0,-2 C6,-9 11,-3 6,2 C11,6 6,10 0,3Z" fill="#fce7f3"/>
+        <line x1="0" y1="-2" x2="0" y2="8" stroke="#9d174d" strokeWidth="0.5"/>
+        <line x1="0" y1="-2" x2="-1" y2="-5" stroke="#9d174d" strokeWidth="0.4"/>
+        <line x1="0" y1="-2" x2="1" y2="-5" stroke="#9d174d" strokeWidth="0.4"/>
+      </g>
+      <g transform="translate(108,25)">
+        <path d="M0,-2 C-5,-8 -10,-3 -5,2 C-10,5 -5,9 0,3Z" fill="#f472b6"/>
+        <path d="M0,-2 C5,-8 10,-3 5,2 C10,5 5,9 0,3Z" fill="#fbcfe8"/>
+        <line x1="0" y1="-2" x2="0" y2="7" stroke="#9d174d" strokeWidth="0.5"/>
       </g>
     </svg>
   );
