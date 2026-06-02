@@ -1421,7 +1421,8 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
         const getPhaseForDay = (d) => {
           if (!lastPeriod) return "follicular";
           const date = new Date(year, month, d);
-          const start = new Date(lastPeriod);
+          const parts = lastPeriod.split("-");
+          const start = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
           const diff = Math.floor((date - start) / 86400000);
           const dayInCycle = ((diff % cycleLength) + cycleLength) % cycleLength;
           if (dayInCycle < periodLength) return "menstrual";
@@ -1431,6 +1432,12 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
         };
 
         const getSuggestion = (phase) => {
+          if (mode === "fast") {
+            const dayOfWeek = new Date(year, month, parseInt(phase)).getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 6) return "gentle";
+            if (dayOfWeek === 1 || dayOfWeek === 4) return "steady";
+            return "balanced";
+          }
           if (phase === "menstrual") return "gentle";
           if (phase === "follicular") return "balanced";
           if (phase === "ovulation") return "steady";
@@ -1443,7 +1450,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
         const autoFill = () => {
           const newPlan = {};
           for (let d = 1; d <= daysInMonth; d++) {
-            const phase = getPhaseForDay(d);
+            const phase = mode === "fast" ? String(d) : getPhaseForDay(d);
             newPlan[d] = getSuggestion(phase);
           }
           const updated = { ...plannerData, [planKey]: newPlan };
