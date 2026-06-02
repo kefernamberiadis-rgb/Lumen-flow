@@ -258,7 +258,7 @@ function BotanicalAccent({ phase }) {
     </svg>
   );
   if (p === "Menstrual") return (
-    <svg style={{ position: "fixed", top: 8, right: 8, width: 160, height: 160, opacity: 0.35, pointerEvents: "none", zIndex: 1 }} viewBox="0 0 160 160">
+    <svg style={{ position: "fixed", top: 0, right: 0, width: "100%", height: "100%", opacity: 0.30, pointerEvents: "none", zIndex: 1 }} viewBox="0 0 390 844">
       <g transform="translate(110,15)">
         <line x1="0" y1="0" x2="0" y2="55" stroke="#93c5fd" strokeWidth="2"/>
         <line x1="0" y1="15" x2="-18" y2="30" stroke="#93c5fd" strokeWidth="1.5"/>
@@ -320,10 +320,10 @@ function MoonPhaseCard({ mode, lastPeriod, cycleDay, phase }) {
   };
   const sync = moonSync();
   return (
-    <div style={{ margin: "0 16px 12px", background: mode === "fast" ? "linear-gradient(135deg, #0a1a10, #0f2218)" : "linear-gradient(135deg, #F5F0FF, #EEE8FF)", borderRadius: 18, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid rgba(155,123,201,0.3)" }}>
+    <div style={{ margin: "0 16px 12px", background: mode === "fast" ? "linear-gradient(135deg, #0a1a10, #0f2218)" : phase === "Menstrual" ? "linear-gradient(135deg, #eef4ff, #dce8f8)" : phase === "Follicular" ? "linear-gradient(135deg, #fff0f8, #fce4ee)" : phase === "Ovulation" ? "linear-gradient(135deg, #fffbee, #fff0c0)" : "linear-gradient(135deg, #fff5ee, #ffd4a0)", borderRadius: 18, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : phase === "Menstrual" ? "0.5px solid rgba(147,197,253,0.5)" : phase === "Follicular" ? "0.5px solid rgba(244,114,182,0.4)" : phase === "Ovulation" ? "0.5px solid rgba(251,191,36,0.5)" : "0.5px solid rgba(234,88,12,0.4)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-        <p style={{ fontFamily: "sans-serif", fontSize: 10, letterSpacing: "2px", color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: 0, textTransform: "uppercase" }}>🌙 Moon phase</p>
-        <span style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9" }}>{moon.daysToNext}d until {moon.next}</span>
+        <p style={{ fontFamily: "sans-serif", fontSize: 10, letterSpacing: "2px", color: mode === "fast" ? "#7A9E7E" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c", margin: 0, textTransform: "uppercase" }}>🌙 Moon phase</p>
+        <span style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#7A9E7E" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c" }}>{moon.daysToNext}d until {moon.next}</span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
         <span style={{ fontSize: 32 }}>{moon.emoji}</span>
@@ -333,7 +333,7 @@ function MoonPhaseCard({ mode, lastPeriod, cycleDay, phase }) {
         </div>
       </div>
       {mode !== "fast" && (
-        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#9B7BC9", margin: "0 0 6px" }}>Your cycle season — {cycleSeasonMap[phase] || "—"}</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c", margin: "0 0 6px" }}>Your cycle season — {cycleSeasonMap[phase] || "—"}</p>
       )}
       {sync && <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", margin: "0 0 8px", lineHeight: 1.6, fontStyle: "italic" }}>{sync}</p>}
       <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
@@ -527,7 +527,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
             <button onClick={() => setShowEditFast(!showEditFast)} style={{ background: mode === "fast" ? "rgba(184,148,60,0.06)" : "#F0F6F0", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.3)" : "0.5px solid #C5D9C5", borderRadius: mode === "fast" ? 5 : 50, padding: "0 16px", fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#C9A84C" : "#5C7F60", cursor: "pointer" }}>✏️</button>
           </div>
         ) : (
-          <button onClick={startFast} style={{ ...s.btn, background: mode === "fast" ? "rgba(184,148,60,0.06)" : "linear-gradient(135deg,#8B5E7A,#7D5490)", color: mode === "fast" ? "#C9A84C" : "#fff", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.3)" : "none", letterSpacing: mode === "fast" ? "0.1em" : "0", opacity: goalHours ? 1 : 0.5 }}>
+          <button onClick={startFast} style={{ ...s.btn, background: mode === "fast" ? "rgba(184,148,60,0.06)" : phase === "Menstrual" ? "linear-gradient(135deg,#7BA8C9,#5888b0)" : phase === "Follicular" ? "linear-gradient(135deg,#f472b6,#c4809a)" : phase === "Ovulation" ? "linear-gradient(135deg,#f59e0b,#d97706)" : "linear-gradient(135deg,#ea580c,#c2410c)", color: mode === "fast" ? "#C9A84C" : "#fff", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.3)" : "none", letterSpacing: mode === "fast" ? "0.1em" : "0", opacity: goalHours ? 1 : 0.5 }}>
             {mode === "fast" ? "BEGIN FAST ›" : "Begin Fast 🌙"}
           </button>
         )}
