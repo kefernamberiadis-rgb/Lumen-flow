@@ -1767,7 +1767,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
       </div>
 
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-        <button onClick={() => setShowPlanner(!showPlanner)} style={{ padding: "9px 20px", borderRadius: 50, border: "none", background: mode === "fast" ? "rgba(201,168,76,0.15)" : "linear-gradient(135deg, #C4809A, #A87898)", color: "#fff", fontFamily: "Georgia, serif", fontSize: 13, cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.1)" }}>
+        <button onClick={() => setShowPlanner(!showPlanner)} style={{ padding: "9px 20px", borderRadius: 50, border: "none", background: mode === "fast" ? "rgba(201,168,76,0.15)" : getSeasonalAccent(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))).btn, color: "#fff", fontFamily: "Georgia, serif", fontSize: 13, cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.1)" }}>
           {showPlanner ? "✕ Close Planner" : "🗓️ Plan My Month"}
         </button>
       </div>
@@ -2081,7 +2081,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
             {periodMsg}
           </div>
         )}
-        <button onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }} style={{ width: 52, height: 52, borderRadius: "50%", background: mode === "fast" ? "#5C7F60" : "#C97B7B", border: "none", color: "#fff", fontSize: 26, cursor: "pointer", boxShadow: mode === "fast" ? "0 4px 16px rgba(92,127,96,0.4)" : "0 4px 16px rgba(201,123,123,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <button onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }} style={{ width: 52, height: 52, borderRadius: "50%", background: mode === "fast" ? "#5C7F60" : getSeasonalAccent(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))).btn, border: "none", color: "#fff", fontSize: 26, cursor: "pointer", boxShadow: mode === "fast" ? "0 4px 16px rgba(92,127,96,0.4)" : "0 4px 16px rgba(234,88,12,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           +
         </button>
       </div>
