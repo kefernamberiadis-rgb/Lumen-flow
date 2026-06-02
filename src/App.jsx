@@ -869,6 +869,56 @@ if (saved) {
         </div>
       </div>
 
+      {mode === "fast" && (() => {
+        const last7 = [];
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(); d.setDate(d.getDate() - i);
+          const dk = d.toISOString().split("T")[0];
+          try { const e = JSON.parse(localStorage.getItem(`lf_checkin_${dk}`)); if (e) last7.push(e); } catch {}
+        }
+        const drives = last7.filter(e => e.driveLevel).map(e => e.driveLevel);
+        const signals = last7.filter(e => e.morningSignal).map(e => e.morningSignal);
+        const alcoholDays = last7.filter(e => e.hadAlcohol && e.hadAlcohol !== "None").length;
+        const highDrive = drives.filter(d => d === "🔥 High").length;
+        const lowDrive = drives.filter(d => d === "💤 Low" || d === "— None").length;
+        const strongSignal = signals.filter(s => s === "✅ Strong").length;
+        if (last7.length === 0) return null;
+        return (
+          <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 18, border: "0.5px solid rgba(201,168,76,0.2)", padding: 16, marginBottom: 12 }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#C9A84C", margin: "0 0 12px" }}>⚡ Performance Pattern ✦</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {drives.length > 0 && (
+                <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: "10px 12px" }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#7A9E7E", margin: "0 0 4px" }}>🔥 Drive this week</p>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#e8e0ce", margin: 0 }}>
+                    {highDrive > lowDrive ? `${highDrive} high days — good week` : lowDrive > highDrive ? `${lowDrive} low days — check sleep and stress` : "Mixed — track patterns over time"}
+                  </p>
+                </div>
+              )}
+              {signals.length > 0 && (
+                <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: "10px 12px" }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#7A9E7E", margin: "0 0 4px" }}>🌅 Morning signal this week</p>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#e8e0ce", margin: 0 }}>
+                    {strongSignal >= 4 ? `${strongSignal} strong mornings — testosterone looking good` : strongSignal >= 2 ? `${strongSignal} strong mornings — room to improve` : "Low signal week — prioritise sleep and reduce alcohol"}
+                  </p>
+                </div>
+              )}
+              {alcoholDays > 0 && (
+                <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: "10px 12px" }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#7A9E7E", margin: "0 0 4px" }}>🍺 Alcohol this week</p>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#e8e0ce", margin: 0 }}>
+                    {alcoholDays >= 4 ? `${alcoholDays} days — likely affecting drive and sleep quality` : alcoholDays >= 2 ? `${alcoholDays} days — may be affecting recovery` : `${alcoholDays} day — minimal impact`}
+                  </p>
+                </div>
+              )}
+              {drives.length === 0 && signals.length === 0 && (
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#7A9E7E", margin: 0, lineHeight: 1.6 }}>Log your morning signal and drive in Check-In to see your performance patterns here.</p>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
       <div style={{ background: "#F8F0FF", borderRadius: 18, border: "0.5px solid rgba(155,123,201,0.2)", padding: 16, marginBottom: 16 }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#9B7BC9", margin: "0 0 8px" }}>Today's Lumen Note ✦</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>{insight}</p>
