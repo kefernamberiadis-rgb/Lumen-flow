@@ -1656,7 +1656,7 @@ if (saved) {
         />
       </div>
 
-      <button onClick={save} style={{ ...s.btn, background: mode === "fast" ? "#8FAF8F" : "linear-gradient(135deg, #C4809A, #A87898)" }}>Save Check-In ✅</button>
+      <button onClick={save} style={{ ...s.btn, background: mode === "fast" ? "#8FAF8F" : getSeasonalAccent(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))).btn }}>Save Check-In ✅</button>
     </div>
   );
 }
