@@ -1330,6 +1330,11 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
   const [month, setMonth] = useState(today.getMonth());
   const [year,  setYear]  = useState(today.getFullYear());
   const [selDay, setSelDay] = useState(today.getDate());
+  const [showPlanner, setShowPlanner] = useState(false);
+  const [plannerData, setPlannerData] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("lf_monthly_plan") || "{}"); } catch (e) { return {}; }
+  });
+  const [editPlanDay, setEditPlanDay] = useState(null);
 
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDow    = new Date(year, month, 1).getDay();
@@ -1397,6 +1402,122 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
         <button onClick={() => { if (month === 11) { setMonth(0); setYear(y => y+1); } else setMonth(m => m+1); }}
           style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#8FAF8F" }}>›</button>
       </div>
+
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+        <button onClick={() => setShowPlanner(!showPlanner)} style={{ padding: "9px 20px", borderRadius: 50, border: "none", background: mode === "fast" ? "rgba(201,168,76,0.15)" : "linear-gradient(135deg, #C4809A, #A87898)", color: "#fff", fontFamily: "Georgia, serif", fontSize: 13, cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.1)" }}>
+          {showPlanner ? "✕ Close Planner" : "🗓️ Plan My Month"}
+        </button>
+      </div>
+
+      {showPlanner && (() => {
+        const PLAN_LABELS = [
+          { key: "rest",    label: "Rest Day",  hours: 0,  color: "#C97B7B", bg: "#FDEAEA" },
+          { key: "gentle",  label: "Gentle",    hours: 12, color: "#7BA8C9", bg: "#EAF2F9" },
+          { key: "balanced",label: "Balanced",  hours: 14, color: "#7A9E7E", bg: "#EAF2EA" },
+          { key: "steady",  label: "Steady",    hours: 16, color: "#C9A87B", bg: "#FDF6EA" },
+          { key: "strong",  label: "Strong",    hours: 18, color: "#9B7BC9", bg: "#F5F0FF" },
+        ];
+
+        const getPhaseForDay = (d) => {
+          if (!lastPeriod) return "follicular";
+          const date = new Date(year, month, d);
+          const start = new Date(lastPeriod);
+          const diff = Math.floor((date - start) / 86400000);
+          const dayInCycle = ((diff % cycleLength) + cycleLength) % cycleLength;
+          if (dayInCycle < periodLength) return "menstrual";
+          if (dayInCycle < 13) return "follicular";
+          if (dayInCycle < 16) return "ovulation";
+          return "luteal";
+        };
+
+        const getSuggestion = (phase) => {
+          if (phase === "menstrual") return "gentle";
+          if (phase === "follicular") return "balanced";
+          if (phase === "ovulation") return "steady";
+          return "balanced";
+        };
+
+        const planKey = `${year}-${month}`;
+        const currentPlan = plannerData[planKey] || {};
+
+        const autoFill = () => {
+          const newPlan = {};
+          for (let d = 1; d <= daysInMonth; d++) {
+            const phase = getPhaseForDay(d);
+            newPlan[d] = getSuggestion(phase);
+          }
+          const updated = { ...plannerData, [planKey]: newPlan };
+          setPlannerData(updated);
+          localStorage.setItem("lf_monthly_plan", JSON.stringify(updated));
+        };
+
+        const resetPlan = () => {
+          const updated = { ...plannerData };
+          delete updated[planKey];
+          setPlannerData(updated);
+          localStorage.setItem("lf_monthly_plan", JSON.stringify(updated));
+          setEditPlanDay(null);
+        };
+
+        const setDayPlan = (d, key) => {
+          const newPlan = { ...currentPlan, [d]: key };
+          const updated = { ...plannerData, [planKey]: newPlan };
+          setPlannerData(updated);
+          localStorage.setItem("lf_monthly_plan", JSON.stringify(updated));
+          setEditPlanDay(null);
+        };
+
+        const hasPlan = Object.keys(currentPlan).length > 0;
+
+        return (
+          <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 18, padding: "16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : "0.5px solid rgba(180,160,200,0.3)", marginBottom: 16 }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 4px" }}>🗓️ Monthly Rhythm Planner</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: "0 0 14px", lineHeight: 1.6 }}>Plan your month with your body, not against it.</p>
+            <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+              <button onClick={autoFill} style={{ padding: "8px 16px", borderRadius: 50, border: "none", background: mode === "fast" ? "#7A9E7E" : "#9B7BC9", color: "#fff", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>✨ Suggest my month</button>
+              {hasPlan && <button onClick={resetPlan} style={{ padding: "8px 16px", borderRadius: 50, border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(155,123,201,0.3)", background: "none", color: mode === "fast" ? "#C9A84C" : "#9B7BC9", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>↺ Reset</button>}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 12 }}>
+              {["S","M","T","W","T","F","S"].map((d,i) => (
+                <div key={i} style={{ textAlign: "center", fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", fontWeight: 600, padding: "4px 0" }}>{d}</div>
+              ))}
+              {Array.from({ length: new Date(year, month, 1).getDay() }).map((_, i) => <div key={`e${i}`} />)}
+              {Array.from({ length: daysInMonth }).map((_, i) => {
+                const d = i + 1;
+                const planKey2 = currentPlan[d];
+                const planItem = PLAN_LABELS.find(p => p.key === planKey2);
+                return (
+                  <div key={d} onClick={() => setEditPlanDay(editPlanDay === d ? null : d)} style={{ aspectRatio: "1", borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", background: planItem ? planItem.bg : mode === "fast" ? "rgba(255,255,255,0.04)" : "#F8FAF8", border: `0.5px solid ${planItem ? planItem.color + "44" : "rgba(150,150,150,0.15)"}`, padding: 2 }}>
+                    <span style={{ fontFamily: "sans-serif", fontSize: 11, color: planItem ? planItem.color : "#8FA090", fontWeight: 600 }}>{d}</span>
+                    {planItem && <span style={{ fontFamily: "sans-serif", fontSize: 7, color: planItem.color, lineHeight: 1, textAlign: "center" }}>{planItem.label}</span>}
+                  </div>
+                );
+              })}
+            </div>
+            {editPlanDay && (
+              <div style={{ background: mode === "fast" ? "rgba(0,0,0,0.2)" : "#fff", borderRadius: 14, padding: "14px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : "0.5px solid #dce8dc", marginBottom: 12 }}>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 10px" }}>Day {editPlanDay} — choose your rhythm</p>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {PLAN_LABELS.map(p => (
+                    <button key={p.key} onClick={() => setDayPlan(editPlanDay, p.key)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: currentPlan[editPlanDay] === p.key ? p.color : p.bg, color: currentPlan[editPlanDay] === p.key ? "#fff" : p.color, fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", fontWeight: currentPlan[editPlanDay] === p.key ? 600 : 400 }}>
+                      {p.label} {p.hours > 0 ? `${p.hours}h` : ""}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {PLAN_LABELS.map(p => (
+                <div key={p.key} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 2, background: p.color }} />
+                  <span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#6b7b6b" }}>{p.label} {p.hours > 0 ? `${p.hours}h` : ""}</span>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "10px 0 0", lineHeight: 1.6 }}>🌿 Free during beta — premium coming soon. These are gentle suggestions, not rules. Always listen to your body first.</p>
+          </div>
+        );
+      })()}
 
       {/* Day of week headers */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 8 }}>
