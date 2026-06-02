@@ -151,7 +151,7 @@ function Onboarding({ onDone }) {
 249
 function MoonPhaseCard({ mode, lastPeriod, cycleDay, phase }) {
   const moon = getMoonPhase();
-  const cycleSeasonMap = { menstrual: "Winter 🌨️", follicular: "Spring 🌸", ovulation: "Summer ☀️", luteal: "Autumn 🍂" };
+  const cycleSeasonMap = { Menstrual: "Winter 🌨️", Follicular: "Spring 🌸", Ovulation: "Summer ☀️", Luteal: "Autumn 🍂" };
   const moonSync = () => {
     if (!lastPeriod) return null;
     const moonDay = (() => {
@@ -186,7 +186,17 @@ function MoonPhaseCard({ mode, lastPeriod, cycleDay, phase }) {
       {mode !== "fast" && (
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#9B7BC9", margin: "0 0 6px" }}>Your cycle season — {cycleSeasonMap[phase] || "—"}</p>
       )}
-      {sync && <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", margin: 0, lineHeight: 1.6, fontStyle: "italic" }}>{sync}</p>}
+      {sync && <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", margin: "0 0 8px", lineHeight: 1.6, fontStyle: "italic" }}>{sync}</p>}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
+        <div style={{ background: mode === "fast" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.6)", borderRadius: 10, padding: "8px 12px" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.06em" }}>🕯️ Ritual</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#a8c4a8" : "#4a3a5a", margin: 0, lineHeight: 1.6 }}>{moon.ritual}</p>
+        </div>
+        <div style={{ background: mode === "fast" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.6)", borderRadius: 10, padding: "8px 12px" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.06em" }}>📝 Journal prompt</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#a8c4a8" : "#4a3a5a", margin: 0, lineHeight: 1.6 }}>{moon.journal}</p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -3339,14 +3349,15 @@ function getMoonPhase() {
   const synodic = 29.53058867;
   const diff = (now - known) / (1000 * 60 * 60 * 24);
   const phase = ((diff % synodic) + synodic) % synodic;
-  if (phase < 1.85) return { name: "New Moon", emoji: "🌑", desc: "A time for new intentions and quiet beginnings.", next: "Full Moon", daysToNext: Math.round(synodic / 2 - phase) };
-  if (phase < 7.38) return { name: "Waxing Crescent", emoji: "🌒", desc: "Energy is building. Plant seeds and take first steps.", next: "Full Moon", daysToNext: Math.round(14.77 - phase) };
-  if (phase < 9.22) return { name: "First Quarter", emoji: "🌓", desc: "Take action. Push through resistance.", next: "Full Moon", daysToNext: Math.round(14.77 - phase) };
-  if (phase < 14.77) return { name: "Waxing Gibbous", emoji: "🌔", desc: "Refine and prepare. The full moon is close.", next: "Full Moon", daysToNext: Math.round(14.77 - phase) };
-  if (phase < 16.61) return { name: "Full Moon", emoji: "🌕", desc: "Peak energy. Release what no longer serves you.", next: "New Moon", daysToNext: Math.round(synodic - phase) };
-  if (phase < 22.15) return { name: "Waning Gibbous", emoji: "🌖", desc: "Reflect and share. Gratitude and integration.", next: "New Moon", daysToNext: Math.round(synodic - phase) };
-  if (phase < 23.99) return { name: "Last Quarter", emoji: "🌗", desc: "Release and let go. Clear space for what is coming.", next: "New Moon", daysToNext: Math.round(synodic - phase) };
-  return { name: "Waning Crescent", emoji: "🌘", desc: "Rest, restore, and prepare for renewal.", next: "New Moon", daysToNext: Math.round(synodic - phase) };
+  const illum = Math.round(Math.abs(Math.cos(phase / synodic * 2 * Math.PI)) * 100);
+  if (phase < 1.85) return { name: "New Moon", emoji: "🌑", desc: "A time for new intentions and quiet beginnings.", next: "Full Moon", daysToNext: Math.round(synodic / 2 - phase), illum: 0, ritual: "Light a candle. Write one intention for this cycle. Let it be simple and honest.", journal: "What am I ready to begin? What do I want to call in this month?" };
+  if (phase < 7.38) return { name: "Waxing Crescent", emoji: "🌒", desc: "Energy is building. Plant seeds and take first steps.", next: "Full Moon", daysToNext: Math.round(14.77 - phase), illum, ritual: "Take one small action toward something you want. Even a tiny step counts.", journal: "What seed am I planting right now? What would it feel like to see it grow?" };
+  if (phase < 9.22) return { name: "First Quarter", emoji: "🌓", desc: "Take action. Push through resistance.", next: "Full Moon", daysToNext: Math.round(14.77 - phase), illum, ritual: "Do the thing you have been putting off. Movement builds momentum.", journal: "What is holding me back right now? What would I do if I wasn't afraid?" };
+  if (phase < 14.77) return { name: "Waxing Gibbous", emoji: "🌔", desc: "Refine and prepare. The full moon is close.", next: "Full Moon", daysToNext: Math.round(14.77 - phase), illum, ritual: "Review what you started. Adjust, refine, and trust the process.", journal: "What needs refining in my life right now? What am I almost ready for?" };
+  if (phase < 16.61) return { name: "Full Moon", emoji: "🌕", desc: "Peak energy. Release what no longer serves you.", next: "New Moon", daysToNext: Math.round(synodic - phase), illum: 100, ritual: "Write down what you are releasing. Burn it, tear it, or let it go with intention.", journal: "What am I ready to let go of? What has run its course in my life?" };
+  if (phase < 22.15) return { name: "Waning Gibbous", emoji: "🌖", desc: "Reflect and share. Gratitude and integration.", next: "New Moon", daysToNext: Math.round(synodic - phase), illum, ritual: "Write three things you are grateful for from this cycle. Share something you have learned.", journal: "What did this full moon reveal to me? What am I integrating right now?" };
+  if (phase < 23.99) return { name: "Last Quarter", emoji: "🌗", desc: "Release and let go. Clear space for what is coming.", next: "New Moon", daysToNext: Math.round(synodic - phase), illum, ritual: "Clear one physical space — a drawer, your bag, your phone. Let the outside reflect the inside.", journal: "What do I need to forgive — in myself or someone else? What am I clearing?" };
+  return { name: "Waning Crescent", emoji: "🌘", desc: "Rest, restore, and prepare for renewal.", next: "New Moon", daysToNext: Math.round(synodic - phase), illum, ritual: "Rest without guilt. Sleep early, drink water, be gentle with yourself.", journal: "What does my body need right now? What would true rest look like for me?" };
 }
 
 export default function App() {
