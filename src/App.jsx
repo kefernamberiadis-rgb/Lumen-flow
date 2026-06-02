@@ -543,7 +543,7 @@ function CheckInScreen({ mode, onNavigate, onNourishDigestion }) {
   const [notes,  setNotes]  = useState("");
 
   const save = () => {
-    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, movements, bodyCheck, weightUnit, namedMood, moodNote, symptoms, bowelCheck: { entries: bowelEntries, didPoopToday: bowelEntries.length > 0 } };
+    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, movements, bodyCheck, weightUnit, namedMood, moodNote, symptoms, bowelCheck: { entries: bowelEntries, didPoopToday: bowelEntries.length > 0 }, morningSignal, driveLevel, hadAlcohol, gotSunlight };
     localStorage.setItem(key, JSON.stringify(data));
     setSaved(data);
   };
@@ -582,6 +582,10 @@ function CheckInScreen({ mode, onNavigate, onNourishDigestion }) {
   const [namedMood, setNamedMood] = useState(null);
   const [moodNote, setMoodNote] = useState("");
   const [showMoodNote, setShowMoodNote] = useState(false);
+  const [morningSignal, setMorningSignal] = useState(null);
+  const [driveLevel, setDriveLevel] = useState(null);
+  const [hadAlcohol, setHadAlcohol] = useState(null);
+  const [gotSunlight, setGotSunlight] = useState(null);
   const [showLogPreview, setShowLogPreview] = useState(false);
 
   const NAMED_MOODS = {
@@ -1051,6 +1055,52 @@ if (saved) {
             </button>
           ))}
         </div>
+      </div>
+      )}
+
+      {mode === "fast" && (
+      <div style={{ ...s.card, background: "rgba(255,255,255,0.07)", border: "0.5px solid rgba(201,168,76,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#e8eaf0", margin: "0 0 4px" }}>⚡ Morning Report</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#7A9E7E", margin: "0 0 14px" }}>Your daily performance signals — private, data only, no judgment.</p>
+
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🌅 Morning signal</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+          {["✅ Strong","〰️ Partial","❌ None","💤 Didn't notice"].map(opt => (
+            <button key={opt} onClick={() => setMorningSignal(morningSignal === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: morningSignal === opt ? "#7A9E7E" : "rgba(255,255,255,0.06)", color: morningSignal === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🔥 Drive today</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+          {["🔥 High","⚡ Medium","💤 Low","— None"].map(opt => (
+            <button key={opt} onClick={() => setDriveLevel(driveLevel === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: driveLevel === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: driveLevel === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🍺 Alcohol yesterday</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+          {["None","1–2 drinks","3+ drinks"].map(opt => (
+            <button key={opt} onClick={() => setHadAlcohol(hadAlcohol === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: hadAlcohol === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: hadAlcohol === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🌞 Sunlight today</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+          {["✅ Got outside","❌ Stayed in"].map(opt => (
+            <button key={opt} onClick={() => setGotSunlight(gotSunlight === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: gotSunlight === opt ? "#7A9E7E" : "rgba(255,255,255,0.06)", color: gotSunlight === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+
+        {(morningSignal || driveLevel || hadAlcohol) && (
+          <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: "12px 14px", marginTop: 10, borderLeft: "3px solid #C9A84C" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 12, color: "#C9A84C", margin: "0 0 6px" }}>⚡ What your data says</p>
+            {hadAlcohol && hadAlcohol !== "None" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🍺 Alcohol affects testosterone and sleep quality. You may notice lower drive or energy today.</p>}
+            {morningSignal === "❌ None" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🌅 No morning signal can be linked to poor sleep, stress, alcohol, or low testosterone. Track it over time.</p>}
+            {driveLevel === "💤 Low" || driveLevel === "— None" ? <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🔥 Low drive is often linked to poor sleep, high stress, or low zinc and magnesium. Fasting may help restore it over time.</p> : null}
+            {gotSunlight === "❌ Stayed in" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🌞 Morning sunlight supports testosterone and circadian rhythm. Even 10 minutes outside makes a difference.</p>}
+            {driveLevel === "🔥 High" && morningSignal === "✅ Strong" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#7A9E7E", margin: "0 0 4px", lineHeight: 1.6 }}>💪 Strong signal and high drive — your testosterone window looks good today. Good day to train hard.</p>}
+          </div>
+        )}
       </div>
       )}
 
