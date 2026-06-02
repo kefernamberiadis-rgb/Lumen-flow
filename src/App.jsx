@@ -1664,11 +1664,19 @@ if (saved) {
 // ─────────────────────────────────────────────
 //  CALENDAR SCREEN
 // ─────────────────────────────────────────────
+function getSeasonalAccent(mode, phase) {
+  if (mode === "fast") return { color: "#7A9E7E", bg: "rgba(122,158,126,0.12)", border: "rgba(122,158,126,0.3)", btn: "#7A9E7E" };
+  if (phase === "Menstrual") return { color: "#7BA8C9", bg: "rgba(123,168,201,0.12)", border: "rgba(123,168,201,0.3)", btn: "linear-gradient(135deg,#7BA8C9,#5888b0)" };
+  if (phase === "Follicular") return { color: "#f472b6", bg: "rgba(244,114,182,0.12)", border: "rgba(244,114,182,0.3)", btn: "linear-gradient(135deg,#f472b6,#c4809a)" };
+  if (phase === "Ovulation") return { color: "#f59e0b", bg: "rgba(245,158,11,0.12)", border: "rgba(245,158,11,0.3)", btn: "linear-gradient(135deg,#f59e0b,#d97706)" };
+  return { color: "#ea580c", bg: "rgba(234,88,12,0.12)", border: "rgba(234,88,12,0.3)", btn: "linear-gradient(135deg,#ea580c,#c2410c)" };
+}
+
 function getSeasonalBg(mode, phase) {
   if (mode === "fast") return "linear-gradient(180deg, #0c1410 0%, #141e16 40%, #0f1a12 100%)";
   if (phase === "Menstrual") return "linear-gradient(160deg, #f8fbff 0%, #eef4ff 25%, #dce8f8 50%, #c8daf0 100%)";
-  if (phase === "Follicular") return "linear-gradient(160deg, #fff8ff 0%, #fde8f8 25%, #f8c8f0 50%, #e8d8f8 75%, #d8f0d8 100%)";
-  if (phase === "Ovulation") return "linear-gradient(160deg, #fffde8 0%, #fff5b0 25%, #ffe050 50%, #ffc020 75%, #88c8e8 100%)";
+  if (phase === "Follicular") return "linear-gradient(160deg, #fff8ff 0%, #fde8f8 25%, #f8c8f0 50%, #f0d0f8 75%, #fce4f4 100%)";
+  if (phase === "Ovulation") return "linear-gradient(160deg, #fffbee 0%, #fff4cc 25%, #ffe880 50%, #ffd940 75%, #ffca00 100%)";
   return "linear-gradient(160deg, #fffaf4 0%, #ffeedd 25%, #ffd4a0 50%, #ffb060 75%, #f08040 100%)";
 }
 
@@ -2158,7 +2166,8 @@ function MoveMapCard({ item, mode }) {
   );
 }
 
-function LearnScreen({ mode }) {
+function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
+  const learnPhase = getPhase(Math.max(1, getCycleDay(lastPeriod) - 1));
   const [tab, setTab] = useState(mode === "fast" ? "Fasting" : "Phases");
   const tabs = mode === "fast"
     ? ["Lumen Life", "Fasting Basics", "Movement Map", "Partner Wellness", "Body Glossary", "Cycle Workouts", "Craving Wisdom", "Grooming", "Gut + Cycle Health"]
@@ -2246,7 +2255,7 @@ function LearnScreen({ mode }) {
         {tabs.map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
             flexShrink: 0, padding: "7px 16px", borderRadius: 100, border: "none",
-            background: tab === t ? "#8FAF8F" : "#EAF2EA",
+            background: tab === t ? (mode === "fast" ? "#7A9E7E" : learnPhase === "Menstrual" ? "#7BA8C9" : learnPhase === "Follicular" ? "#f472b6" : learnPhase === "Ovulation" ? "#f59e0b" : "#ea580c") : "rgba(255,255,255,0.5)",
             color: tab === t ? "#fff" : "#6b7b6b",
             fontFamily: "sans-serif", fontSize: 13, fontWeight: tab === t ? 700 : 400, cursor: "pointer",
           }}>{t}</button>
@@ -2892,13 +2901,13 @@ const CRAVINGS = {
       <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
         <button onClick={() => setNourishTab("cravings")} style={{
           flex: 1, padding: "12px 8px", borderRadius: 14, border: "none", cursor: "pointer",
-          background: nourishTab === "cravings" ? "#7A9E7E" : "#F0F6F0",
+          background: nourishTab === "cravings" ? (mode === "fast" ? "#7A9E7E" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c") : "rgba(255,255,255,0.5)",
           color: nourishTab === "cravings" ? "#fff" : "#4a5a4b",
           fontFamily: "Georgia, serif", fontSize: 13, fontWeight: 600,
         }}>🌿 Craving Decoder</button>
         <button onClick={() => setNourishTab("fasting")} style={{
           flex: 1, padding: "12px 8px", borderRadius: 14, border: "none", cursor: "pointer",
-          background: nourishTab === "fasting" ? "#7A9E7E" : "#F0F6F0",
+          background: nourishTab === "fasting" ? (mode === "fast" ? "#7A9E7E" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c") : "rgba(255,255,255,0.5)",
           color: nourishTab === "fasting" ? "#fff" : "#4a5a4b",
           fontFamily: "Georgia, serif", fontSize: 13, fontWeight: 600,
         }}>💧 Fasting Support</button>
@@ -3587,7 +3596,7 @@ export default function App() {
         {screen === "calendar" && <CalendarScreen lastPeriod={settings.lastPeriod} cycleLength={settings.cycleLength || 28} periodLength={settings.periodLength || 7} mode={settings.mode || "cycle"} onSave={(date, cycleLen, periodLen) => saveSettings({...settings, lastPeriod: date, cycleLength: cycleLen || settings.cycleLength || 28, periodLength: periodLen || settings.periodLength || 7})} onNavigate={setScreen} />}
        {screen === "recipes"  && <RecipesScreen phase={getPhase(getCycleDay(settings.lastPeriod))} onNavigate={setScreen} mode={settings.mode || "cycle"} digestionPreset={nourishDigestionPreset} onClearDigestionPreset={() => setNourishDigestionPreset(false)} />}
         {screen === "checkin"  && <CheckInScreen mode={settings.mode || "cycle"} lastPeriod={settings.lastPeriod || ""} onNavigate={setScreen} onNourishDigestion={() => { setScreen("recipes"); setNourishDigestionPreset(true); }} />}
-        {screen === "learn"    && <LearnScreen mode={settings.mode || "cycle"} />}
+        {screen === "learn"    && <LearnScreen mode={settings.mode || "cycle"} lastPeriod={settings.lastPeriod || ""} />}
         {screen === "settings" && <SettingsScreen settings={settings} onSave={saveSettings} />}
 
 <BottomNav current={screen} onChange={setScreen} />
