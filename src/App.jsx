@@ -149,6 +149,133 @@ function Onboarding({ onDone }) {
 //  HOME SCREEN
 // ─────────────────────────────────────────────
 249
+function BotanicalAccent({ phase }) {
+  const p = phase || "";
+  const style = { position: "fixed", top: 8, right: 8, width: 120, height: 120, opacity: 0.25, pointerEvents: "none", zIndex: 1 };
+  if (p === "Follicular") return (
+    <svg style={style} viewBox="0 0 120 120">
+      <g transform="translate(80,25)">
+        <path d="M0,0 C-6,-14 -18,-12 -14,0 C-18,12 -6,14 0,0Z" fill="#f472b6"/>
+        <path d="M0,0 C6,-14 18,-12 14,0 C18,12 6,14 0,0Z" fill="#f9a8c9"/>
+        <path d="M0,0 C-12,-6 -12,6 0,0Z" fill="#fce7f3"/>
+        <path d="M0,0 C12,-6 12,6 0,0Z" fill="#fce7f3"/>
+        <circle cx="0" cy="0" r="3" fill="#fde68a"/>
+        <line x1="0" y1="3" x2="0" y2="22" stroke="#86efac" strokeWidth="1.2"/>
+        <path d="M0,12 C-7,8 -10,13 -5,16Z" fill="#86efac"/>
+        <path d="M0,17 C7,13 10,18 5,21Z" fill="#86efac"/>
+      </g>
+      <g transform="translate(105,65)">
+        <path d="M0,0 C-5,-11 -14,-9 -11,0 C-14,9 -5,11 0,0Z" fill="#fce7f3"/>
+        <path d="M0,0 C5,-11 14,-9 11,0 C14,9 5,11 0,0Z" fill="#f9a8c9"/>
+        <circle cx="0" cy="0" r="2.5" fill="#fde68a"/>
+        <line x1="0" y1="2" x2="0" y2="16" stroke="#86efac" strokeWidth="1"/>
+      </g>
+      <g transform="translate(55,85)">
+        <path d="M0,0 C-4,-9 -12,-8 -9,0 C-12,8 -4,9 0,0Z" fill="#f472b6"/>
+        <path d="M0,0 C4,-9 12,-8 9,0 C12,8 4,9 0,0Z" fill="#fce7f3"/>
+        <circle cx="0" cy="0" r="2" fill="#fde68a"/>
+        <line x1="0" y1="2" x2="0" y2="12" stroke="#86efac" strokeWidth="0.8"/>
+      </g>
+      <g transform="translate(70,50)">
+        <path d="M0,-8 C3,-4 3,4 0,8 C-3,4 -3,-4 0,-8Z" fill="#f472b6" opacity="0.6"/>
+        <path d="M-8,0 C-4,-3 4,-3 8,0 C4,3 -4,3 -8,0Z" fill="#f9a8c9" opacity="0.5"/>
+        <ellipse cx="3" cy="-5" rx="2" ry="1.2" fill="#f472b6" transform="rotate(30 3 -5)" opacity="0.7"/>
+        <ellipse cx="-3" cy="-5" rx="2" ry="1.2" fill="#fce7f3" transform="rotate(-30 -3 -5)" opacity="0.7"/>
+        <ellipse cx="3" cy="5" rx="1.5" ry="1" fill="#f9a8c9" transform="rotate(-20 3 5)" opacity="0.6"/>
+        <ellipse cx="-3" cy="5" rx="1.5" ry="1" fill="#fce7f3" transform="rotate(20 -3 5)" opacity="0.6"/>
+        <line x1="0" y1="-8" x2="-3" y2="-12" stroke="#6b7280" strokeWidth="0.6"/>
+        <line x1="0" y1="-8" x2="3" y2="-12" stroke="#6b7280" strokeWidth="0.6"/>
+      </g>
+    </svg>
+  );
+  if (p === "Ovulation") return (
+    <svg style={style} viewBox="0 0 120 120">
+      <g transform="translate(75,30)">
+        <path d="M0,-20 C5,-10 5,10 0,20 C-5,10 -5,-10 0,-20Z" fill="#fbbf24"/>
+        <path d="M-20,0 C-10,-5 10,-5 20,0 C10,5 -10,5 -20,0Z" fill="#f59e0b"/>
+        <path d="M-14,-14 C-7,-10 7,10 14,14 C7,10 -10,-7 -14,-14Z" fill="#fde68a"/>
+        <path d="M14,-14 C10,-7 -10,7 -14,14 C-7,10 10,-10 14,-14Z" fill="#fde68a"/>
+        <circle cx="0" cy="0" r="6" fill="#f97316"/>
+        <circle cx="0" cy="0" r="3" fill="#fbbf24"/>
+      </g>
+      <g transform="translate(100,75)">
+        <path d="M0,-14 C4,-7 4,7 0,14 C-4,7 -4,-7 0,-14Z" fill="#fb923c"/>
+        <path d="M-14,0 C-7,-4 7,-4 14,0 C7,4 -7,4 -14,0Z" fill="#fbbf24"/>
+        <circle cx="0" cy="0" r="4" fill="#f97316"/>
+      </g>
+      <g transform="translate(45,90)">
+        <ellipse cx="0" cy="0" rx="18" ry="12" fill="#fb923c" opacity="0.7"/>
+        <path d="M0,-22 C4,-11 4,0 0,6" stroke="#4ade80" strokeWidth="1.2" fill="none"/>
+        <path d="M0,6 C-6,2 -9,-3 -7,-8" fill="#4ade80"/>
+        <path d="M0,6 C6,2 9,-3 7,-8" fill="#4ade80"/>
+      </g>
+    </svg>
+  );
+  if (p === "Luteal") return (
+    <svg style={style} viewBox="0 0 120 120">
+      <g transform="translate(80,15) rotate(-20)">
+        <ellipse cx="0" cy="-18" rx="7" ry="18" fill="#ea580c"/>
+        <line x1="0" y1="-36" x2="0" y2="0" stroke="#c2410c" strokeWidth="0.8"/>
+        <line x1="0" y1="-28" x2="-6" y2="-22" stroke="#c2410c" strokeWidth="0.6"/>
+        <line x1="0" y1="-22" x2="6" y2="-16" stroke="#c2410c" strokeWidth="0.6"/>
+        <line x1="0" y1="-16" x2="-5" y2="-10" stroke="#c2410c" strokeWidth="0.6"/>
+      </g>
+      <g transform="translate(100,50) rotate(15)">
+        <ellipse cx="0" cy="-15" rx="6" ry="15" fill="#f97316"/>
+        <line x1="0" y1="-30" x2="0" y2="0" stroke="#ea580c" strokeWidth="0.7"/>
+        <line x1="0" y1="-22" x2="-5" y2="-17" stroke="#ea580c" strokeWidth="0.5"/>
+        <line x1="0" y1="-15" x2="5" y2="-10" stroke="#ea580c" strokeWidth="0.5"/>
+      </g>
+      <g transform="translate(60,70) rotate(-10)">
+        <ellipse cx="0" cy="-14" rx="5" ry="14" fill="#dc2626"/>
+        <line x1="0" y1="-28" x2="0" y2="0" stroke="#b91c1c" strokeWidth="0.7"/>
+        <line x1="0" y1="-20" x2="-4" y2="-15" stroke="#b91c1c" strokeWidth="0.5"/>
+        <line x1="0" y1="-13" x2="4" y2="-8" stroke="#b91c1c" strokeWidth="0.5"/>
+      </g>
+      <g transform="translate(95,90) rotate(25)">
+        <ellipse cx="0" cy="-12" rx="5" ry="12" fill="#f97316"/>
+        <line x1="0" y1="-24" x2="0" y2="0" stroke="#ea580c" strokeWidth="0.6"/>
+        <line x1="0" y1="-17" x2="-4" y2="-13" stroke="#ea580c" strokeWidth="0.5"/>
+      </g>
+      <g transform="translate(40,95) rotate(-30)">
+        <ellipse cx="0" cy="-10" rx="4" ry="10" fill="#c2410c"/>
+        <line x1="0" y1="-20" x2="0" y2="0" stroke="#9a3412" strokeWidth="0.6"/>
+      </g>
+    </svg>
+  );
+  if (p === "Menstrual") return (
+    <svg style={style} viewBox="0 0 120 120">
+      <g transform="translate(85,20)">
+        <line x1="0" y1="0" x2="0" y2="35" stroke="#93c5fd" strokeWidth="1.2"/>
+        <path d="M0,12 C-8,6 -12,12 -6,16Z" fill="#bfdbfe"/>
+        <path d="M0,20 C8,14 12,20 6,24Z" fill="#bfdbfe"/>
+        <circle cx="0" cy="0" r="3" fill="#e0f2fe"/>
+        <circle cx="-3" cy="-3" r="1.5" fill="#bfdbfe"/>
+        <circle cx="3" cy="-3" r="1.5" fill="#bfdbfe"/>
+        <circle cx="0" cy="-5" r="1.5" fill="#bfdbfe"/>
+      </g>
+      <g transform="translate(108,65)">
+        <line x1="0" y1="0" x2="0" y2="26" stroke="#93c5fd" strokeWidth="1"/>
+        <path d="M0,9 C-6,4 -9,9 -4,12Z" fill="#bfdbfe"/>
+        <path d="M0,16 C6,11 9,16 4,19Z" fill="#bfdbfe"/>
+        <circle cx="0" cy="0" r="2.5" fill="#e0f2fe"/>
+        <circle cx="-2" cy="-2" r="1.2" fill="#bfdbfe"/>
+        <circle cx="2" cy="-2" r="1.2" fill="#bfdbfe"/>
+      </g>
+      <g transform="translate(55,90)">
+        <line x1="0" y1="0" x2="0" y2="22" stroke="#93c5fd" strokeWidth="0.9"/>
+        <path d="M0,8 C-5,3 -8,8 -4,11Z" fill="#bfdbfe"/>
+        <circle cx="0" cy="0" r="2" fill="#e0f2fe"/>
+        <circle cx="-2" cy="-2" r="1" fill="#bfdbfe"/>
+        <circle cx="2" cy="-2" r="1" fill="#bfdbfe"/>
+      </g>
+      <circle cx="40" cy="30" r="1.5" fill="#bfdbfe" opacity="0.4"/>
+      <circle cx="110" cy="100" r="1.5" fill="#bfdbfe" opacity="0.3"/>
+    </svg>
+  );
+  return null;
+}
+
 function MoonPhaseCard({ mode, lastPeriod, cycleDay, phase }) {
   const moon = getMoonPhase();
   const cycleSeasonMap = { Menstrual: "Winter 🌨️", Follicular: "Spring 🌸", Ovulation: "Summer ☀️", Luteal: "Autumn 🍂" };
@@ -276,7 +403,8 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
   
 
   return (
-    <div style={{ padding: "0 0 90px", background: getSeasonalBg(mode, phase), minHeight: "100vh" }}>
+    <div style={{ padding: "0 0 90px", background: getSeasonalBg(mode, phase), minHeight: "100vh", position: "relative" }}>
+      {mode !== "fast" && <BotanicalAccent phase={phase} />}
       {/* Header */}
       <div style={{ ...s.header, justifyContent: "space-between", paddingTop: 20 }}>
         <div>
