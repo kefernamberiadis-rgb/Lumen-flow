@@ -448,6 +448,23 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
         ))}
       </div>
 
+      {(() => {
+        const moon = getMoonPhase();
+        return (
+          <div style={{ background: mode === "fast" ? "linear-gradient(135deg, #0a1a10, #0f2218)" : "linear-gradient(135deg, #1a1a2e, #16213e)", borderRadius: 20, padding: "16px 18px", marginBottom: 12, border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid rgba(155,123,201,0.3)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div>
+                <p style={{ fontFamily: "sans-serif", fontSize: 10, letterSpacing: "2px", color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: "0 0 4px", textTransform: "uppercase" }}>🌙 Moon phase</p>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 20, color: "#fff", margin: "0 0 4px" }}>{moon.emoji} {moon.name}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "rgba(255,255,255,0.7)", margin: "0 0 8px", lineHeight: 1.6 }}>{moon.desc}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "rgba(255,255,255,0.5)", margin: 0 }}>{moon.daysToNext} days until {moon.next}</p>
+              </div>
+              <span style={{ fontSize: 40, lineHeight: 1 }}>{moon.emoji}</span>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Partner rhythm card */}
       {settings && settings.partnerConnected && (
         <div style={{ margin: "0 16px 12px", background: "#F5F0FF", borderRadius: 18, padding: "14px 16px", border: "0.5px solid #D4C5E9" }}>
@@ -3237,6 +3254,22 @@ function useSwipeNavigation(screen, setScreen) {
       window.removeEventListener("touchend", onTouchEnd);
     };
   }, [screen]);
+}
+
+function getMoonPhase() {
+  const now = new Date();
+  const known = new Date(2000, 0, 6, 18, 14, 0);
+  const synodic = 29.53058867;
+  const diff = (now - known) / (1000 * 60 * 60 * 24);
+  const phase = ((diff % synodic) + synodic) % synodic;
+  if (phase < 1.85) return { name: "New Moon", emoji: "🌑", desc: "A time for new intentions and quiet beginnings.", next: "Full Moon", daysToNext: Math.round(synodic / 2 - phase) };
+  if (phase < 7.38) return { name: "Waxing Crescent", emoji: "🌒", desc: "Energy is building. Plant seeds and take first steps.", next: "Full Moon", daysToNext: Math.round(14.77 - phase) };
+  if (phase < 9.22) return { name: "First Quarter", emoji: "🌓", desc: "Take action. Push through resistance.", next: "Full Moon", daysToNext: Math.round(14.77 - phase) };
+  if (phase < 14.77) return { name: "Waxing Gibbous", emoji: "🌔", desc: "Refine and prepare. The full moon is close.", next: "Full Moon", daysToNext: Math.round(14.77 - phase) };
+  if (phase < 16.61) return { name: "Full Moon", emoji: "🌕", desc: "Peak energy. Release what no longer serves you.", next: "New Moon", daysToNext: Math.round(synodic - phase) };
+  if (phase < 22.15) return { name: "Waning Gibbous", emoji: "🌖", desc: "Reflect and share. Gratitude and integration.", next: "New Moon", daysToNext: Math.round(synodic - phase) };
+  if (phase < 23.99) return { name: "Last Quarter", emoji: "🌗", desc: "Release and let go. Clear space for what is coming.", next: "New Moon", daysToNext: Math.round(synodic - phase) };
+  return { name: "Waning Crescent", emoji: "🌘", desc: "Rest, restore, and prepare for renewal.", next: "New Moon", daysToNext: Math.round(synodic - phase) };
 }
 
 export default function App() {
