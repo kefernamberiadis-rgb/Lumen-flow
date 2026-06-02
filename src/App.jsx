@@ -149,6 +149,48 @@ function Onboarding({ onDone }) {
 //  HOME SCREEN
 // ─────────────────────────────────────────────
 249
+function MoonPhaseCard({ mode, lastPeriod, cycleDay, phase }) {
+  const moon = getMoonPhase();
+  const cycleSeasonMap = { menstrual: "Winter 🌨️", follicular: "Spring 🌸", ovulation: "Summer ☀️", luteal: "Autumn 🍂" };
+  const moonSync = () => {
+    if (!lastPeriod) return null;
+    const moonDay = (() => {
+      const now = new Date();
+      const known = new Date(2000, 0, 6, 18, 14, 0);
+      const synodic = 29.53058867;
+      const diff = (now - known) / (1000 * 60 * 60 * 24);
+      return ((diff % synodic) + synodic) % synodic;
+    })();
+    const isFullMoon = moonDay >= 13 && moonDay <= 17;
+    const isNewMoon = moonDay < 2 || moonDay > 27;
+    if (isFullMoon && phase === "ovulation") return "🌕 You are synced with the moon — full moon and ovulation together is a powerful time.";
+    if (isNewMoon && phase === "menstrual") return "🌑 You are synced with the dark moon — a powerful time for rest and release.";
+    if (isFullMoon) return "🌕 Full moon energy is here. Notice how your body feels.";
+    if (isNewMoon) return "🌑 New moon — a quiet time for intention setting.";
+    return null;
+  };
+  const sync = moonSync();
+  return (
+    <div style={{ margin: "0 16px 12px", background: mode === "fast" ? "linear-gradient(135deg, #0a1a10, #0f2218)" : "linear-gradient(135deg, #F5F0FF, #EEE8FF)", borderRadius: 18, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid rgba(155,123,201,0.3)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <p style={{ fontFamily: "sans-serif", fontSize: 10, letterSpacing: "2px", color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: 0, textTransform: "uppercase" }}>🌙 Moon phase</p>
+        <span style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9" }}>{moon.daysToNext}d until {moon.next}</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+        <span style={{ fontSize: 32 }}>{moon.emoji}</span>
+        <div>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 2px" }}>{moon.name}</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "rgba(255,255,255,0.6)" : "#6b7b6b", margin: 0, lineHeight: 1.5 }}>{moon.desc}</p>
+        </div>
+      </div>
+      {mode !== "fast" && (
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#9B7BC9", margin: "0 0 6px" }}>Your cycle season — {cycleSeasonMap[phase] || "—"}</p>
+      )}
+      {sync && <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", margin: 0, lineHeight: 1.6, fontStyle: "italic" }}>{sync}</p>}
+    </div>
+  );
+}
+
 function HomeScreen({ name, lastPeriod, mode, settings }) {
   const cycleDay = Math.max(1, getCycleDay(lastPeriod) - 1);
 
@@ -229,7 +271,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
       <div style={{ ...s.header, justifyContent: "space-between", paddingTop: 20 }}>
         <div>
           <p style={{ ...s.label, marginBottom: 2 }}>Good {getGreeting()},</p>
-          <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: "#2D3B2E", margin: 0, fontWeight: 400 }}>{name} 🌿</h2>
+          <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: 0, fontWeight: 400 }}>{name} 🌿</h2>
         </div>
         <div style={{ textAlign: "right" }}>
           {mode !== "fast" ? (
@@ -448,22 +490,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
         ))}
       </div>
 
-      {(() => {
-        const moon = getMoonPhase();
-        return (
-          <div style={{ background: mode === "fast" ? "linear-gradient(135deg, #0a1a10, #0f2218)" : "linear-gradient(135deg, #F5F0FF, #EEE8FF)", borderRadius: 20, padding: "16px 18px", marginBottom: 12, border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid rgba(155,123,201,0.3)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <div>
-                <p style={{ fontFamily: "sans-serif", fontSize: 10, letterSpacing: "2px", color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: "0 0 4px", textTransform: "uppercase" }}>🌙 Moon phase</p>
-                <p style={{ fontFamily: "Georgia, serif", fontSize: 20, color: mode === "fast" ? "#fff" : "#2D3B2E", margin: "0 0 4px" }}>{moon.emoji} {moon.name}</p>
-                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "rgba(255,255,255,0.7)" : "#6b7b6b", margin: "0 0 8px", lineHeight: 1.6 }}>{moon.desc}</p>
-                <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "rgba(255,255,255,0.5)" : "#9B7BC9", margin: 0 }}>{moon.daysToNext} days until {moon.next}</p>
-              </div>
-              <span style={{ fontSize: 40, lineHeight: 1 }}>{moon.emoji}</span>
-            </div>
-          </div>
-        );
-      })()}
+      <MoonPhaseCard mode={mode} lastPeriod={lastPeriod} cycleDay={cycleDay} phase={phase} />
 
       {/* Partner rhythm card */}
       {settings && settings.partnerConnected && (
