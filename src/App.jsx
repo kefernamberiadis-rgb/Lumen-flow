@@ -276,7 +276,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
   
 
   return (
-    <div style={{ padding: "0 0 90px", background: mode === "fast" ? "linear-gradient(180deg, #0c1410 0%, #141e16 40%, #0f1a12 100%)" : "linear-gradient(150deg, #f7f0ec 0%, #ede5f0 35%, #f5e8ed 65%, #eceaf5 100%)", minHeight: "100vh" }}>
+    <div style={{ padding: "0 0 90px", background: getSeasonalBg(mode, phase), minHeight: "100vh" }}>
       {/* Header */}
       <div style={{ ...s.header, justifyContent: "space-between", paddingTop: 20 }}>
         <div>
@@ -575,7 +575,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
 // ─────────────────────────────────────────────
 //  CHECK-IN SCREEN
 // ─────────────────────────────────────────────
-function CheckInScreen({ mode, onNavigate, onNourishDigestion }) {
+function CheckInScreen({ mode, lastPeriod, onNavigate, onNourishDigestion }) {
   const today = new Date().toISOString().split("T")[0];
   const key   = `lf_checkin_${today}`;
   const autoSave = (() => { try { return JSON.parse(localStorage.getItem("lf_settings"))?.autoSave; } catch (e) { return false; } })();
@@ -702,7 +702,7 @@ if (saved) {
       return "Every check-in is a small act of self-awareness. You are building a picture of your body over time — that is powerful.";
     })();
     return (
-    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: mode === "fast" ? "linear-gradient(180deg, #0c1410 0%, #141e16 40%, #0f1a12 100%)" : "linear-gradient(160deg, #E8EAF6 0%, #F3E5F5 35%, #FCE4EC 65%, #FFF8E7 100%)", minHeight: "100vh" }}>
+    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: getSeasonalBg(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))), minHeight: "100vh" }}>
       <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.75)", borderRadius: 20, padding: 20, marginBottom: 16, textAlign: "center", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid rgba(180,160,210,0.3)" }}>
         <p style={{ fontSize: 28, marginBottom: 6 }}>✦</p>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 18, color: "#2D3B2E", marginBottom: 4 }}>Today's check-in saved!</p>
@@ -983,7 +983,7 @@ if (saved) {
     );
   }
   return (
-    <div style={{ padding: "16px 16px 90px", background: mode === "fast" ? "linear-gradient(160deg, #1a2f1e 0%, #1e3524 40%, #162a1a 100%)" : "linear-gradient(160deg, #E8EAF6 0%, #F3E5F5 30%, #FCE4EC 60%, #FFF8E7 100%)", minHeight: "100vh" }}>
+    <div style={{ padding: "16px 16px 90px", background: getSeasonalBg(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))), minHeight: "100vh" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
         <h3 style={{ ...s.title, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: 0 }}>Daily Check-In {mode !== "fast" ? "🌸" : ""}</h3>
         <button onClick={() => setShowLogPreview(true)} style={{ background: mode === "fast" ? "rgba(201,168,76,0.1)" : "rgba(155,123,201,0.1)", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(155,123,201,0.3)", borderRadius: 50, padding: "6px 12px", fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", cursor: "pointer" }}>📋 View log</button>
@@ -1514,6 +1514,14 @@ if (saved) {
 // ─────────────────────────────────────────────
 //  CALENDAR SCREEN
 // ─────────────────────────────────────────────
+function getSeasonalBg(mode, phase) {
+  if (mode === "fast") return "linear-gradient(180deg, #0c1410 0%, #141e16 40%, #0f1a12 100%)";
+  if (phase === "Menstrual") return "linear-gradient(160deg, #f8fbff 0%, #eef4ff 25%, #dce8f8 50%, #c8daf0 100%)";
+  if (phase === "Follicular") return "linear-gradient(160deg, #fff8ff 0%, #fde8f8 25%, #f8c8f0 50%, #e8d8f8 75%, #d8f0d8 100%)";
+  if (phase === "Ovulation") return "linear-gradient(160deg, #fffde8 0%, #fff5b0 25%, #ffe050 50%, #ffc020 75%, #88c8e8 100%)";
+  return "linear-gradient(160deg, #fffaf4 0%, #ffeedd 25%, #ffd4a0 50%, #ffb060 75%, #f08040 100%)";
+}
+
 function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, periodLength = 7, mode }) {
   const [showMenu, setShowMenu] = useState(false);
   const [calendarKey, setCalendarKey] = useState(0);
@@ -1547,7 +1555,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
   const selInfo  = PHASE_INFO[selPhase];
 
   return (
-    <div style={{ padding: "16px 16px 90px", background: mode === "fast" ? "linear-gradient(180deg, #0c1410 0%, #141e16 50%, #1a2a0f 100%)" : "linear-gradient(160deg, #E8EAF6 0%, #F3E5F5 35%, #FCE4EC 65%, #FFF8E7 100%)", minHeight: "100vh" }}>
+    <div style={{ padding: "16px 16px 90px", background: getSeasonalBg(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))), minHeight: "100vh" }}>
       {/* Mini Dashboard */}
       {lastPeriod && mode !== "fast" && (
         <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.75)", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.25)" : "0.5px solid rgba(180,160,200,0.3)", padding: "16px", marginBottom: 14 }}>
@@ -2075,7 +2083,7 @@ function LearnScreen({ mode }) {
   ];
 
   return (
-    <div style={{ padding: "0 0 90px", background: mode === "fast" ? "linear-gradient(180deg, #0c1410 0%, #141e16 100%)" : "linear-gradient(160deg, #F5EDE8 0%, #F9EEF2 40%, #F2EDF5 100%)", minHeight: "100vh" }}>
+    <div style={{ padding: "0 0 90px", background: getSeasonalBg(mode, getPhase(Math.max(1, getCycleDay((() => { try { return JSON.parse(localStorage.getItem("lf_settings"))?.lastPeriod || ""; } catch(e) { return ""; } })()) - 1))), minHeight: "100vh" }}>
       <div style={{ padding: "16px 16px 12px" }}>
         <h3 style={{ ...s.title, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E" }}>Learn & Optimise</h3>
         <p style={{ ...s.label, marginBottom: 12 }}>Knowledge for your body, your cycle, and your rhythm.</p>
@@ -2489,7 +2497,7 @@ function SettingsScreen({ settings, onSave }) {
   };
 
   return (
-    <div style={{ padding: "16px 16px 90px" }}>
+    <div style={{ padding: "16px 16px 90px", background: getSeasonalBg(settings?.mode || "cycle", getPhase(Math.max(1, getCycleDay(settings?.lastPeriod || "") - 1))), minHeight: "100vh" }}>
       <h3 style={s.title}>Settings</h3>
 
       <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
@@ -2726,7 +2734,7 @@ const CRAVINGS = {
   const cravingKeys = Object.keys(CRAVINGS);
 
   return (
-    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: mode === "fast" ? "linear-gradient(160deg, #0c1410 0%, #141e16 50%, #1a2a0f 100%)" : "linear-gradient(160deg, #E8F5E9 0%, #F8F0F8 40%, #F5EAF0 100%)", minHeight: "100vh" }}>
+    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: getSeasonalBg(mode, getPhase(Math.max(1, getCycleDay((() => { try { return JSON.parse(localStorage.getItem("lf_settings"))?.lastPeriod || ""; } catch(e) { return ""; } })()) - 1))), minHeight: "100vh" }}>
       <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 4px" }}>Nourish ✨</h2>
       <p style={{ fontSize: 13, color: mode === "fast" ? "#3a5a3a" : "#8FA090", margin: "0 0 16px" }}>Food craving or soul craving?</p>
 
@@ -3428,7 +3436,7 @@ export default function App() {
         {screen === "home"     && <HomeScreen     name={settings.name} lastPeriod={settings.lastPeriod} mode={settings.mode || "cycle"} settings={settings} />}
         {screen === "calendar" && <CalendarScreen lastPeriod={settings.lastPeriod} cycleLength={settings.cycleLength || 28} periodLength={settings.periodLength || 7} mode={settings.mode || "cycle"} onSave={(date, cycleLen, periodLen) => saveSettings({...settings, lastPeriod: date, cycleLength: cycleLen || settings.cycleLength || 28, periodLength: periodLen || settings.periodLength || 7})} onNavigate={setScreen} />}
        {screen === "recipes"  && <RecipesScreen phase={getPhase(getCycleDay(settings.lastPeriod))} onNavigate={setScreen} mode={settings.mode || "cycle"} digestionPreset={nourishDigestionPreset} onClearDigestionPreset={() => setNourishDigestionPreset(false)} />}
-        {screen === "checkin"  && <CheckInScreen mode={settings.mode || "cycle"} onNavigate={setScreen} onNourishDigestion={() => { setScreen("recipes"); setNourishDigestionPreset(true); }} />}
+        {screen === "checkin"  && <CheckInScreen mode={settings.mode || "cycle"} lastPeriod={settings.lastPeriod || ""} onNavigate={setScreen} onNourishDigestion={() => { setScreen("recipes"); setNourishDigestionPreset(true); }} />}
         {screen === "learn"    && <LearnScreen mode={settings.mode || "cycle"} />}
         {screen === "settings" && <SettingsScreen settings={settings} onSave={saveSettings} />}
 
