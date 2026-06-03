@@ -2327,12 +2327,77 @@ function MoveMapCard({ item, mode }) {
   );
 }
 
+function LumenMirror({ mode, lastPeriod }) {
+  const today = new Date().toISOString().split("T")[0];
+  const mirrorKey = `lf_mirror_${today}`;
+  const phase = getPhase(Math.max(1, getCycleDay(lastPeriod) - 1));
+  const [note, setNote] = useState(() => { try { return JSON.parse(localStorage.getItem(mirrorKey))?.note || ""; } catch(e) { return ""; } });
+  const [saved, setSaved] = useState(false);
+  const [promptIdx, setPromptIdx] = useState(0);
+
+  const prompts = {
+    Menstrual: ["What am I ready to release?", "What has this cycle taught me?", "What does my body need right now?", "What truth am I avoiding?", "What would rest look like today?"],
+    Follicular: ["What am I excited to create?", "What new idea is asking for my attention?", "What do I want to learn right now?", "What feels possible today?", "What am I planting this cycle?"],
+    Ovulation: ["What do I want to share with the world?", "Who do I want to connect with?", "What lights me up right now?", "What truth am I ready to speak?", "What am I most proud of lately?"],
+    Luteal: ["What needs my attention?", "What am I holding on to?", "What would I simplify if I could?", "What is my body telling me?", "What boundary would protect my peace?"],
+  };
+  const todayPrompts = prompts[phase] || prompts.Luteal;
+
+  const saveEntry = () => {
+    localStorage.setItem(mirrorKey, JSON.stringify({ note, date: today, phase }));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const last7 = [];
+  for (let i = 1; i <= 7; i++) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const dk = d.toISOString().split("T")[0];
+    try {
+      const e = JSON.parse(localStorage.getItem(`lf_mirror_${dk}`));
+      if (e?.note) last7.push({ dk, ...e, label: d.toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" }) });
+    } catch {}
+  }
+
+  const accentColor = mode === "fast" ? "#C9A84C" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg, #1a1a2e, #16213e)", borderRadius: 18, padding: "18px 16px", border: `0.5px solid ${accentColor}44` }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 20, color: "#fff", margin: "0 0 6px" }}>🪞 Lumen Mirror</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "rgba(255,255,255,0.7)", margin: 0, lineHeight: 1.7 }}>A private space to notice your patterns, reflect on your emotions, and track your inner world alongside your cycle.</p>
+      </div>
+      <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 16, padding: "16px", border: `0.5px solid ${accentColor}33` }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 4px" }}>📝 Today's reflection</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: accentColor, margin: "0 0 12px" }}>{phase} phase · {new Date().toLocaleDateString("en-CA", { weekday: "long", month: "long", day: "numeric" })}</p>
+        <div style={{ background: mode === "fast" ? "rgba(0,0,0,0.2)" : `${accentColor}12`, borderRadius: 12, padding: "12px 14px", marginBottom: 12 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: accentColor, margin: "0 0 8px", fontStyle: "italic" }}>✨ {todayPrompts[promptIdx]}</p>
+          <button onClick={() => setPromptIdx((promptIdx + 1) % todayPrompts.length)} style={{ background: "none", border: "none", fontFamily: "sans-serif", fontSize: 11, color: accentColor, cursor: "pointer", padding: 0 }}>↻ New prompt</button>
+        </div>
+        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Write freely — this is just for you..." spellCheck autoCorrect="on" style={{ width: "100%", minHeight: 100, padding: "10px 12px", borderRadius: 12, border: `0.5px solid ${accentColor}33`, background: mode === "fast" ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.8)", fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", resize: "none", lineHeight: 1.7, boxSizing: "border-box", marginBottom: 10 }} />
+        <button onClick={saveEntry} style={{ width: "100%", padding: "10px", borderRadius: 12, border: "none", background: mode === "fast" ? "#7A9E7E" : `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`, color: "#fff", fontFamily: "Georgia, serif", fontSize: 13, cursor: "pointer" }}>{saved ? "✅ Saved" : "Save reflection"}</button>
+      </div>
+      {last7.length > 0 && (
+        <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 16, padding: "16px", border: `0.5px solid ${accentColor}33` }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 12px" }}>📖 Past reflections</p>
+          {last7.map((e, i) => (
+            <div key={i} style={{ padding: "10px 0", borderBottom: i < last7.length - 1 ? `0.5px solid ${accentColor}22` : "none" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 11, color: accentColor, margin: "0 0 4px" }}>{e.label} · {e.phase}</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#a8c4a8" : "#4a3a5a", margin: 0, lineHeight: 1.6 }}>{e.note.slice(0, 120)}{e.note.length > 120 ? "..." : ""}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
   const learnPhase = getPhase(Math.max(1, getCycleDay(lastPeriod) - 1));
   const [tab, setTab] = useState(mode === "fast" ? "Fasting" : "Phases");
   const tabs = mode === "fast"
-    ? ["Lumen Life", "Fasting Basics", "Movement Map", "Partner Wellness", "Body Glossary", "Cycle Workouts", "Craving Wisdom", "Grooming", "Gut + Cycle Health"]
-    : ["Lumen Life", "Fasting Basics", "Cycle Phases", "Health Conditions", "Partner Wellness", "Body Glossary", "Cycle Workouts", "Cycle Nutrition", "Period Blood Guide", "Craving Wisdom", "Cycle Guide", "Gut + Cycle Health", "Movement Map"];
+    ? ["Lumen Life", "Lumen Mirror", "Fasting Basics", "Movement Map", "Partner Wellness", "Body Glossary", "Cycle Workouts", "Craving Wisdom", "Grooming", "Gut + Cycle Health"]
+    : ["Lumen Life", "Lumen Mirror", "Fasting Basics", "Cycle Phases", "Health Conditions", "Partner Wellness", "Body Glossary", "Cycle Workouts", "Cycle Nutrition", "Period Blood Guide", "Craving Wisdom", "Cycle Guide", "Gut + Cycle Health", "Movement Map"];
 
   const MOVE_MAP = [
     { group: "🔥 Core", color: "#C9A87B", bg: "#FDF6EA", phase: "All phases — gentler in Menstrual and Luteal", fasting: "Core work is great fasted — low intensity, high focus", exercises: [{ name: "Dead bug", reps: "8–10 reps each side", equipment: "None", level: "Beginner", tip: "Press lower back into floor throughout" }, { name: "Plank hold", reps: "20–40 seconds", equipment: "None", level: "Beginner", tip: "Keep hips level, breathe steadily" }, { name: "Bird dog", reps: "8 reps each side", equipment: "None", level: "Beginner", tip: "Move slowly and with control" }, { name: "Hollow hold", reps: "15–20 seconds", equipment: "None", level: "Intermediate", tip: "Press ribs down, avoid holding your breath" }, { name: "Pallof press", reps: "10 reps each side", equipment: "Resistance band", level: "Intermediate", tip: "Resist rotation — that is the work" }], note: "Avoid heavy core work during heavy flow days. Listen to your body." },
@@ -2444,6 +2509,8 @@ function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
             {MOVE_MAP.map((item, idx) => <MoveMapCard key={idx} item={item} mode={mode} />)}
           </div>
         )}
+
+        {tab === "Lumen Mirror" && <LumenMirror mode={mode} lastPeriod={lastPeriod} />}
 
         {tab === "Lumen Life" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
