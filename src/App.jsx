@@ -1919,6 +1919,21 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
           const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
           const isSel   = d === selDay;
           const fertile = isFertileDay(d);
+          const dayMoon = (() => {
+            const date = new Date(year, month, d);
+            const known = new Date(2000, 0, 6, 18, 14, 0);
+            const synodic = 29.53058867;
+            const diff = (date - known) / (1000 * 60 * 60 * 24);
+            const phase = ((diff % synodic) + synodic) % synodic;
+            if (phase < 1.85) return "🌑";
+            if (phase < 7.38) return "🌒";
+            if (phase < 9.22) return "🌓";
+            if (phase < 14.77) return "🌔";
+            if (phase < 16.61) return "🌕";
+            if (phase < 22.15) return "🌖";
+            if (phase < 23.99) return "🌗";
+            return "🌘";
+          })();
           const isOvulationDay = (() => {
             if (!lastPeriod) return false;
             const date = new Date(year, month, d);
@@ -1958,7 +1973,8 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
               fontWeight: isToday ? 700 : 400,
               display: "flex", alignItems: "center", justifyContent: "center", position: "relative",
             }}>
-              {d}
+              <span style={{ fontSize: 11, lineHeight: 1 }}>{d}</span>
+              {mode !== "fast" && <span style={{ fontSize: 7, lineHeight: 1, position: "absolute", top: 1, right: 1 }}>{dayMoon}</span>}
               {fertile && mode !== "fast" && <span style={{ position: "absolute", bottom: 1, right: 1, width: 4, height: 4, borderRadius: "50%", background: "#86efac" }} />}
             </button>
           );
