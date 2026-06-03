@@ -3262,6 +3262,25 @@ const CRAVINGS = {
     const filter = supportFilter;
     const has = (...keys) => keys.some(k => cravings.map(c => c.toLowerCase()).some(c => c.includes(k)));
 
+    if (dietMode === "carnivore" && cravings.length === 0 && !filter) return {
+      label: "🥩 Carnivore — what to eat",
+      why: "Based on your carnivore preference — animal-based, nourishing, and satisfying.",
+      items: filterItems([
+        "Ribeye or sirloin steak cooked in butter",
+        "Eggs any style — scrambled, fried, or boiled",
+        "Ground beef patties with sea salt",
+        "Chicken thighs or drumsticks — skin on",
+        "Bacon — pasture raised if possible",
+        "Salmon fillet with butter and sea salt",
+        "Lamb chops cooked in tallow or butter",
+        "Bone broth — warm and nourishing",
+        "Beef liver — nutrient dense and grounding",
+        "Hard boiled eggs as a snack",
+        "Pork belly or pork ribs",
+        "Sardines or mackerel straight from the tin",
+      ]),
+    };
+
     if (filter === "fasting") return {
       label: "💧 Still Fasting",
       why: "You are fasting — your body is doing great work. Stay supported without breaking your window.",
@@ -3349,7 +3368,12 @@ const CRAVINGS = {
       };
     }
 
-    if (cravings.length === 0) return null;
+    if (cravings.length === 0 && dietMode !== "carnivore") return null;
+    if (cravings.length === 0 && dietMode === "carnivore") return {
+      label: "🥩 Carnivore",
+      why: "Based on your carnivore preference — animal-based, nourishing, and satisfying.",
+      items: filterItems(["Ribeye or sirloin steak cooked in butter", "Eggs any style", "Ground beef patties with sea salt", "Chicken thighs or drumsticks", "Bacon", "Salmon fillet with butter", "Lamb chops", "Bone broth", "Hard boiled eggs", "Pork belly or ribs", "Sardines or mackerel"]),
+    };
 
     // Combined craving logic
     const items = [];
