@@ -651,6 +651,53 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
       </div>
 
       <MoonPhaseCard mode={mode} lastPeriod={lastPeriod} cycleDay={cycleDay} phase={phase} />
+      {(() => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const known = new Date(2000, 0, 6, 18, 14, 0);
+        const synodic = 29.53058867;
+        const moonDays = [];
+        for (let d = 1; d <= daysInMonth; d++) {
+          const date = new Date(year, month, d);
+          const diff = (date - known) / (1000 * 60 * 60 * 24);
+          const phase = ((diff % synodic) + synodic) % synodic;
+          const isNew = phase < 0.5 || phase > 29.0;
+          const isFull = phase >= 14.5 && phase < 15.2;
+          const isFirst = phase >= 7.1 && phase < 7.8;
+          const isLast = phase >= 21.9 && phase < 22.6;
+          if (isNew) moonDays.push({ d, name: "New Moon", emoji: "🌑" });
+          else if (isFull) moonDays.push({ d, name: "Full Moon", emoji: "🌕" });
+          else if (isFirst) moonDays.push({ d, name: "First Quarter", emoji: "🌓" });
+          else if (isLast) moonDays.push({ d, name: "Last Quarter", emoji: "🌗" });
+        }
+        if (moonDays.length === 0) return null;
+        const monthName = now.toLocaleDateString("en-CA", { month: "long" });
+        return (
+          <div style={{ margin: "0 16px 12px", background: mode === "fast" ? "linear-gradient(135deg, #0a1a10, #0f2218)" : "linear-gradient(135deg, #1a1a2e, #16213e)", borderRadius: 18, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid rgba(155,123,201,0.3)" }}>
+            <p style={{ fontFamily: "sans-serif", fontSize: 10, letterSpacing: "2px", color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: "0 0 10px", textTransform: "uppercase" }}>🌙 {monthName} moon dates</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {moonDays.map((m, i) => {
+                const date = new Date(year, month, m.d);
+                const dayName = date.toLocaleDateString("en-CA", { weekday: "long" });
+                const isPast = m.d < now.getDate();
+                return (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, opacity: isPast ? 0.5 : 1 }}>
+                    <span style={{ fontSize: 20 }}>{m.emoji}</span>
+                    <div>
+                      <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: mode === "fast" ? "#e8e0ce" : "#fff", margin: 0 }}>{m.name}</p>
+                      <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: 0 }}>{dayName}, {monthName} {m.d}</p>
+                    </div>
+                    {!isPast && <span style={{ marginLeft: "auto", fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#C9A84C" : "#9B7BC9" }}>in {m.d - now.getDate()} days</span>}
+                    {isPast && <span style={{ marginLeft: "auto", fontFamily: "sans-serif", fontSize: 10, color: "#8FA090" }}>passed</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Partner rhythm card */}
       {settings && settings.partnerConnected && (
