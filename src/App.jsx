@@ -1959,6 +1959,10 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
       {/* Legend */}
       {mode !== "fast" && (
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16, paddingTop: 12, borderTop: "1px solid #EAF2EA" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#86efac" }} />
+          <span style={{ fontFamily: "sans-serif", fontSize: 11, color: "#6b7b6b" }}>Fertile window</span>
+        </div>
         {Object.entries(PHASE_INFO).map(([name, info]) => (
           <div key={name} style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <div style={{ width: 10, height: 10, borderRadius: "50%", background: info.color }} />
@@ -1998,7 +2002,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
                 </div>
               )}
               <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
-                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: selInfo.color, margin: 0 }}>⚡ {selInfo.energy}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: selInfo.color, margin: 0 }}>{selInfo.energy}</p>
               </div>
               <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
                 <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#4a5a4b", margin: 0 }}>💧 <b>Fast:</b> {selInfo.fast}</p>
