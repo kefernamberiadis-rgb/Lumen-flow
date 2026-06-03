@@ -2620,6 +2620,41 @@ function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
             ].map((section, idx) => (
               <LumenLifeCard key={idx} section={section} mode={mode} />
             ))}
+            {(() => {
+              const now = new Date();
+              const month = now.getMonth();
+              const season = month >= 2 && month <= 4 ? "Spring" : month >= 5 && month <= 7 ? "Summer" : month >= 8 && month <= 10 ? "Autumn" : "Winter";
+              const almanac = {
+                Spring: { emoji: "🌸", desc: "Nature is awakening. Seeds are pushing through soil. The light is returning and everything feels possible again.", foods: ["Asparagus", "Peas", "Spinach", "Radishes", "Strawberries", "Rhubarb", "Spring onions", "Artichokes"], wisdom: "Spring asks you to begin. Not perfectly — just begin. Plant something, start something, say yes to something new.", energy: "Rising, fresh, hopeful", ritual: "Write one intention for this season. Plant something — even a herb on a windowsill." },
+                Summer: { emoji: "☀️", desc: "Everything is in full bloom. The sun is generous and the days are long. This is the season of abundance and expression.", foods: ["Tomatoes", "Courgette", "Cucumber", "Berries", "Peaches", "Corn", "Peppers", "Watermelon"], wisdom: "Summer asks you to show up fully. To be seen, to connect, to share what you have been growing inside.", energy: "Peak, vibrant, expressive", ritual: "Spend time outside in the sun. Connect with someone you love. Share something you have been working on." },
+                Autumn: { emoji: "🍂", desc: "The harvest is here. The trees are letting go of what they no longer need. The earth is preparing for rest.", foods: ["Pumpkin", "Butternut squash", "Apples", "Pears", "Root vegetables", "Mushrooms", "Kale", "Brussels sprouts"], wisdom: "Autumn asks you to harvest and release. To gather what has grown and let go of what has not served you.", energy: "Grounding, reflective, completing", ritual: "Write a list of what you are grateful for this season. Let go of one thing that is weighing on you." },
+                Winter: { emoji: "❄️", desc: "The earth is resting beneath the surface. What looks like stillness is actually deep restoration and quiet preparation.", foods: ["Root vegetables", "Citrus fruits", "Pomegranate", "Leeks", "Cabbage", "Sweet potato", "Warming spices", "Dark leafy greens"], wisdom: "Winter asks you to rest without guilt. To turn inward, to restore, to trust that spring will come again.", energy: "Still, restorative, introspective", ritual: "Light a candle. Wrap yourself in warmth. Rest fully — without justifying it." },
+              };
+              const a = almanac[season];
+              return (
+                <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg, #1a1a2e, #16213e)", borderRadius: 18, padding: "18px 16px", border: "0.5px solid rgba(155,123,201,0.3)", marginBottom: 12 }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 10, letterSpacing: "2px", color: "#9B7BC9", margin: "0 0 6px", textTransform: "uppercase" }}>🌿 Almanac — {season} {a.emoji}</p>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#fff", margin: "0 0 8px" }}>{a.desc}</p>
+                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 14px", marginBottom: 10 }}>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#9B7BC9", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>⚡ Energy of this season</p>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "rgba(255,255,255,0.8)", margin: 0 }}>{a.energy}</p>
+                  </div>
+                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 14px", marginBottom: 10 }}>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#9B7BC9", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>🍎 Foods in season</p>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "rgba(255,255,255,0.8)", margin: 0, lineHeight: 1.7 }}>{a.foods.join(" · ")}</p>
+                  </div>
+                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 14px", marginBottom: 10 }}>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#9B7BC9", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>✨ Ancient wisdom</p>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "rgba(255,255,255,0.8)", margin: 0, lineHeight: 1.7 }}>{a.wisdom}</p>
+                  </div>
+                  <div style={{ background: "rgba(155,123,201,0.15)", borderRadius: 12, padding: "12px 14px" }}>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#9B7BC9", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>🕯️ Seasonal ritual</p>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "rgba(255,255,255,0.8)", margin: 0, lineHeight: 1.7 }}>{a.ritual}</p>
+                  </div>
+                </div>
+              );
+            })()}
+
             <div style={{ background: "linear-gradient(135deg, #F5F0FF, #FFF0F5)", borderRadius: 18, padding: "18px 16px", border: "0.5px solid rgba(180,140,200,0.3)", marginTop: 4 }}>
               <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 4px" }}>✨ More coming to Lumen Life</p>
               <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#9B7BC9", margin: "0 0 16px", lineHeight: 1.6 }}>Moon reflections, emotional patterns, rituals, and deeper wellness tools are being built.</p>
