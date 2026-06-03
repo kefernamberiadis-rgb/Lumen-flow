@@ -1107,6 +1107,41 @@ if (saved) {
       })()}
 
       <div style={{ background: "#F8F0FF", borderRadius: 18, border: "0.5px solid rgba(155,123,201,0.2)", padding: 16, marginBottom: 16 }}>
+        {(() => {
+          const weightData = days7.filter(d => d.data?.bodyCheck && !isNaN(parseFloat(d.data.bodyCheck)));
+          if (weightData.length < 2) return null;
+          const weights = weightData.map(d => parseFloat(d.data.bodyCheck));
+          const unit = weightData[weightData.length-1].data?.weightUnit || "lbs";
+          const minW = Math.min(...weights) - 2;
+          const maxW = Math.max(...weights) + 2;
+          const range = maxW - minW || 1;
+          const w = 280; const h = 60;
+          const points = weightData.map((d, i) => {
+            const x = (i / (weightData.length - 1)) * w;
+            const y = h - ((parseFloat(d.data.bodyCheck) - minW) / range) * h;
+            return `${x},${y}`;
+          }).join(" ");
+          return (
+            <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "#fff", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+              <p style={{ fontSize: 11, color: "#7A9E7E", fontWeight: 600, margin: "0 0 10px" }}>🌿 Body — last 7 days ({unit})</p>
+              <svg width="100%" viewBox={`0 0 ${w} ${h}`} style={{ overflow: "visible" }}>
+                <polyline points={points} fill="none" stroke={mode === "fast" ? "#C9A84C" : "#9B7BC9"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                {weightData.map((d, i) => {
+                  const x = (i / (weightData.length - 1)) * w;
+                  const y = h - ((parseFloat(d.data.bodyCheck) - minW) / range) * h;
+                  return (
+                    <g key={i}>
+                      <circle cx={x} cy={y} r="4" fill={mode === "fast" ? "#C9A84C" : "#9B7BC9"}/>
+                      <text x={x} y={y - 8} textAnchor="middle" fontSize="8" fill={mode === "fast" ? "#C9A84C" : "#9B7BC9"}>{d.data.bodyCheck}</text>
+                      <text x={x} y={h + 12} textAnchor="middle" fontSize="8" fill="#A8BEA8">{d.label}</text>
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+          );
+        })()}
+
         <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#9B7BC9", margin: "0 0 8px" }}>Today's Lumen Note ✦</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>{insight}</p>
       </div>
