@@ -1961,7 +1961,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16, paddingTop: 12, borderTop: "1px solid #EAF2EA" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
           <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#86efac" }} />
-          <span style={{ fontFamily: "sans-serif", fontSize: 11, color: "#6b7b6b" }}>Fertile window</span>
+          <span style={{ fontFamily: "sans-serif", fontSize: 11, color: "#6b7b6b" }}>Fertile</span>
         </div>
         {Object.entries(PHASE_INFO).map(([name, info]) => (
           <div key={name} style={{ display: "flex", alignItems: "center", gap: 5 }}>
