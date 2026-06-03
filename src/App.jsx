@@ -3672,7 +3672,8 @@ function TermsScreen({ onBack }) {
 // ─────────────────────────────────────────────
 //  BOTTOM NAV
 // ─────────────────────────────────────────────
-function BottomNav({ current, onChange }) {
+function BottomNav({ current, onChange, mode, phase }) {
+  const activeColor = mode === "fast" ? "#7A9E7E" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c";
   const items = [
     { id: "home",     icon: "🏠", label: "Home" },
     { id: "calendar", icon: "📅", label: "Calendar" },
@@ -3686,12 +3687,12 @@ function BottomNav({ current, onChange }) {
       {items.map(item => (
         <div key={item.id} onClick={() => onChange(item.id)} style={{
           ...s.navItem,
-          color: current === item.id ? "#8FAF8F" : "#8FA090",
+          color: current === item.id ? activeColor : "#8FA090",
           fontWeight: current === item.id ? 700 : 400,
         }}>
           <div style={{ fontSize: 20 }}>{item.icon}</div>
           <div style={{ fontSize: 10, marginTop: 2 }}>{item.label}</div>
-          {current === item.id && <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#8FAF8F", marginTop: 3 }} />}
+          {current === item.id && <div style={{ width: 4, height: 4, borderRadius: "50%", background: activeColor, marginTop: 3 }} />}
         </div>
       ))}
     </div>
