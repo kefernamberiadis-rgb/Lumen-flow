@@ -1919,6 +1919,15 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
           const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
           const isSel   = d === selDay;
           const fertile = isFertileDay(d);
+          const isOvulationDay = (() => {
+            if (!lastPeriod) return false;
+            const date = new Date(year, month, d);
+            const parts = lastPeriod.split("-");
+            const start = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+            const diff = Math.floor((date - start) / 86400000);
+            const dayInCycle = ((diff % cycleLength) + cycleLength) % cycleLength;
+            return dayInCycle === 14;
+          })();
           const fastDays = allFastDays;
           const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
           const isFasted = fastDays.includes(dateStr);
@@ -1941,7 +1950,8 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
           return (
             <button key={d} onClick={() => setSelDay(d)} style={{
               aspectRatio: "1", borderRadius: "50%",
-              border: isToday ? `2px solid #8FAF8F` : isFasted ? "2px solid #7A9E7E" : "none",
+              border: isOvulationDay ? "2px solid #f59e0b" : isToday ? `2px solid #8FAF8F` : isFasted ? "2px solid #7A9E7E" : "none",
+              boxShadow: isOvulationDay ? "0 0 8px rgba(245,158,11,0.5)" : "none",
               background: mode === "fast" ? (isSel ? "#7A9E7E" : "#F0F6F0") : isPeriodDay ? (isSel ? "#C97B7B" : "#FDEAEA") : isPredictedPeriod ? (isSel ? "#E8B4B4" : "#FDF0F0") : (isSel ? info.color : info.bg),
               cursor: "pointer", fontFamily: "sans-serif", fontSize: 13,
               color: mode === "fast" ? (isSel ? "#fff" : "#5C7F60") : (isSel ? "#fff" : info.color),
@@ -1963,10 +1973,11 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
           <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#86efac" }} />
           <span style={{ fontFamily: "sans-serif", fontSize: 11, color: "#6b7b6b" }}>Fertile</span>
         </div>
+        
         {Object.entries(PHASE_INFO).map(([name, info]) => (
           <div key={name} style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <div style={{ width: 10, height: 10, borderRadius: "50%", background: info.color }} />
-            <span style={{ fontFamily: "sans-serif", fontSize: 11, color: "#6b7b6b" }}>{name}</span>
+            <span style={{ fontFamily: "sans-serif", fontSize: 11, color: name === "Menstrual" ? "#7BA8C9" : name === "Follicular" ? "#f472b6" : name === "Ovulation" ? "#f59e0b" : "#ea580c" }}>{name}</span>
           </div>
         ))}
       </div>
