@@ -3214,6 +3214,27 @@ const CRAVINGS = {
 
 
       function LumenSuggests({ mode, selectedCravings, supportFilter, setSupportFilter, activeTab }) {
+        const dietary = (() => { try { return JSON.parse(localStorage.getItem("lf_dietary")) || { mode: "none", allergies: [] }; } catch(e) { return { mode: "none", allergies: [] }; } })();
+        const dietMode = dietary.mode;
+        const algs = dietary.allergies || [];
+
+        const filterItems = (items) => {
+          return items.filter(item => {
+            const text = item.toLowerCase();
+            if (algs.includes("fruit") && (text.includes("fruit") || text.includes("mango") || text.includes("berry") || text.includes("berries") || text.includes("apple") || text.includes("banana") || text.includes("orange") || text.includes("pear") || text.includes("kiwi") || text.includes("watermelon"))) return false;
+            if (algs.includes("dairy") && (text.includes("milk") || text.includes("cream") || text.includes("cheese") || text.includes("yogurt") || text.includes("butter") || text.includes("dairy"))) return false;
+            if (algs.includes("gluten") && (text.includes("bread") || text.includes("toast") || text.includes("pasta") || text.includes("wheat") || text.includes("crackers") || text.includes("sourdough") || text.includes("oat"))) return false;
+            if (algs.includes("eggs") && text.includes("egg")) return false;
+            if (algs.includes("peanuts") && text.includes("peanut")) return false;
+            if (algs.includes("treenuts") && (text.includes("almond") || text.includes("cashew") || text.includes("walnut") || text.includes("pecan") || text.includes("nut butter"))) return false;
+            if (algs.includes("shellfish") && (text.includes("shrimp") || text.includes("prawn") || text.includes("crab") || text.includes("lobster") || text.includes("shellfish"))) return false;
+            if (dietMode === "carnivore" && (text.includes("oat") || text.includes("rice") || text.includes("bread") || text.includes("pasta") || text.includes("bean") || text.includes("lentil") || text.includes("chickpea") || text.includes("tofu") || text.includes("tempeh") || text.includes("veggie") || text.includes("vegetable soup") || text.includes("salad") && !text.includes("caesar") && !text.includes("cobb"))) return false;
+            if (dietMode === "vegan" && (text.includes("chicken") || text.includes("beef") || text.includes("pork") || text.includes("fish") || text.includes("salmon") || text.includes("tuna") || text.includes("egg") || text.includes("dairy") || text.includes("cheese") || text.includes("yogurt") || text.includes("milk") || text.includes("butter") || text.includes("honey"))) return false;
+            if (dietMode === "vegetarian" && (text.includes("chicken") || text.includes("beef") || text.includes("pork") || text.includes("fish") || text.includes("salmon") || text.includes("tuna") || text.includes("turkey") || text.includes("meat"))) return false;
+            if (dietMode === "pescatarian" && (text.includes("chicken") || text.includes("beef") || text.includes("pork") || text.includes("turkey") || text.includes("lamb"))) return false;
+            return true;
+          });
+        };
   const supportOptions = [
     { id: "alkaline",   label: "Alkaline-Inspired", icon: "🌿" },
     { id: "juice",      label: "Juice Ideas",        icon: "🍹" },
@@ -3244,7 +3265,7 @@ const CRAVINGS = {
     if (filter === "fasting") return {
       label: "💧 Still Fasting",
       why: "You are fasting — your body is doing great work. Stay supported without breaking your window.",
-      items: ["Water — drink consistently throughout your fast", "Plain herbal tea or green tea — no sweeteners", "Black coffee if tolerated", "Sparkling water if you need something different", "A pinch of sea salt in water for electrolytes", "Rest, breathe, and ground yourself", "If you feel weak, shaky, dizzy, or unwell — break your fast and eat first"],
+      items: filterItems(["Water — drink consistently throughout your fast", "Plain herbal tea or green tea — no sweeteners", "Black coffee if tolerated", "Sparkling water if you need something different", "A pinch of sea salt in water for electrolytes", "Rest, breathe, and ground yourself", "If you feel weak, shaky, dizzy, or unwell — break your fast and eat first"]),
     };
 
     if (filter === "digestion") {
@@ -3292,7 +3313,7 @@ const CRAVINGS = {
       return {
         label: "🌱 Digestion Support",
         why,
-        items,
+        items: filterItems(items),
         note: "Wellness support only — not medical advice. If symptoms are severe, persistent, include blood, fever, or vomiting, please contact a healthcare provider.",
       };
     }
@@ -3362,7 +3383,7 @@ const CRAVINGS = {
     return {
       label: cravingLabel,
       why: `You chose ${cravingLabel.toLowerCase()} — here are options that match what your body is asking for right now.`,
-      items,
+      items: filterItems(items),
     };
   };
 
