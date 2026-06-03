@@ -2920,8 +2920,31 @@ const PHASE_FILTERS = ["All","Menstrual","Follicular","Ovulation","Luteal"];
 function RecipesScreen({ phase, onNavigate, mode, digestionPreset, onClearDigestionPreset }) {
   const [cravingType, setCravingType] = useState([]);
   const [nourishTab, setNourishTab] = useState("cravings");
+  const DIETARY_MODES = [
+    { id: "none", label: "No preference", emoji: "🍽️" },
+    { id: "carnivore", label: "Carnivore", emoji: "🥩" },
+    { id: "vegan", label: "Vegan", emoji: "🌱" },
+    { id: "vegetarian", label: "Vegetarian", emoji: "🥗" },
+    { id: "pescatarian", label: "Pescatarian", emoji: "🐟" },
+    { id: "glutenfree", label: "Gluten free", emoji: "🌾" },
+  ];
+  const ALLERGY_OPTIONS = [
+    { id: "fruit", label: "Fresh fruit", emoji: "🍓" },
+    { id: "peanuts", label: "Peanuts", emoji: "🥜" },
+    { id: "dairy", label: "Dairy", emoji: "🥛" },
+    { id: "gluten", label: "Gluten/wheat", emoji: "🌾" },
+    { id: "eggs", label: "Eggs", emoji: "🥚" },
+    { id: "treenuts", label: "Tree nuts", emoji: "🌰" },
+    { id: "shellfish", label: "Shellfish", emoji: "🦐" },
+  ];
   const [nourishSupportFilter, setNourishSupportFilter] = useState(digestionPreset ? "digestion" : null);
   const [cravingOverride, setCravingOverride] = useState(false);
+  const [dietaryMode, setDietaryMode] = useState(() => { try { return JSON.parse(localStorage.getItem("lf_dietary"))?.mode || "none"; } catch(e) { return "none"; } });
+  const [allergies, setAllergies] = useState(() => { try { return JSON.parse(localStorage.getItem("lf_dietary"))?.allergies || []; } catch(e) { return []; } });
+
+  const saveDietary = (mode, algs) => {
+    localStorage.setItem("lf_dietary", JSON.stringify({ mode, allergies: algs }));
+  };
 
   useEffect(() => {
     if (digestionPreset) {
@@ -3025,6 +3048,12 @@ const CRAVINGS = {
           color: nourishTab === "fasting" ? "#fff" : "#4a5a4b",
           fontFamily: "Georgia, serif", fontSize: 13, fontWeight: 600,
         }}>💧 Fasting Support</button>
+        <button onClick={() => setNourishTab("preferences")} style={{
+          flex: 1, padding: "12px 8px", borderRadius: 14, border: "none", cursor: "pointer",
+          background: nourishTab === "preferences" ? (mode === "fast" ? "#7A9E7E" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c") : "rgba(255,255,255,0.5)",
+          color: nourishTab === "preferences" ? "#fff" : "#4a5a4b",
+          fontFamily: "Georgia, serif", fontSize: 13, fontWeight: 600,
+        }}>🌿 My Preferences</button>
       </div>
       {nourishTab === "cravings" && <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.75)", borderRadius: 18, padding: "16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : "0.5px solid rgba(180,160,200,0.3)", marginBottom: 16 }}>
         <p style={{ fontSize: 13, color: "#2D3B2E", fontWeight: 600, margin: "0 0 12px" }}>What are you craving right now?</p>
@@ -3082,6 +3111,46 @@ const CRAVINGS = {
           </div>
         );
       })()}
+      {nourishTab === "preferences" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.75)", borderRadius: 18, padding: "16px", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.2)" : "0.5px solid rgba(180,160,200,0.3)" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 4px" }}>🍽️ Dietary preference</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 12px", lineHeight: 1.6 }}>Lumen Suggests will personalise food ideas based on your preference.</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {DIETARY_MODES.map(d => (
+                <button key={d.id} onClick={() => { setDietaryMode(d.id); saveDietary(d.id, allergies); }} style={{ padding: "8px 14px", borderRadius: 50, border: "none", background: dietaryMode === d.id ? (mode === "fast" ? "#7A9E7E" : "#9B7BC9") : (mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.7)"), color: dietaryMode === d.id ? "#fff" : (mode === "fast" ? "#a8c4a8" : "#4a3a5a"), fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>
+                  {d.emoji} {d.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.75)", borderRadius: 18, padding: "16px", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.2)" : "0.5px solid rgba(180,160,200,0.3)" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 4px" }}>🚫 Allergies & avoid</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 12px", lineHeight: 1.6 }}>Select anything you cannot eat or want to avoid. Suggestions will be filtered automatically.</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {ALLERGY_OPTIONS.map(a => (
+                <button key={a.id} onClick={() => {
+                  const updated = allergies.includes(a.id) ? allergies.filter(x => x !== a.id) : [...allergies, a.id];
+                  setAllergies(updated);
+                  saveDietary(dietaryMode, updated);
+                }} style={{ padding: "8px 14px", borderRadius: 50, border: "none", background: allergies.includes(a.id) ? "#C97B7B" : (mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.7)"), color: allergies.includes(a.id) ? "#fff" : (mode === "fast" ? "#a8c4a8" : "#4a3a5a"), fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>
+                  {a.emoji} {a.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          {(dietaryMode !== "none" || allergies.length > 0) && (
+            <div style={{ background: mode === "fast" ? "rgba(122,158,126,0.08)" : "rgba(155,123,201,0.08)", borderRadius: 14, padding: "12px 14px", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.2)" : "0.5px solid rgba(155,123,201,0.2)" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: 0, lineHeight: 1.6 }}>
+                ✅ Preferences saved — Lumen Suggests will use these when making food recommendations.
+                {allergies.length > 0 && ` Avoiding: ${ALLERGY_OPTIONS.filter(a => allergies.includes(a.id)).map(a => a.label).join(", ")}.`}
+              </p>
+            </div>
+          )}
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", textAlign: "center", margin: 0, lineHeight: 1.6 }}>🌿 These preferences are saved on your device only.</p>
+        </div>
+      )}
+
       {nourishTab === "fasting" && (
         <div>
           {[
