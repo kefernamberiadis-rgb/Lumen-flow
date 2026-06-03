@@ -3061,7 +3061,7 @@ const CRAVINGS = {
           {cravingKeys.map(key => (
             <button key={key} onClick={() => { setCravingType(prev => Array.isArray(prev) ? (prev.includes(key) ? prev.filter(x => x !== key) : [...prev, key]) : [key]); setNourishSupportFilter(null); }} style={{
               padding: "8px 14px", borderRadius: 50, border: "0.5px solid #dce8dc",
-              background: (Array.isArray(cravingType) ? cravingType.includes(key) : cravingType === key) ? "#7A9E7E" : "#F8FAF8",
+              background: (Array.isArray(cravingType) ? cravingType.includes(key) : cravingType === key) ? (mode === "fast" ? "#7A9E7E" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c") : "rgba(255,255,255,0.7)",
               color: (Array.isArray(cravingType) ? cravingType.includes(key) : cravingType === key) ? "#fff" : "#4a5a4b",
               fontSize: 12, cursor: "pointer", fontFamily: "sans-serif",
               display: "flex", alignItems: "center", gap: 6
