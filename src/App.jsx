@@ -28,10 +28,10 @@ function getPhase(day, periodLength = 7) {
   return "Luteal";
 }
 const PHASE_INFO = {
-  Menstrual:  { emoji: "🌑", color: "#C97B7B", bg: "#FDEAEA", fast: "12–14h if comfortable — skip fasting if your body needs food", move: "Rest, gentle stretching, slow walks, or restorative movement" },
-  Follicular: { emoji: "🌒", color: "#7BA8C9", bg: "#EAF2F9", fast: "14–16h if it feels supportive", move: "Light strength, cardio, Pilates, walking, or trying something new" },
-  Ovulation:  { emoji: "🌕", color: "#C9A87B", bg: "#F9F4EA", fast: "14–16h, or up to 18h only if it feels good", move: "Strength, cardio, dance, circuits, or higher-energy movement if it feels good" },
-  Luteal:     { emoji: "🌗", color: "#9B7BC9", bg: "#F2EAFA", fast: "12–14h, especially in late luteal — break early if you feel shaky, irritable, or overly hungry", move: "Walking, Pilates, mobility, stretching, or lower intensity movement" },
+  Menstrual:  { emoji: "🌑", color: "#C97B7B", bg: "#FDEAEA", fast: "12–14h if comfortable — skip fasting if your body needs food", move: "Rest, gentle stretching, slow walks, or restorative movement", energy: "🌙 Low — rest and restore", nourish: "Iron-rich foods, warm soups, dark leafy greens, dark chocolate, warming teas", reflection: "What am I ready to release? What needs rest?" },
+  Follicular: { emoji: "🌒", color: "#7BA8C9", bg: "#EAF2F9", fast: "14–16h if it feels supportive", move: "Light strength, cardio, Pilates, walking, or trying something new", energy: "🌱 Rising — energy is building", nourish: "Protein, fresh vegetables, fruit, fermented foods, light and bright meals", reflection: "What am I ready to grow? What feels exciting right now?" },
+  Ovulation:  { emoji: "🌕", color: "#C9A87B", bg: "#F9F4EA", fast: "14–16h, or up to 18h only if it feels good", move: "Strength, cardio, dance, circuits, or higher-energy movement if it feels good", energy: "⚡ Peak — vibrant and expressive", nourish: "Anti-inflammatory foods, zinc-rich foods, fibre, raw vegetables, smoothies", reflection: "What do I want to share? Who do I want to connect with?" },
+  Luteal:     { emoji: "🌗", color: "#9B7BC9", bg: "#F2EAFA", fast: "12–14h, especially in late luteal — break early if you feel shaky, irritable, or overly hungry", move: "Walking, Pilates, mobility, stretching, or lower intensity movement", energy: "🍂 Grounding — slow and steady", nourish: "Complex carbs, magnesium-rich foods, sweet potato, oats, dark chocolate, warm nourishing meals", reflection: "What needs my attention? What can I simplify?" },
 };
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -1702,6 +1702,16 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDow    = new Date(year, month, 1).getDay();
 
+  const isFertileDay = (d) => {
+    if (!lastPeriod) return false;
+    const date = new Date(year, month, d);
+    const start = lastPeriod.split("-");
+    const periodStart = new Date(parseInt(start[0]), parseInt(start[1])-1, parseInt(start[2]));
+    const diff = Math.floor((date - periodStart) / 86400000);
+    const dayInCycle = ((diff % cycleLength) + cycleLength) % cycleLength;
+    return dayInCycle >= 11 && dayInCycle <= 16;
+  };
+
   const getCycleDayFor = (d) => {
     if (!lastPeriod) return 1;
     const date = new Date(year, month, d);
@@ -1908,6 +1918,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
           const info    = PHASE_INFO[phase];
           const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
           const isSel   = d === selDay;
+          const fertile = isFertileDay(d);
           const fastDays = allFastDays;
           const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
           const isFasted = fastDays.includes(dateStr);
@@ -1935,8 +1946,11 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
               cursor: "pointer", fontFamily: "sans-serif", fontSize: 13,
               color: mode === "fast" ? (isSel ? "#fff" : "#5C7F60") : (isSel ? "#fff" : info.color),
               fontWeight: isToday ? 700 : 400,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>{d}</button>
+              display: "flex", alignItems: "center", justifyContent: "center", position: "relative",
+            }}>
+              {d}
+              {fertile && mode !== "fast" && <span style={{ position: "absolute", bottom: 1, right: 1, width: 4, height: 4, borderRadius: "50%", background: "#86efac" }} />}
+            </button>
           );
         });
         })()}
@@ -1968,8 +1982,42 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
             </p>
           </div>
         </div>
-        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: "0 0 4px" }}>💧 <b>Fast:</b> {selInfo.fast}</p>
-        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: 0 }}>🏋️ <b>Move:</b> {selInfo.move}</p>
+        {(() => {
+          const fertile = isFertileDay(selDay);
+          const cycDay = getCycleDayFor(selDay);
+          const isOvulation = cycDay >= 14 && cycDay <= 16;
+          const moon = getMoonPhase();
+          return (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
+              {fertile && (
+                <div style={{ background: "rgba(134,239,172,0.15)", borderRadius: 10, padding: "6px 10px", border: "0.5px solid rgba(134,239,172,0.4)" }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#16a34a", margin: 0 }}>
+                    {isOvulation ? "🌕 Estimated ovulation day" : "🌱 Possible fertile window"}
+                  </p>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#6b7b6b", margin: "2px 0 0" }}>Prediction only — not birth control</p>
+                </div>
+              )}
+              <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: selInfo.color, margin: 0 }}>⚡ {selInfo.energy}</p>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#4a5a4b", margin: 0 }}>💧 <b>Fast:</b> {selInfo.fast}</p>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#4a5a4b", margin: 0 }}>🏋️ <b>Move:</b> {selInfo.move}</p>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#4a5a4b", margin: 0 }}>🌿 <b>Nourish:</b> {selInfo.nourish}</p>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#7BA8C9", margin: 0 }}>🌙 {moon.emoji} {moon.name} — {moon.desc}</p>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: selInfo.color, margin: 0, fontStyle: "italic" }}>✨ {selInfo.reflection}</p>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       ) : (
