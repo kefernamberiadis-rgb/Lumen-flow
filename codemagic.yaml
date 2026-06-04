@@ -17,19 +17,17 @@ workflows:
         script: npm run build
       - name: Sync Capacitor
         script: npx cap sync ios
-      - name: Install CocoaPods
-        script: |
-          cd ios/App
-          pod install
       - name: Build iOS
         script: |
-          xcodebuild -workspace ios/App/App.xcworkspace \
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Release \
             -archivePath build/App.xcarchive \
-            archive \
+            -allowProvisioningUpdates \
             CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM=XCYBL2AZ3S
+            DEVELOPMENT_TEAM=XCYBL2AZ3S \
+            archive
     artifacts:
       - build/App.xcarchive
     publishing:
