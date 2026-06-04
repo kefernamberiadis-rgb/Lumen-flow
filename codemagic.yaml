@@ -1,4 +1,4 @@
-workflows:
+﻿workflows:
   ios-workflow:
     name: iOS Workflow
     max_build_duration: 120
@@ -19,15 +19,7 @@ workflows:
         script: npx cap sync ios
       - name: Build iOS
         script: |
-          xcodebuild \
-            -workspace ios/App/App.xcworkspace \
-            -scheme App \
-            -configuration Release \
-            -archivePath build/App.xcarchive \
-            -allowProvisioningUpdates \
-            CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM=XCYBL2AZ3S \
-            archive
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -archivePath build/App.xcarchive -allowProvisioningUpdates CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=XCYBL2AZ3S archive
     artifacts:
       - build/App.xcarchive
     publishing:
