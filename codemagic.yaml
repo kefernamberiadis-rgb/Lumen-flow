@@ -3,9 +3,11 @@ workflows:
     name: iOS Workflow
     max_build_duration: 120
     environment:
+      groups:
+        - ios_signing
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.lumenflow.app
+        bundle_identifier: com.kefern.lumenflow
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
@@ -25,3 +27,7 @@ workflows:
             archive
     artifacts:
       - build/App.xcarchive
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
