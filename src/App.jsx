@@ -2267,6 +2267,44 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
 // ─────────────────────────────────────────────
 //  LEARN SCREEN
 // ─────────────────────────────────────────────
+function PaywallScreen({ onClose, mode }) {
+  const [selected, setSelected] = useState("yearly");
+  return (
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 2000, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div style={{ background: "linear-gradient(160deg, #1a1a2e, #16213e)", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 480, maxHeight: "90vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 22, color: "#fff", margin: 0 }}>🌿 Lumen Flow</p>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#8FA090", fontSize: 22, cursor: "pointer" }}>✕</button>
+        </div>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "rgba(255,255,255,0.8)", margin: "0 0 6px", lineHeight: 1.6, fontStyle: "italic" }}>Your body has a rhythm. Lumen Flow helps you live inside it.</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "rgba(255,255,255,0.5)", margin: "0 0 16px", lineHeight: 1.6 }}>Unlock the full Lumen Flow experience — cycle-synced fasting, moon phase guidance, seasonal tools, rituals, journaling, and premium insights.</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
+          {["Cycle-synced fasting guidance", "Full check-in — gut, bowel, movement, sleep", "7 / 30 / 90 day trend charts", "Lumen Suggests — AI food recommendations", "Dietary preferences and allergy filtering", "Move Map and cycle workouts", "Lumen Life — 10 cycle empowerment tools", "Lumen Mirror — private journal", "Monthly Rhythm Planner", "Moon phase rituals and journal prompts", "Almanac — seasonal wisdom"].map((f, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ color: "#9B7BC9", fontSize: 12 }}>✦</span>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "rgba(255,255,255,0.8)", margin: 0 }}>{f}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+          <button onClick={() => setSelected("yearly")} style={{ flex: 1, padding: "14px 10px", borderRadius: 14, border: selected === "yearly" ? "2px solid #9B7BC9" : "1px solid rgba(255,255,255,0.2)", background: selected === "yearly" ? "rgba(155,123,201,0.15)" : "rgba(255,255,255,0.05)", cursor: "pointer", position: "relative" }}>
+            {selected === "yearly" && <span style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", background: "#9B7BC9", color: "#fff", fontFamily: "sans-serif", fontSize: 10, padding: "2px 8px", borderRadius: 50 }}>BEST VALUE</span>}
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#fff", margin: "0 0 2px" }}>$69.99</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "rgba(255,255,255,0.6)", margin: 0 }}>per year · $5.83/mo</p>
+          </button>
+          <button onClick={() => setSelected("monthly")} style={{ flex: 1, padding: "14px 10px", borderRadius: 14, border: selected === "monthly" ? "2px solid #9B7BC9" : "1px solid rgba(255,255,255,0.2)", background: selected === "monthly" ? "rgba(155,123,201,0.15)" : "rgba(255,255,255,0.05)", cursor: "pointer" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#fff", margin: "0 0 2px" }}>$9.99</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "rgba(255,255,255,0.6)", margin: 0 }}>per month</p>
+          </button>
+        </div>
+        <button style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #9B7BC9, #7B5BA9)", color: "#fff", fontFamily: "Georgia, serif", fontSize: 16, cursor: "pointer", marginBottom: 8 }}>Start 7-day free trial ✦</button>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", textAlign: "center", margin: "0 0 6px" }}>Cancel anytime. No charge during trial.</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#9B7BC9", textAlign: "center", margin: 0 }}>🌿 Everything is free during beta — premium coming soon</p>
+      </div>
+    </div>
+  );
+}
+
 function PremiumLock({ tier = "premium", mode }) {
   const isPlus = tier === "plus";
   const isPartner = tier === "partner";
@@ -2918,7 +2956,7 @@ function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
 // ─────────────────────────────────────────────
 //  SETTINGS SCREEN
 // ─────────────────────────────────────────────
-function SettingsScreen({ settings, onSave }) {
+function SettingsScreen({ settings, onSave, onShowPaywall }) {
   const [subScreen,    setSubScreen]    = useState(null);
   const [name,         setName]         = useState(settings.name || "");
   const [saved,        setSaved]        = useState(false);
@@ -3047,6 +3085,7 @@ function SettingsScreen({ settings, onSave }) {
           Switch to {settings.mode === "fast" ? "🌸 Cycle tracking" : "⚡ Fasting focus"}
         </button>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: "8px 0 16px", textAlign: "center" }}>Your data is saved — you can switch back anytime</p>
+        <button onClick={() => onShowPaywall && onShowPaywall()} style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #9B7BC9, #7B5BA9)", color: "#fff", fontFamily: "Georgia, serif", fontSize: 16, cursor: "pointer", marginBottom: 12 }}>✦ Unlock Lumen Flow Premium</button>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>🌿 Lumen Flow</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: 0 }}>Version 1.0.0 · Made with care</p>
       </div>
@@ -3959,6 +3998,7 @@ export default function App() {
   const [screen, setScreen] = useState("home");
   const [showWaitlist, setShowWaitlist] = useState(false);
   const [nourishDigestionPreset, setNourishDigestionPreset] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   useSwipeNavigation(screen, setScreen);
 
   const saveSettings = (data) => {
@@ -4004,9 +4044,10 @@ export default function App() {
        {screen === "recipes"  && <RecipesScreen phase={getPhase(getCycleDay(settings.lastPeriod))} onNavigate={setScreen} mode={settings.mode || "cycle"} digestionPreset={nourishDigestionPreset} onClearDigestionPreset={() => setNourishDigestionPreset(false)} />}
         {screen === "checkin"  && <CheckInScreen mode={settings.mode || "cycle"} lastPeriod={settings.lastPeriod || ""} onNavigate={setScreen} onNourishDigestion={() => { setScreen("recipes"); setNourishDigestionPreset(true); }} />}
         {screen === "learn"    && <LearnScreen mode={settings.mode || "cycle"} lastPeriod={settings.lastPeriod || ""} />}
-        {screen === "settings" && <SettingsScreen settings={settings} onSave={saveSettings} />}
+        {screen === "settings" && <SettingsScreen settings={settings} onSave={saveSettings} onShowPaywall={() => setShowPaywall(true)} />}
 
-<BottomNav current={screen} onChange={setScreen} />
+<BottomNav current={screen} onChange={setScreen} mode={settings.mode || "cycle"} phase={getPhase(Math.max(1, getCycleDay(settings.lastPeriod || "") - 1))} />
+      {showPaywall && <PaywallScreen onClose={() => setShowPaywall(false)} mode={settings.mode || "cycle"} />}
       </div>
     </div>
   );
