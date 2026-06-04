@@ -2908,6 +2908,10 @@ function SettingsScreen({ settings, onSave }) {
   const [subScreen,    setSubScreen]    = useState(null);
   const [name,         setName]         = useState(settings.name || "");
   const [saved,        setSaved]        = useState(false);
+  const [notifPerms,   setNotifPerms]   = useState(() => localStorage.getItem("lf_notif_perms") || "default");
+  const [notifPrefs,   setNotifPrefs]   = useState(() => { try { return JSON.parse(localStorage.getItem("lf_notif_prefs")) || {}; } catch(e) { return {}; } });
+  const requestNotifications = async () => { if ("Notification" in window) { const r = await Notification.requestPermission(); setNotifPerms(r); localStorage.setItem("lf_notif_perms", r); } };
+  const toggleNotif = (key) => { const u = { ...notifPrefs, [key]: !notifPrefs[key] }; setNotifPrefs(u); localStorage.setItem("lf_notif_prefs", JSON.stringify(u)); };
 
   if (subScreen === "privacy") return <PrivacyScreen onBack={() => setSubScreen(null)} />;
   if (subScreen === "terms")   return <TermsScreen   onBack={() => setSubScreen(null)} />;
@@ -2952,7 +2956,9 @@ function SettingsScreen({ settings, onSave }) {
       {/* Partner Mode */}
       <div style={{ ...s.card, textAlign: "left", marginBottom: 12, background: "#F5F0FF", border: "0.5px solid #D4C5E9" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#9B7BC9", margin: "0 0 4px" }}>🤝 Partner mode</p>
-        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 14px" }}>Fast together and understand each other's rhythm</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Fast together and understand each other's rhythm</p>
+        <PremiumLock tier="partner" mode={settings.mode || "cycle"} />
+        {false && <>
         {(() => {
           const code = settings.partnerCode || (() => {
             const newCode = Math.random().toString(36).substring(2,8).toUpperCase();
@@ -2988,6 +2994,7 @@ function SettingsScreen({ settings, onSave }) {
             </div>
           );
         })()}
+        </>}
       </div>
 
       <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
@@ -3001,6 +3008,14 @@ function SettingsScreen({ settings, onSave }) {
       </div>
 
       <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+        <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>🔔 Notifications</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 14px", lineHeight: 1.6 }}>Get gentle reminders about your cycle, fasting window, and moon phases.</p>
+          {notifPerms === "default" && <button onClick={requestNotifications} style={{ width: "100%", padding: "10px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #9B7BC9, #7B5BA9)", color: "#fff", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>🔔 Enable notifications</button>}
+          {notifPerms === "granted" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#7A9E7E", margin: 0 }}>✅ Notifications enabled — toggle below</p>}
+          {notifPerms === "denied" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#C97B7B", margin: 0 }}>🔕 Blocked — allow in browser settings</p>}
+        </div>
+
         <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>💾 Auto-save check-in</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 14px" }}>When on, your check-in saves automatically as you log. Resets at midnight each day.</p>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
