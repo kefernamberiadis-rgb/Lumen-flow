@@ -28,9 +28,14 @@
           <plist version="1.0">
           <dict>
             <key>method</key>
-            <string>app-store</string>
+            <string>app-store-connect</string>
             <key>teamID</key>
             <string>XCYBL2AZ3S</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.kefern.lumenflow</key>
+              <string>Lumen Flow Distribution</string>
+            </dict>
           </dict>
           </plist>
           EOF
