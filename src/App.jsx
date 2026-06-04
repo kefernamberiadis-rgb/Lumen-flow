@@ -794,7 +794,7 @@ function CheckInScreen({ mode, lastPeriod, onNavigate, onNourishDigestion }) {
   const [notes,  setNotes]  = useState("");
 
   const save = () => {
-    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, movements, bodyCheck, weightUnit, namedMood, moodNote, symptoms, bowelCheck: { entries: bowelEntries, didPoopToday: bowelEntries.length > 0 }, morningSignal, driveLevel, hadAlcohol, gotSunlight };
+    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, movements, bodyCheck, weightUnit, namedMood, moodNote, symptoms, bowelCheck: { entries: bowelEntries, didPoopToday: bowelEntries.length > 0 }, morningSignal, driveLevel, hadAlcohol, gotSunlight, libido };
     localStorage.setItem(key, JSON.stringify(data));
     setSaved(data);
   };
@@ -837,6 +837,7 @@ function CheckInScreen({ mode, lastPeriod, onNavigate, onNourishDigestion }) {
   const [driveLevel, setDriveLevel] = useState(null);
   const [hadAlcohol, setHadAlcohol] = useState(null);
   const [gotSunlight, setGotSunlight] = useState(null);
+  const [libido, setLibido] = useState(null);
   const [showLogPreview, setShowLogPreview] = useState(false);
   const [selectedPastDay, setSelectedPastDay] = useState(null);
 
@@ -1284,6 +1285,12 @@ if (saved) {
             <button key={opt} onClick={() => setDriveLevel(driveLevel === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: driveLevel === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: driveLevel === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
           ))}
         </div>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🌶️ Libido today</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+          {["🔥 High","😏 Moderate","😐 Low","— None"].map(opt => (
+            <button key={opt} onClick={() => setLibido(libido === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: libido === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: libido === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
         <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🍺 Alcohol yesterday</p>
         <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
           {["None","1–2 drinks","3+ drinks"].map(opt => (
@@ -1453,6 +1460,13 @@ if (saved) {
         <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
           {["🔥 High","⚡ Medium","💤 Low","— None"].map(opt => (
             <button key={opt} onClick={() => setDriveLevel(driveLevel === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: driveLevel === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: driveLevel === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🌶️ Libido today</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+          {["🔥 High","😏 Moderate","😐 Low","— None"].map(opt => (
+            <button key={opt} onClick={() => setLibido(libido === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: libido === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: libido === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
           ))}
         </div>
 
