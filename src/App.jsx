@@ -3081,10 +3081,11 @@ function SettingsScreen({ settings, onSave, onShowPaywall }) {
       <div style={{ ...s.card, textAlign: "center" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>⚡ Switch experience</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 12px" }}>Currently using: {settings.mode === "fast" ? "Fasting focus" : "Cycle tracking"}</p>
-        <button onClick={() => { const newMode = settings.mode === "fast" ? "cycle" : "fast"; onSave({...settings, mode: newMode}); }} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "0.5px solid #dce8dc", background: "#F8FAF8", color: "#4a5a4b", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>
+        <button onClick={() => { if (window.confirm(`Switch to ${settings.mode === "fast" ? "Cycle tracking" : "Fasting focus"}? Your data is saved and you can switch back anytime.`)) { const newMode = settings.mode === "fast" ? "cycle" : "fast"; onSave({...settings, mode: newMode}); }}} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "0.5px solid #dce8dc", background: "#F8FAF8", color: "#4a5a4b", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>
           Switch to {settings.mode === "fast" ? "🌸 Cycle tracking" : "⚡ Fasting focus"}
         </button>
-        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: "8px 0 16px", textAlign: "center" }}>Your data is saved — you can switch back anytime</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#C97B7B", margin: "0 0 4px", textAlign: "center" }}>⚠️ This changes the whole app experience.</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: "0 0 16px", textAlign: "center" }}>Your data is saved — you can switch back anytime</p>
         <button onClick={() => onShowPaywall && onShowPaywall()} style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #9B7BC9, #7B5BA9)", color: "#fff", fontFamily: "Georgia, serif", fontSize: 16, cursor: "pointer", marginBottom: 12 }}>✦ Unlock Lumen Flow Premium</button>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>🌿 Lumen Flow</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: 0 }}>Version 1.0.0 · Made with care</p>
