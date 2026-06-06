@@ -52,6 +52,7 @@
     environment:
       android_signing:
         - lumenflow_keystore
+      java: 17
       vars:
         PACKAGE_NAME: com.wLumenFlow_19769943
     scripts:
