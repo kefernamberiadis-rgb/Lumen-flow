@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 
 // ─────────────────────────────────────────────
 //  CYCLE LOGIC
@@ -2268,38 +2268,25 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
 //  LEARN SCREEN
 // ─────────────────────────────────────────────
 function PaywallScreen({ onClose, mode }) {
-  const [selected, setSelected] = useState("yearly");
   return (
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 2000, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
       <div style={{ background: "linear-gradient(160deg, #1a1a2e, #16213e)", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 480, maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <p style={{ fontFamily: "Georgia, serif", fontSize: 22, color: "#fff", margin: 0 }}>🌿 Lumen Flow</p>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "#8FA090", fontSize: 22, cursor: "pointer" }}>✕</button>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 22, color: "#fff", margin: 0 }}>Lumen Flow</p>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#8FA090", fontSize: 22, cursor: "pointer" }}>x</button>
         </div>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "rgba(255,255,255,0.8)", margin: "0 0 6px", lineHeight: 1.6, fontStyle: "italic" }}>Your body has a rhythm. Lumen Flow helps you live inside it.</p>
-        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "rgba(255,255,255,0.5)", margin: "0 0 16px", lineHeight: 1.6 }}>Unlock the full Lumen Flow experience — cycle-synced fasting, moon phase guidance, seasonal tools, rituals, journaling, and premium insights.</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "rgba(255,255,255,0.5)", margin: "0 0 16px", lineHeight: 1.6 }}>More ways to go deeper with Lumen Flow are coming soon - cycle-synced fasting, moon phase guidance, seasonal tools, rituals, journaling, and more.</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
-          {["Cycle-synced fasting guidance", "Full check-in — gut, bowel, movement, sleep", "7 / 30 / 90 day trend charts", "Lumen Suggests — AI food recommendations", "Dietary preferences and allergy filtering", "Move Map and cycle workouts", "Lumen Life — 10 cycle empowerment tools", "Lumen Mirror — private journal", "Monthly Rhythm Planner", "Moon phase rituals and journal prompts", "Almanac — seasonal wisdom"].map((f, i) => (
+          {["Cycle-synced fasting guidance", "Full check-in - gut, bowel, movement, sleep", "7 / 30 / 90 day trend charts", "Lumen Suggests - food recommendations", "Dietary preferences and allergy filtering", "Move Map and cycle workouts", "Lumen Life - cycle empowerment tools", "Lumen Mirror - private journal", "Monthly Rhythm Planner", "Moon phase rituals and journal prompts", "Almanac - seasonal wisdom"].map((f, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ color: "#9B7BC9", fontSize: 12 }}>✦</span>
+              <span style={{ color: "#9B7BC9", fontSize: 12 }}>-</span>
               <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "rgba(255,255,255,0.8)", margin: 0 }}>{f}</p>
             </div>
           ))}
         </div>
-        <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-          <button onClick={() => setSelected("yearly")} style={{ flex: 1, padding: "14px 10px", borderRadius: 14, border: selected === "yearly" ? "2px solid #9B7BC9" : "1px solid rgba(255,255,255,0.2)", background: selected === "yearly" ? "rgba(155,123,201,0.15)" : "rgba(255,255,255,0.05)", cursor: "pointer", position: "relative" }}>
-            {selected === "yearly" && <span style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", background: "#9B7BC9", color: "#fff", fontFamily: "sans-serif", fontSize: 10, padding: "2px 8px", borderRadius: 50 }}>BEST VALUE</span>}
-            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#fff", margin: "0 0 2px" }}>$69.99</p>
-            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "rgba(255,255,255,0.6)", margin: 0 }}>per year · $5.83/mo</p>
-          </button>
-          <button onClick={() => setSelected("monthly")} style={{ flex: 1, padding: "14px 10px", borderRadius: 14, border: selected === "monthly" ? "2px solid #9B7BC9" : "1px solid rgba(255,255,255,0.2)", background: selected === "monthly" ? "rgba(155,123,201,0.15)" : "rgba(255,255,255,0.05)", cursor: "pointer" }}>
-            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#fff", margin: "0 0 2px" }}>$9.99</p>
-            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "rgba(255,255,255,0.6)", margin: 0 }}>per month</p>
-          </button>
-        </div>
-        <button style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #9B7BC9, #7B5BA9)", color: "#fff", fontFamily: "Georgia, serif", fontSize: 16, cursor: "pointer", marginBottom: 8 }}>Start 7-day free trial ✦</button>
-        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", textAlign: "center", margin: "0 0 6px" }}>Cancel anytime. No charge during trial.</p>
-        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#9B7BC9", textAlign: "center", margin: 0 }}>🌿 Everything is free during beta — premium coming soon</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#9B7BC9", textAlign: "center", margin: "0 0 6px" }}>Coming soon to Lumen Flow</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", textAlign: "center", margin: 0 }}>Everything in Lumen Flow is free right now. Thank you for being here early.</p>
       </div>
     </div>
   );
@@ -2311,7 +2298,7 @@ function PremiumLock({ tier = "premium", mode }) {
   const color = mode === "fast" ? "#C9A84C" : isPlus ? "#9B7BC9" : "#7A9E7E";
   const bg = mode === "fast" ? "rgba(201,168,76,0.08)" : isPlus ? "rgba(155,123,201,0.08)" : "rgba(122,158,126,0.08)";
   const border = mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : isPlus ? "0.5px solid rgba(155,123,201,0.2)" : "0.5px solid rgba(122,158,126,0.2)";
-  const title = isPartner ? "Partner Sharing Coming Soon" : isPlus ? "Coming Soon to Lumen Flow Plus" : "Unlock with Lumen Flow Premium";
+  const title = isPartner ? "Partner Sharing Coming Soon" : isPlus ? "Coming Soon to Lumen Flow Plus" : "More Features Coming Soon";
   const body = isPartner ? "Supportive rhythm tools for men and partners are planned for a future Lumen Flow update." : isPlus ? "Moon reflections, emotional patterns, rituals, and deeper wellness tools are being built for a future update." : "Go deeper with full check-ins, cycle insights, Nourish support, trend charts, movement guidance, and gentle fasting tools.";
   return (
     <div style={{ background: bg, borderRadius: 16, padding: "16px", border, marginBottom: 8 }}>
@@ -3086,7 +3073,7 @@ function SettingsScreen({ settings, onSave, onShowPaywall }) {
         </button>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#C97B7B", margin: "0 0 4px", textAlign: "center" }}>⚠️ This changes the whole app experience.</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: "0 0 16px", textAlign: "center" }}>Your data is saved — you can switch back anytime</p>
-        <button onClick={() => onShowPaywall && onShowPaywall()} style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #9B7BC9, #7B5BA9)", color: "#fff", fontFamily: "Georgia, serif", fontSize: 16, cursor: "pointer", marginBottom: 12 }}>✦ Unlock Lumen Flow Premium</button>
+        <button onClick={() => onShowPaywall && onShowPaywall()} style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #9B7BC9, #7B5BA9)", color: "#fff", fontFamily: "Georgia, serif", fontSize: 16, cursor: "pointer", marginBottom: 12 }}>✦ What's Coming Next</button>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>🌿 Lumen Flow</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: 0 }}>Version 1.0.0 · Made with care</p>
       </div>
