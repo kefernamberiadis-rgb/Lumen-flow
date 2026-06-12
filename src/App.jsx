@@ -1,702 +1,767 @@
 import { useState, useEffect } from "react";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONSTANTS
-// ─────────────────────────────────────────────────────────────────────────────
-const PILLARS = ["Cycle Education","Fasting","Food","Workouts","App Features","Lifestyle","Men","Moon & Rituals","General"];
-const PHASES  = ["Menstrual","Follicular","Ovulation","Luteal","Men","General"];
-const PLATFORMS = ["Instagram","TikTok","Pinterest","YouTube Shorts"];
-const AUDIENCES = ["Women","Men","Both"];
-const GROWTH_TAGS = ["Awareness","Trust Building","Education","App Feature Promotion","Premium Teaser","Conversion Focused","Community Building"];
-const STATUSES = ["Idea","Draft","Ready for Asset Creation","Assets Created","Video Created","Needs Review","Approved","Scheduled","Posted","Analytics Reviewed","Repurpose Later"];
-const SOUND_TYPES = ["Original Audio","Voiceover","Calm Instrumental","Trending Sound","Commercial-Safe Music","Soft Background Music","Silence / No Music"];
-const SOUND_MOODS = ["Soft Feminine Wellness","Energising & Uplifting","Calm & Grounding","Motivating & Bold","Dreamy & Slow","Educational & Clear","Masculine & Focused","Spiritual & Ritual"];
-const SOUND_SOURCES = ["Add inside TikTok","Add inside Instagram Reels","Add inside YouTube Shorts","Pre-mixed in video file","No music needed"];
-const MUSIC_STATUSES = ["Not Needed","Needs Music","Music Added","Posted Without Music"];
-
-const PHASE_COLORS  = { Menstrual:"#c4726a", Follicular:"#8fb5a0", Ovulation:"#d4c574", Luteal:"#b08fbe", Men:"#5a7a6a", General:"#b8c9a3" };
-const GROWTH_TAG_COLORS = { "Awareness":"#7ab5d4","Trust Building":"#8fb5a0","Education":"#b8c9a3","App Feature Promotion":"#d4a574","Premium Teaser":"#b08fbe","Conversion Focused":"#c4726a","Community Building":"#d4c574" };
-const STATUS_COLORS = { "Idea":"#b8c9a3","Draft":"#d4a574","Ready for Asset Creation":"#8fb5a0","Assets Created":"#7a9e8a","Video Created":"#6b8f7a","Needs Review":"#e8c5a0","Approved":"#5a8a6a","Scheduled":"#4a7a5a","Posted":"#3a6a4a","Analytics Reviewed":"#2d5a3d","Repurpose Later":"#c4a882" };
-const MUSIC_STATUS_COLORS = { "Not Needed":"#b8c9a3","Needs Music":"#e8a060","Music Added":"#5a8a6a","Posted Without Music":"#c4726a" };
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SOUND PROFILE INTELLIGENCE  (per growth tag)
-// ─────────────────────────────────────────────────────────────────────────────
-const SOUND_PROFILES = {
-  "Awareness":             { mood:"Energising & Uplifting",   type:"Trending Sound",         terms:["morning energy","viral wellness","female empowerment","trending wellness 2025"], addWhere:"Add inside TikTok",            voiceover:false, note:"Trending audio maximises discovery reach on TikTok." },
-  "Trust Building":        { mood:"Soft Feminine Wellness",    type:"Calm Instrumental",       terms:["soft wellness","gentle feminine","cycle sync sound","morning reset audio"],    addWhere:"Add inside TikTok",            voiceover:true,  note:"Calm instrumental under voiceover builds intimacy and saves." },
-  "Education":             { mood:"Educational & Clear",       type:"Soft Background Music",   terms:["calm study music","soft piano wellness","background wellness audio"],           addWhere:"Add inside TikTok",            voiceover:true,  note:"Keep music very quiet so the voiceover educates clearly." },
-  "App Feature Promotion": { mood:"Energising & Uplifting",   type:"Commercial-Safe Music",   terms:["app promo music","clean tech beat","modern wellness audio","brand safe"],       addWhere:"Add inside TikTok",            voiceover:true,  note:"Commercial-safe avoids copyright flags on branded content." },
-  "Premium Teaser":        { mood:"Dreamy & Slow",             type:"Calm Instrumental",       terms:["luxury wellness audio","elevated feminine","premium calm","aspirational soft"], addWhere:"Add inside Instagram Reels",   voiceover:true,  note:"Aspirational, soft, elevated feel. Suggests the premium tier." },
-  "Conversion Focused":    { mood:"Motivating & Bold",         type:"Trending Sound",          terms:["motivational trending","call to action sound","uplift moment","bold feminine"], addWhere:"Add inside TikTok",            voiceover:false, note:"Trending audio on conversion posts expands reach right when you need clicks." },
-  "Community Building":    { mood:"Soft Feminine Wellness",    type:"Original Audio",          terms:["authentic voiceover","real voice wellness","community feel audio"],             addWhere:"Add inside TikTok",            voiceover:true,  note:"Your own voice builds the most community trust. Skip music or keep it very light." },
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MOCK DATA
-// ─────────────────────────────────────────────────────────────────────────────
-const INITIAL_TOPICS = [
-  { id:1,  title:"Seed Cycling for Follicular Phase Energy",       pillar:"Cycle Education", audience:"Women", phase:"Follicular", platforms:["Instagram","Pinterest"],          status:"Posted",         priority:"High",   created:"2025-01-10", notes:"Very popular — include flaxseeds & pumpkin seeds", source:"Research",           growthTags:["Education","Trust Building"] },
-  { id:2,  title:"Gentle Fasting During Your Luteal Phase",        pillar:"Fasting",         audience:"Women", phase:"Luteal",     platforms:["TikTok","Instagram"],             status:"Approved",       priority:"High",   created:"2025-01-11", notes:"Be gentle, mention body cues",                    source:"Community Question", growthTags:["Education","Trust Building"] },
-  { id:3,  title:"Men's 16:8 Intermittent Fasting Guide",          pillar:"Men",             audience:"Men",   phase:"Men",        platforms:["TikTok","Instagram","Pinterest"], status:"Needs Review",   priority:"High",   created:"2025-01-12", notes:"Strong men's content needed",                     source:"Brand Strategy",     growthTags:["Awareness","Education"] },
-  { id:4,  title:"Ovulation Phase Workout Energy Boost",           pillar:"Workouts",        audience:"Women", phase:"Ovulation",  platforms:["TikTok","Instagram"],             status:"Scheduled",      priority:"Medium", created:"2025-01-13", notes:"High energy, peak phase",                         source:"Content Plan",       growthTags:["Awareness","Community Building"] },
-  { id:5,  title:"Nourishing Menstrual Phase Meal Ideas",          pillar:"Food",            audience:"Women", phase:"Menstrual",  platforms:["Pinterest","Instagram"],          status:"Draft",          priority:"Medium", created:"2025-01-14", notes:"Warm, nourishing, iron-rich",                     source:"Community Request",  growthTags:["Education","Trust Building"] },
-  { id:6,  title:"App Feature: Cycle Tracking Tutorial",           pillar:"App Features",    audience:"Both",  phase:"General",   platforms:["TikTok","YouTube Shorts","Instagram"], status:"Idea",      priority:"High",   created:"2025-01-15", notes:"Show app UI walkthrough",                         source:"Marketing",          growthTags:["App Feature Promotion","Conversion Focused"] },
-  { id:7,  title:"New Moon Reset Ritual for Women",                pillar:"Moon & Rituals",  audience:"Women", phase:"Menstrual",  platforms:["Pinterest","Instagram"],          status:"Repurpose Later",priority:"Low",    created:"2025-01-16", notes:"Beautiful aesthetic potential",                   source:"Trend Research",     growthTags:["Community Building","Trust Building"] },
-  { id:8,  title:"Why Fasting Feels Harder Before Your Period",    pillar:"Fasting",         audience:"Women", phase:"Luteal",     platforms:["TikTok","Instagram"],             status:"Posted",         priority:"High",   created:"2025-01-05", notes:"Top performer — repurpose",                       source:"Community",          growthTags:["Education","Trust Building","Awareness"] },
-  { id:9,  title:"Unlock Premium: Advanced Cycle Reports",         pillar:"App Features",    audience:"Women", phase:"General",   platforms:["Instagram","TikTok"],              status:"Idea",           priority:"High",   created:"2025-01-17", notes:"Soft premium tease — show the value",             source:"Marketing",          growthTags:["Premium Teaser","Conversion Focused"] },
-  { id:10, title:"How Men Can Sync Their Energy to Weekly Rhythms",pillar:"Men",             audience:"Men",   phase:"Men",        platforms:["TikTok","Pinterest"],             status:"Draft",          priority:"High",   created:"2025-01-18", notes:"Energy mapping concept, relatable",               source:"Research",           growthTags:["Awareness","Education","Community Building"] },
-];
-
-const INITIAL_PACKAGES = [
-  { id:1, topicId:1, title:"Seed Cycling for Follicular Phase", pillar:"Cycle Education", audience:"Women", phase:"Follicular", platforms:["Instagram","Pinterest"], status:"Posted", scheduledDate:"2025-01-14", postedDate:"2025-01-14",
-    caption:"Your follicular phase is calling for seeds 💚 Flaxseeds and pumpkin seeds support your body's natural rhythm. Sync your snacks with your cycle and feel the difference. Link in bio to learn more 💚",
-    hashtags:"#cyclesyncing #follicularphase #seedcycling #hormonalhealth #cycleaware #lumenflo", cta:"Download the app — link in bio 💚", growthTags:["Education","Trust Building"],
-    analytics:{ views:18400, likes:1240, saves:2100, shares:380, comments:94, profileVisits:640, linkInBioClicks:312, appStoreClicks:88, reach:21000, followersGained:142 }},
-  { id:2, topicId:8, title:"Why Fasting Feels Harder Before Your Period", pillar:"Fasting", audience:"Women", phase:"Luteal", platforms:["TikTok","Instagram"], status:"Posted", scheduledDate:"2025-01-10", postedDate:"2025-01-10",
-    caption:"Nobody told me fasting would feel almost impossible the week before my period 💚 Your luteal phase means higher progesterone, rising cortisol, and more cravings. Your body is asking for more — listen to it. If you feel weak, dizzy, or shaky, break your fast. Always. Link in bio for the full breakdown 💚",
-    hashtags:"#lutealphase #intermittentfasting #cycleaware #hormonehealth #lumenflo #fastingwomen", cta:"Full guide — link in bio 💚", growthTags:["Education","Trust Building","Awareness"],
-    analytics:{ views:34200, likes:2800, saves:5300, shares:1100, comments:287, profileVisits:1420, linkInBioClicks:680, appStoreClicks:194, reach:40000, followersGained:389 }},
-  { id:3, topicId:3, title:"Men's 16:8 Fasting Guide", pillar:"Men", audience:"Men", phase:"Men", platforms:["TikTok","Instagram","Pinterest"], status:"Needs Review", scheduledDate:"2025-01-22", postedDate:null,
-    caption:"Men — your fasting approach doesn't need to be complicated 💚 16:8 is a clean, effective window that works with your natural rhythm. Start simple, stay consistent. Link in bio for more 💚",
-    hashtags:"#menshealthfasting #intermittentfasting #mens16 #lumenflo #menshealthtips", cta:"Learn more — link in bio 💚", growthTags:["Awareness","Education"], analytics:null },
-  { id:4, topicId:2, title:"Gentle Fasting in Luteal Phase", pillar:"Fasting", audience:"Women", phase:"Luteal", platforms:["TikTok","Instagram"], status:"Approved", scheduledDate:"2025-01-23", postedDate:null,
-    caption:"Fasting during your luteal phase doesn't have to be all or nothing 💚 Your body is working hard this week. Be gentle with yourself. If you feel weak, dizzy, or shaky — break your fast. Always. Link in bio 💚",
-    hashtags:"#lutealphase #intermittentfasting #cycleaware #hormonehealth #lumenflo", cta:"Full guide — link in bio 💚", growthTags:["Education","Trust Building"], analytics:null },
-];
-
-const INITIAL_VIDEO_QUEUE = [
-  { id:1, topic:"Gentle Fasting in Luteal Phase", phase:"Luteal", platform:"TikTok", status:"Approved", concept:"Soft voiceover on why the luteal phase calls for gentler fasting windows", growthTag:"Trust Building",
-    music:{ mood:"Soft Feminine Wellness", recommendedType:"Calm Instrumental", searchTerms:["soft wellness","gentle feminine","cycle sync","morning reset"], addWhere:"Add inside TikTok", useVoiceover:true, musicStatus:"Needs Music", addMusicLater:true, musicAdded:false, soundUsed:"", audioSource:"Calm Instrumental", soundNotes:"Keep it very quiet under voiceover", performanceNotes:"" }},
-  { id:2, topic:"Men's 16:8 Fasting Guide", phase:"Men", platform:"TikTok", status:"Needs Review", concept:"Clean practical breakdown of 16:8 for men", growthTag:"Awareness",
-    music:{ mood:"Masculine & Focused", recommendedType:"Commercial-Safe Music", searchTerms:["clean male wellness","focused energy beat","masculine calm"], addWhere:"Add inside TikTok", useVoiceover:true, musicStatus:"Needs Music", addMusicLater:true, musicAdded:false, soundUsed:"", audioSource:"Commercial-Safe Music", soundNotes:"Clean direct beat — not feminine", performanceNotes:"" }},
-  { id:3, topic:"Ovulation Phase Energy Boost", phase:"Ovulation", platform:"YouTube Shorts", status:"Generating", concept:"High energy ovulation phase workout clips with on-screen text", growthTag:"Community Building",
-    music:{ mood:"Energising & Uplifting", recommendedType:"Trending Sound", searchTerms:["morning energy","viral wellness","female empowerment","trending 2025"], addWhere:"Add inside YouTube Shorts", useVoiceover:false, musicStatus:"Needs Music", addMusicLater:true, musicAdded:false, soundUsed:"", audioSource:"Trending Sound", soundNotes:"Search trending wellness audio directly in YouTube Shorts", performanceNotes:"" }},
-  { id:4, topic:"Seed Cycling Benefits", phase:"Follicular", platform:"TikTok", status:"Waiting", concept:"Educational explainer with gentle background visuals", growthTag:"Education",
-    music:{ mood:"Educational & Clear", recommendedType:"Soft Background Music", searchTerms:["calm study music","soft piano wellness","background wellness audio"], addWhere:"Add inside TikTok", useVoiceover:true, musicStatus:"Not Needed", addMusicLater:false, musicAdded:false, soundUsed:"", audioSource:"Soft Background Music", soundNotes:"Very light, almost inaudible background", performanceNotes:"" }},
-  { id:5, topic:"App Feature: Advanced Reports", phase:"General", platform:"TikTok", status:"Waiting", concept:"Quick app walkthrough — Premium teaser style", growthTag:"Premium Teaser",
-    music:{ mood:"Dreamy & Slow", recommendedType:"Calm Instrumental", searchTerms:["luxury wellness","elevated feminine","premium calm","aspirational audio"], addWhere:"Add inside TikTok", useVoiceover:true, musicStatus:"Needs Music", addMusicLater:true, musicAdded:false, soundUsed:"", audioSource:"Calm Instrumental", soundNotes:"Aspirational feel — soft and elevated, not upbeat", performanceNotes:"" }},
-  { id:6, topic:"New Moon Reset Ritual", phase:"Menstrual", platform:"TikTok", status:"Failed", concept:"Slow calming visual with moon imagery and journaling prompts", growthTag:"Trust Building",
-    music:{ mood:"Spiritual & Ritual", recommendedType:"Calm Instrumental", searchTerms:["moon ritual audio","spiritual wellness","night calm feminine","ritual sound"], addWhere:"Add inside TikTok", useVoiceover:false, musicStatus:"Needs Music", addMusicLater:true, musicAdded:false, soundUsed:"", audioSource:"Calm Instrumental", soundNotes:"Atmospheric, slow, almost no beat", performanceNotes:"" }},
-];
-
-const WEEKLY_SCHEDULE = {
-  "Mon Jan 20":[{ id:2, platform:"Instagram", title:"Why Fasting Feels Harder Before Your Period", phase:"Luteal", status:"Posted", growthTag:"Trust Building" }],
-  "Tue Jan 21":[{ id:1, platform:"Pinterest", title:"Seed Cycling for Follicular Phase", phase:"Follicular", status:"Posted", growthTag:"Education" }],
-  "Wed Jan 22":[{ id:3, platform:"TikTok", title:"Men's 16:8 Fasting Guide", phase:"Men", status:"Needs Review", growthTag:"Awareness" }],
-  "Thu Jan 23":[{ id:4, platform:"Instagram", title:"Gentle Fasting in Luteal Phase", phase:"Luteal", status:"Approved", growthTag:"Education" }],
-  "Fri Jan 24":[], "Sat Jan 25":[], "Sun Jan 26":[],
-};
-
-const PLATFORM_GROWTH = [
-  { platform:"TikTok",    followers:"+389", reach:"40K", saves:"5.3K", clicks:"680", appClicks:"194", score:94 },
-  { platform:"Pinterest", followers:"+142", reach:"21K", saves:"2.1K", clicks:"312", appClicks:"88",  score:78 },
-  { platform:"Instagram", followers:"+203", reach:"18K", saves:"1.8K", clicks:"240", appClicks:"61",  score:72 },
-  { platform:"YouTube",   followers:"+44",  reach:"6K",  saves:"380",  clicks:"88",  appClicks:"22",  score:41 },
-];
-
-const TOP_POSTS = [
-  { title:"Why Fasting Feels Harder Before Your Period", platform:"TikTok",   phase:"Luteal",     views:"34.2K", saves:"5.3K", appClicks:194, followersGained:389, growthTag:"Trust Building", score:94 },
-  { title:"Seed Cycling for Follicular Phase Energy",    platform:"Pinterest", phase:"Follicular", views:"18.4K", saves:"2.1K", appClicks:88,  followersGained:142, growthTag:"Education",      score:78 },
-  { title:"Men's Energy & Weekly Rhythm Guide",          platform:"TikTok",   phase:"Men",        views:"12.1K", saves:"1.4K", appClicks:64,  followersGained:98,  growthTag:"Awareness",      score:66 },
-];
-
-const GROWTH_RECS = [
-  { type:"repeat",  icon:"🔁", msg:"Luteal phase fasting content is your top performer. Create 3 more posts with the same structure — relatable hook, gentle education, safety reminder.", tag:"Trust Building",       action:"Create Similar" },
-  { type:"insight", icon:"📌", msg:"Pinterest is driving more link-in-bio clicks than Instagram this week. Prioritise Pinterest pins for app feature promotions.",                         tag:"App Feature Promotion", action:"Add Pinterest Post" },
-  { type:"men",     icon:"👥", msg:"Men's fasting content is gaining traction. Schedule another men's post this week to build that audience segment.",                                     tag:"Awareness",             action:"Schedule Men's Post" },
-  { type:"convert", icon:"💜", msg:"Cycle education posts build strong trust but you have no Premium teasers live this week. Add one Premium teaser to convert that trust into downloads.", tag:"Premium Teaser",         action:"Create Premium Teaser" },
-  { type:"gap",     icon:"⚠️", msg:"App feature posts are missing from this week. App feature content drives the highest app store clicks per impression.",                               tag:"Conversion Focused",    action:"Add App Feature Post" },
-  { type:"hook",    icon:"🎯", msg:"TikTok hooks starting with 'Nobody told me…' are outperforming all others. Reuse that hook structure in your next 2 videos.",                        tag:"Awareness",             action:"Note for Generator" },
-  { type:"sound",   icon:"🎵", msg:"Videos with calm instrumental backgrounds are earning 2× more saves than silent posts. Check your music queue and ensure no video posts silent.",    tag:"Trust Building",        action:"Open Sound Queue" },
-  { type:"retire",  icon:"📉", msg:"General lifestyle posts are getting the lowest saves and zero app clicks. Consider retiring or rethinking this pillar.",                              tag:"Education",             action:"Review Topics" },
-];
-
-const MORNING_BRIEFING = {
-  readyToPost:[
-    { id:2, title:"Why Fasting Feels Harder Before Your Period", platform:"TikTok",   phase:"Luteal",     growthTag:"Trust Building", scheduledTime:"9:00 AM",  musicStatus:"Needs Music",  hasCaption:true, hasAsset:true },
-    { id:1, title:"Seed Cycling for Follicular Phase",           platform:"Pinterest", phase:"Follicular", growthTag:"Education",      scheduledTime:"11:00 AM", musicStatus:"Not Needed",   hasCaption:true, hasAsset:true },
-  ],
-  needsAttention:[
-    { type:"approval", msg:"Men's 16:8 Fasting Guide is waiting for your approval",       urgency:"high" },
-    { type:"music",    msg:"TikTok for Luteal Fasting needs music before posting",         urgency:"medium" },
-    { type:"gap",      msg:"No Premium Teaser is scheduled this week",                     urgency:"medium" },
-    { type:"men",      msg:"Only 1 men's post scheduled this week — your minimum is 2",    urgency:"high" },
-  ],
-  strategyNote:"This week's focus is Trust Building and Education. Your luteal phase fasting content is your strongest trust signal — post it first thing. Follow up Thursday with an App Feature post to capture the conversion while trust is warm.",
-  nextDirection:"After this week, shift 30% of content toward Premium Teasers and Conversion posts. Your trust bank is full — time to convert it.",
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ICONS
-// ─────────────────────────────────────────────────────────────────────────────
-const I = ({ n, s=18, c="currentColor" }) => {
-  const m = {
-    dash:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
-    growth:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
-    lib:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>,
-    cal:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
-    pkg:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>,
-    asset:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
-    ai:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
-    vid:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>,
-    approve:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
-    analytics:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
-    brand:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>,
-    settings:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
-    plus:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
-    check:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
-    x:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
-    edit:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
-    refresh:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>,
-    search:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
-    eye:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
-    warn:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
-    star:<svg width={s} height={s} viewBox="0 0 24 24" fill={c} stroke={c} strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
-    repurpose:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>,
-    moon:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>,
-    upload:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>,
-    crown:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h20"/><path d="M4 20L2 8l6 4 4-7 4 7 6-4-2 12"/></svg>,
-    target:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
-    link:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>,
-    phone:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>,
-    users:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
-    save:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>,
-    music:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
-    copy:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>,
-    brief:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
-    post:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
-    download:<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
-  };
-  return m[n] || null;
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SHARED ATOMS
-// ─────────────────────────────────────────────────────────────────────────────
-const Tag = ({ label, color, size="sm" }) => (
-  <span style={{ display:"inline-flex", alignItems:"center", padding:size==="sm"?"2px 9px":"4px 13px", borderRadius:20, fontSize:size==="sm"?10:12, fontWeight:600, fontFamily:"'Jost',sans-serif", letterSpacing:"0.03em", background:`${color}22`, color, border:`1px solid ${color}44`, whiteSpace:"nowrap" }}>{label}</span>
-);
-const GrowthTagBadge = ({ tag }) => <Tag label={tag} color={GROWTH_TAG_COLORS[tag]||"#8fb5a0"}/>;
-const PhaseDot = ({ phase, size=10 }) => <span style={{ width:size, height:size, borderRadius:"50%", background:PHASE_COLORS[phase]||"#b8c9a3", display:"inline-block", flexShrink:0 }}/>;
-const Card = ({ children, style={} }) => <div style={{ background:"#faf7f2", borderRadius:16, border:"1px solid #e8e0d0", ...style }}>{children}</div>;
-const SectionHead = ({ title, sub }) => (
-  <div style={{ marginBottom:22 }}>
-    <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:26, fontWeight:600, color:"#2d4a3a", letterSpacing:"0.02em" }}>{title}</h2>
-    {sub && <p style={{ fontFamily:"'Jost',sans-serif", fontSize:13, color:"#7a8a7a", marginTop:3 }}>{sub}</p>}
-  </div>
-);
-const Btn = ({ children, variant="primary", onClick, style={}, disabled=false }) => {
-  const base = { cursor:disabled?"default":"pointer", border:"none", fontFamily:"'Jost',sans-serif", fontSize:13, fontWeight:500, borderRadius:10, display:"inline-flex", alignItems:"center", gap:6, transition:"all 0.18s", opacity:disabled?0.5:1, ...style };
-  const vars = { primary:{ background:"linear-gradient(135deg,#5a8a6a,#3a6a4a)", color:"white", padding:"10px 20px" }, ghost:{ background:"#f0ebe0", color:"#3a5a4a", padding:"10px 16px" }, danger:{ background:"#fdf0e8", color:"#c4726a", padding:"10px 16px" }, purple:{ background:"linear-gradient(135deg,#9a6ab8,#7a4a98)", color:"white", padding:"10px 20px" }, sm:{ background:"#f0ebe0", color:"#3a5a4a", padding:"6px 12px", fontSize:11, borderRadius:8 }, teal:{ background:"linear-gradient(135deg,#4a8a9a,#2a6a7a)", color:"white", padding:"10px 18px" } };
-  return <button style={{ ...base, ...(vars[variant]||vars.primary) }} onClick={disabled?undefined:onClick}>{children}</button>;
-};
-const ScoreBar = ({ score, color="#5a8a6a", height=6 }) => (
-  <div style={{ height, background:"#f0ebe0", borderRadius:height/2, overflow:"hidden" }}>
-    <div style={{ height:"100%", width:`${score}%`, background:`linear-gradient(90deg,${color},${color}aa)`, borderRadius:height/2, transition:"width 0.6s ease" }}/>
-  </div>
-);
-const Toggle = ({ on, onChange }) => (
-  <button onClick={()=>onChange(!on)} style={{ width:42, height:23, borderRadius:12, background:on?"#5a8a6a":"#d0c8b8", position:"relative", border:"none", cursor:"pointer", transition:"background 0.2s", flexShrink:0 }}>
-    <div style={{ width:17, height:17, borderRadius:"50%", background:"white", position:"absolute", top:3, left:on?22:3, transition:"left 0.2s", boxShadow:"0 1px 3px rgba(0,0,0,0.15)" }}/>
-  </button>
-);
-const Label = ({ children }) => <label style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#5a6a5a", display:"block", marginBottom:5 }}>{children}</label>;
-const Input = ({ value, onChange, placeholder, style={} }) => <input value={value} onChange={onChange} placeholder={placeholder} className="inp" style={style}/>;
-const Select = ({ value, onChange, options, style={} }) => (
-  <select value={value} onChange={onChange} className="inp" style={{ cursor:"pointer", ...style }}>
-    {options.map(o=><option key={o}>{o}</option>)}
-  </select>
-);
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN APP
-// ─────────────────────────────────────────────────────────────────────────────
-export default function LumenFlow() {
-  const [page, setPage]           = useState("briefing");
-  const [topics, setTopics]       = useState(INITIAL_TOPICS);
-  const [packages, setPackages]   = useState(INITIAL_PACKAGES);
-  const [videoQueue, setVideoQueue] = useState(INITIAL_VIDEO_QUEUE);
-  const [sideOpen, setSideOpen]   = useState(true);
-  const [selTopic, setSelTopic]   = useState(null);
-  const [selPkg, setSelPkg]       = useState(null);
-  const [selVideo, setSelVideo]   = useState(null);
-  const [analyticsTab, setAnalyticsTab] = useState("growth");
-  const [calView, setCalView]     = useState("week");
-  const [fPhase, setFPhase]       = useState("All");
-  const [fPillar, setFPillar]     = useState("All");
-  const [searchQ, setSearchQ]     = useState("");
-  const [showAddTopic, setShowAddTopic] = useState(false);
-
-  const pending = packages.filter(p=>p.status==="Needs Review").length;
-  const needsMusic = videoQueue.filter(v=>v.music.musicStatus==="Needs Music").length;
-  const hasMens = Object.values(WEEKLY_SCHEDULE).flat().some(p=>p.phase==="Men");
-
-  const NAV = [
-    { id:"briefing",  label:"Morning Briefing", icon:"brief",    badge:0 },
-    { id:"dashboard", label:"Dashboard",         icon:"dash",     badge:0 },
-    { id:"growth",    label:"Growth Intelligence",icon:"growth",  badge:0 },
-    { id:"topics",    label:"Topic Library",      icon:"lib",     badge:0 },
-    { id:"calendar",  label:"Content Calendar",   icon:"cal",     badge:0 },
-    { id:"packages",  label:"Content Packages",   icon:"pkg",     badge:0 },
-    { id:"assets",    label:"Asset Library",       icon:"asset",  badge:0 },
-    { id:"generator", label:"AI Generator",        icon:"ai",     badge:0 },
-    { id:"video-queue",label:"Video Queue",        icon:"vid",    badge:needsMusic },
-    { id:"sound",     label:"Sound Intelligence",  icon:"music",  badge:needsMusic },
-    { id:"post-now",  label:"Post From Phone",     icon:"post",   badge:0 },
-    { id:"approvals", label:"Approvals",            icon:"approve",badge:pending },
-    { id:"analytics", label:"Analytics",           icon:"analytics",badge:0 },
-    { id:"brand",     label:"Brand Rules",         icon:"brand",  badge:0 },
-    { id:"posting",   label:"Posting Settings",    icon:"settings",badge:0 },
-  ];
-
-  return (
-    <div style={{ display:"flex", minHeight:"100vh", background:"#f5f0e8", fontFamily:"'Cormorant Garamond','Palatino Linotype',Georgia,serif" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Jost:wght@300;400;500;600;700&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0}
-        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#f0ebe0}::-webkit-scrollbar-thumb{background:#b8c9a3;border-radius:3px}
-        .nav-item{cursor:pointer;transition:all 0.2s}.nav-item:hover{background:rgba(143,181,160,0.15)!important}.nav-item.active{background:rgba(143,181,160,0.22)!important}
-        button{cursor:pointer;transition:all 0.18s ease}button:hover{opacity:0.88;transform:translateY(-1px)}button:active{transform:translateY(0)}
-        .ch{transition:all 0.2s}.ch:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(90,138,106,0.12)}
-        .inp{font-family:'Jost',sans-serif;background:#faf7f2;border:1px solid #d8cfc0;border-radius:8px;padding:9px 13px;font-size:13px;color:#3a4a3a;outline:none;transition:border-color 0.2s;width:100%}.inp:focus{border-color:#8fb5a0}
-        textarea.inp{resize:vertical;min-height:72px}
-        .overlay{position:fixed;inset:0;background:rgba(30,50,40,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px)}
-        .modal{background:#faf7f2;border-radius:22px;padding:36px;max-width:680px;width:92%;max-height:88vh;overflow-y:auto;box-shadow:0 28px 80px rgba(30,50,40,0.2)}
-        .modal-wide{max-width:820px}
-        .tr:hover{background:rgba(143,181,160,0.07)}
-        .pulse{animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-        .fade{animation:fade 0.3s ease}@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-        .tab-pill{cursor:pointer;padding:7px 16px;border-radius:20px;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;border:none;transition:all 0.18s}
-        .cb-label{display:flex;align-items:center;gap:8px;cursor:pointer;font-family:'Jost',sans-serif;font-size:12px;color:#3a5a4a}
-        input[type=checkbox]{width:15px;height:15px;accent-color:#5a8a6a;cursor:pointer}
-        .phone-card{background:white;border-radius:18px;border:2px solid #e8e0d0;padding:20px;margin-bottom:12px;max-width:400px}
-        .music-warn{background:#fff8f0;border:1px solid #e8c080;border-radius:10px;padding:10px 14px;display:flex;gap:8px;align-items:flex-start;margin-top:8px}
-      `}</style>
-
-      {/* SIDEBAR */}
-      <aside style={{ width:sideOpen?252:64, minHeight:"100vh", background:"linear-gradient(180deg,#2d4a3a 0%,#1e3329 100%)", transition:"width 0.3s", overflow:"hidden", flexShrink:0, display:"flex", flexDirection:"column", position:"sticky", top:0, height:"100vh" }}>
-        <div style={{ padding:"24px 16px 20px", borderBottom:"1px solid rgba(143,181,160,0.2)", display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:34, height:34, borderRadius:"50%", background:"linear-gradient(135deg,#8fb5a0,#5a8a6a)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:17 }}>💚</div>
-          {sideOpen && <div>
-            <div style={{ color:"#e8f0e8", fontFamily:"'Cormorant Garamond',serif", fontSize:17, fontWeight:600, letterSpacing:"0.04em", lineHeight:1.2 }}>Lumen Flow</div>
-            <div style={{ color:"rgba(184,201,163,0.6)", fontFamily:"'Jost',sans-serif", fontSize:8, fontWeight:600, letterSpacing:"0.18em", textTransform:"uppercase", marginTop:1 }}>Marketing Command Center</div>
-          </div>}
-        </div>
-        <nav style={{ flex:1, padding:"12px 0", overflowY:"auto" }}>
-          {NAV.map(item=>(
-            <div key={item.id} className={`nav-item ${page===item.id?"active":""}`} onClick={()=>setPage(item.id)}
-              style={{ display:"flex", alignItems:"center", gap:11, padding:"9px 16px", color:page===item.id?"#b8e0c8":"rgba(200,220,200,0.62)", borderRadius:"0 22px 22px 0", marginRight:10 }}>
-              <div style={{ flexShrink:0 }}><I n={item.icon} s={14} c="currentColor"/></div>
-              {sideOpen && <span style={{ fontFamily:"'Jost',sans-serif", fontSize:12, fontWeight:page===item.id?600:400, whiteSpace:"nowrap" }}>{item.label}</span>}
-              {item.badge>0 && <span style={{ marginLeft:"auto", background:"#c4726a", color:"white", borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontFamily:"'Jost',sans-serif", fontWeight:700, flexShrink:0 }}>{item.badge}</span>}
-            </div>
-          ))}
-        </nav>
-        <div style={{ padding:"12px 16px", borderTop:"1px solid rgba(143,181,160,0.14)" }}>
-          <button onClick={()=>setSideOpen(!sideOpen)} style={{ background:"rgba(143,181,160,0.12)", border:"none", borderRadius:8, padding:"7px 10px", color:"rgba(200,220,200,0.65)", fontSize:12, fontFamily:"'Jost',sans-serif", width:"100%", display:"flex", alignItems:"center", justifyContent:sideOpen?"flex-start":"center", gap:7 }}>
-            <span style={{ transform:sideOpen?"none":"rotate(180deg)", display:"inline-block", transition:"transform 0.3s" }}>←</span>
-            {sideOpen && <span>Collapse</span>}
-          </button>
-        </div>
-      </aside>
-
-      {/* MAIN */}
-      <main style={{ flex:1, overflow:"auto", minWidth:0 }}>
-        <div style={{ background:"#faf7f2", borderBottom:"1px solid #e8e0d0", padding:"13px 30px", display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:100 }}>
-          <div>
-            <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:21, fontWeight:600, color:"#2d4a3a" }}>{NAV.find(n=>n.id===page)?.label}</h1>
-            <p style={{ fontFamily:"'Jost',sans-serif", fontSize:10.5, color:"#8a9a8a", marginTop:1 }}>{new Date().toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}</p>
-          </div>
-          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            {needsMusic>0 && (
-              <div style={{ background:"#fff8f0", border:"1px solid #e8c080", borderRadius:10, padding:"5px 12px", display:"flex", alignItems:"center", gap:6, cursor:"pointer" }} onClick={()=>setPage("sound")}>
-                <I n="music" s={12} c="#c08040"/><span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#8a5020" }}>{needsMusic} videos need music</span>
-              </div>
-            )}
-            {!hasMens && (
-              <div style={{ background:"#fdf0e8", border:"1px solid #e8c8a0", borderRadius:10, padding:"5px 12px", display:"flex", alignItems:"center", gap:6 }}>
-                <I n="warn" s={12} c="#c4726a"/><span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#8a4a3a" }}>No men's content this week</span>
-              </div>
-            )}
-            <div style={{ width:32, height:32, borderRadius:"50%", background:"linear-gradient(135deg,#8fb5a0,#5a8a6a)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15 }}>💚</div>
-          </div>
-        </div>
-
-        <div style={{ padding:"28px 30px" }}>
-          {page==="briefing"    && <BriefingPage setPage={setPage} packages={packages} videoQueue={videoQueue}/>}
-          {page==="dashboard"   && <DashboardPage topics={topics} packages={packages} setPage={setPage} hasMens={hasMens}/>}
-          {page==="growth"      && <GrowthPage packages={packages} topics={topics} setPage={setPage}/>}
-          {page==="topics"      && <TopicsPage topics={topics} setTopics={setTopics} fPhase={fPhase} setFPhase={setFPhase} fPillar={fPillar} setFPillar={setFPillar} searchQ={searchQ} setSearchQ={setSearchQ} selTopic={selTopic} setSelTopic={setSelTopic} showAdd={showAddTopic} setShowAdd={setShowAddTopic}/>}
-          {page==="calendar"    && <CalendarPage calView={calView} setCalView={setCalView} packages={packages}/>}
-          {page==="packages"    && <PackagesPage packages={packages} setPackages={setPackages} topics={topics} selPkg={selPkg} setSelPkg={setSelPkg}/>}
-          {page==="assets"      && <AssetsPage/>}
-          {page==="generator"   && <GeneratorPage topics={topics} setPackages={setPackages}/>}
-          {page==="video-queue" && <VideoQueuePage videoQueue={videoQueue} setVideoQueue={setVideoQueue} selVideo={selVideo} setSelVideo={setSelVideo}/>}
-          {page==="sound"       && <SoundIntelligencePage videoQueue={videoQueue} setVideoQueue={setVideoQueue}/>}
-          {page==="post-now"    && <PostFromPhonePage packages={packages} setPackages={setPackages} videoQueue={videoQueue} setVideoQueue={setVideoQueue}/>}
-          {page==="approvals"   && <ApprovalsPage packages={packages} setPackages={setPackages}/>}
-          {page==="analytics"   && <AnalyticsPage packages={packages} topics={topics} videoQueue={videoQueue} tab={analyticsTab} setTab={setAnalyticsTab}/>}
-          {page==="brand"       && <BrandPage/>}
-          {page==="posting"     && <PostingPage/>}
-        </div>
-      </main>
-    </div>
-  );
+// ─────────────────────────────────────────────
+//  CYCLE LOGIC
+// ─────────────────────────────────────────────
+function getCycleDay(lastPeriod, cycleLength = 28) {
+  if (!lastPeriod) return 1;
+  const start = new Date(lastPeriod);
+  start.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff = Math.floor((today - start) / 86400000);
+  return (diff % cycleLength) + 1;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MORNING BRIEFING  — "your marketing team already did the work"
-// ─────────────────────────────────────────────────────────────────────────────
-function BriefingPage({ setPage, packages, videoQueue }) {
-  const [copied, setCopied] = useState(null);
-  const needsMusicNow = videoQueue.filter(v=>v.music.musicStatus==="Needs Music"&&v.status==="Approved");
-
-  const copy = (text, id) => {
-    navigator.clipboard?.writeText(text).catch(()=>{});
-    setCopied(id); setTimeout(()=>setCopied(null),2000);
-  };
-
-  return (
-    <div className="fade">
-      {/* Hero greeting */}
-      <div style={{ background:"linear-gradient(135deg,#2d4a3a,#1e3329)", borderRadius:20, padding:"28px 32px", marginBottom:22, position:"relative", overflow:"hidden" }}>
-        <div style={{ position:"absolute", right:24, top:16, fontSize:64, opacity:0.07 }}>💚</div>
-        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:13, fontWeight:400, color:"rgba(184,201,163,0.7)", letterSpacing:"0.15em", textTransform:"uppercase", marginBottom:8 }}>Monday · January 20, 2025</div>
-        <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:36, fontWeight:300, color:"#e8f0e8", letterSpacing:"0.03em", marginBottom:10 }}>Good morning 💚</h2>
-        <p style={{ fontFamily:"'Jost',sans-serif", fontSize:14, color:"rgba(184,201,163,0.85)", lineHeight:1.7, maxWidth:600 }}>{MORNING_BRIEFING.strategyNote}</p>
-        <div style={{ marginTop:16, padding:"12px 16px", background:"rgba(143,181,160,0.15)", borderRadius:12, border:"1px solid rgba(143,181,160,0.25)", maxWidth:600 }}>
-          <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"rgba(184,201,163,0.6)", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:5 }}>Next Direction from Your Strategy Team</div>
-          <p style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"rgba(184,201,163,0.9)", lineHeight:1.65 }}>{MORNING_BRIEFING.nextDirection}</p>
-        </div>
-      </div>
-
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:18, marginBottom:18 }}>
-        {/* Ready to post today */}
-        <div>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:600, color:"#2d4a3a", marginBottom:12, display:"flex", alignItems:"center", gap:8 }}>
-            <I n="post" s={16} c="#5a8a6a"/> Ready to Post Today
-          </div>
-          {MORNING_BRIEFING.readyToPost.map((p,i)=>(
-            <Card key={i} style={{ padding:16, marginBottom:10, border:`1px solid ${p.musicStatus==="Needs Music"?"#e8c080":"#e8e0d0"}` }}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8 }}>
-                <div>
-                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:4 }}>{p.title}</div>
-                  <div style={{ display:"flex", gap:6, alignItems:"center" }}>
-                    <PhaseDot phase={p.phase}/>
-                    <span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#5a6a5a" }}>{p.platform} · {p.scheduledTime}</span>
-                    <GrowthTagBadge tag={p.growthTag}/>
-                  </div>
-                </div>
-              </div>
-              {/* Checklist */}
-              <div style={{ display:"flex", gap:12, marginBottom:10, flexWrap:"wrap" }}>
-                {[["Caption ready",p.hasCaption],["Asset ready",p.hasAsset],["Music added",p.musicStatus==="Music Added"||p.musicStatus==="Not Needed"]].map(([l,done])=>(
-                  <div key={l} style={{ display:"flex", alignItems:"center", gap:5 }}>
-                    <div style={{ width:16, height:16, borderRadius:"50%", background:done?"#5a8a6a":"#e8e0d0", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      {done && <I n="check" s={10} c="white"/>}
-                    </div>
-                    <span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:done?"#2d4a3a":"#9a9a90" }}>{l}</span>
-                  </div>
-                ))}
-              </div>
-              {p.musicStatus==="Needs Music" && (
-                <div className="music-warn">
-                  <I n="music" s={13} c="#c08040"/>
-                  <span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#7a5020", lineHeight:1.5 }}>Music recommended before posting. Open Sound Queue to choose your audio. You can post without music but saves may be lower.</span>
-                </div>
-              )}
-              <div style={{ display:"flex", gap:7, marginTop:10 }}>
-                <Btn variant="sm" onClick={()=>setPage("sound")}><I n="music" s={11}/> Sound</Btn>
-                <Btn variant="sm" onClick={()=>setPage("post-now")}><I n="post" s={11}/> Post Now</Btn>
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        {/* Needs attention */}
-        <div>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:600, color:"#2d4a3a", marginBottom:12, display:"flex", alignItems:"center", gap:8 }}>
-            <I n="warn" s={16} c="#c4726a"/> Needs Your Attention
-          </div>
-          {MORNING_BRIEFING.needsAttention.map((a,i)=>(
-            <div key={i} style={{ background: a.urgency==="high"?"#fdf5f0":"#faf7f2", border:`1px solid ${a.urgency==="high"?"#e8c0a0":"#e8e0d0"}`, borderRadius:12, padding:"12px 16px", marginBottom:9, display:"flex", gap:10, alignItems:"flex-start" }}>
-              <div style={{ width:8, height:8, borderRadius:"50%", background:a.urgency==="high"?"#c4726a":"#d4a574", marginTop:5, flexShrink:0 }}/>
-              <div style={{ flex:1 }}>
-                <span style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#3a4a3a", lineHeight:1.55 }}>{a.msg}</span>
-              </div>
-              <Btn variant="sm" onClick={()=>setPage(a.type==="approval"?"approvals":a.type==="music"?"sound":"calendar")}>Fix</Btn>
-            </div>
-          ))}
-
-          {/* This week in one glance */}
-          <Card style={{ padding:18, marginTop:16 }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:17, fontWeight:600, color:"#2d4a3a", marginBottom:12 }}>This Week at a Glance</div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-              {[
-                ["Posts Ready",packages.filter(p=>p.status==="Approved").length,"#5a8a6a"],
-                ["Needs Approval",packages.filter(p=>p.status==="Needs Review").length,"#c4726a"],
-                ["Videos in Queue",INITIAL_VIDEO_QUEUE.length,"#7ab5d4"],
-                ["Need Music",INITIAL_VIDEO_QUEUE.filter(v=>v.music.musicStatus==="Needs Music").length,"#e8a060"],
-              ].map(([l,v,c])=>(
-                <div key={l} style={{ background:`${c}12`, borderRadius:10, padding:12 }}>
-                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:24, fontWeight:600, color:c }}>{v}</div>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a" }}>{l}</div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-      </div>
-
-      {/* Top recommendations strip */}
-      <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:600, color:"#2d4a3a", marginBottom:12, display:"flex", alignItems:"center", gap:8 }}>
-        <I n="target" s={16} c="#8fb5a0"/> Your Strategy Team's Top 3 Recommendations Today
-      </div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12 }}>
-        {GROWTH_RECS.slice(0,3).map((r,i)=>(
-          <div key={i} style={{ background:"#faf7f2", borderRadius:14, border:"1px solid #e8e0d0", padding:18 }}>
-            <div style={{ fontSize:22, marginBottom:8 }}>{r.icon}</div>
-            <GrowthTagBadge tag={r.tag}/>
-            <p style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#2d4a3a", lineHeight:1.65, margin:"8px 0 12px" }}>{r.msg}</p>
-            <Btn variant="sm" onClick={()=>setPage("generator")}>{r.action}</Btn>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+function getPeriodPhase(lastPeriod, periodEnded, cycleLength = 28) {
+  if (!lastPeriod) return null;
+  if (!periodEnded) return "Menstrual";
+  const day = getCycleDay(lastPeriod, cycleLength);
+  return getPhase(day);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SOUND INTELLIGENCE PAGE  — the heart of the new music system
-// ─────────────────────────────────────────────────────────────────────────────
-function SoundIntelligencePage({ videoQueue, setVideoQueue }) {
-  const [activeVideo, setActiveVideo] = useState(null);
-  const [filterStatus, setFilterStatus] = useState("All");
-  const needsMusic = videoQueue.filter(v=>v.music.musicStatus==="Needs Music");
-  const sColors = { "Not Needed":"#b8c9a3","Needs Music":"#e8a060","Music Added":"#5a8a6a","Posted Without Music":"#c4726a" };
 
-  const updateMusic = (id, field, value) => {
-    setVideoQueue(prev=>prev.map(v=>v.id===id?{...v,music:{...v.music,[field]:value}}:v));
-    if(activeVideo?.id===id) setActiveVideo(prev=>({...prev,music:{...prev.music,[field]:value}}));
-  };
+function getPhase(day, periodLength = 7) {
+  if (day <= periodLength)  return "Menstrual";
+  if (day <= periodLength + 8) return "Follicular";
+  if (day <= periodLength + 10) return "Ovulation";
+  return "Luteal";
+}
+const PHASE_INFO = {
+  Menstrual:  { emoji: "🌑", color: "#C97B7B", bg: "#FDEAEA", fast: "12–14h if comfortable — skip fasting if your body needs food", move: "Rest, gentle stretching, slow walks, or restorative movement", energy: "🌙 Low — rest and restore", nourish: "Iron-rich foods, warm soups, dark leafy greens, dark chocolate, warming teas", reflection: "What am I ready to release? What needs rest?" },
+  Follicular: { emoji: "🌒", color: "#7BA8C9", bg: "#EAF2F9", fast: "14–16h if it feels supportive", move: "Light strength, cardio, Pilates, walking, or trying something new", energy: "🌱 Rising — energy is building", nourish: "Protein, fresh vegetables, fruit, fermented foods, light and bright meals", reflection: "What am I ready to grow? What feels exciting right now?" },
+  Ovulation:  { emoji: "🌕", color: "#C9A87B", bg: "#F9F4EA", fast: "14–16h, or up to 18h only if it feels good", move: "Strength, cardio, dance, circuits, or higher-energy movement if it feels good", energy: "⚡ Peak — vibrant and expressive", nourish: "Anti-inflammatory foods, zinc-rich foods, fibre, raw vegetables, smoothies", reflection: "What do I want to share? Who do I want to connect with?" },
+  Luteal:     { emoji: "🌗", color: "#9B7BC9", bg: "#F2EAFA", fast: "12–14h, especially in late luteal — break early if you feel shaky, irritable, or overly hungry", move: "Walking, Pilates, mobility, stretching, or lower intensity movement", energy: "🍂 Grounding — slow and steady", nourish: "Complex carbs, magnesium-rich foods, sweet potato, oats, dark chocolate, warm nourishing meals", reflection: "What needs my attention? What can I simplify?" },
+};
 
-  const filtered = filterStatus==="All" ? videoQueue : videoQueue.filter(v=>v.music.musicStatus===filterStatus);
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+// ─────────────────────────────────────────────
+//  ONBOARDING
+// ─────────────────────────────────────────────
+function Onboarding({ onDone }) {
+  const [step, setStep]       = useState(1);
+  const [name, setName]       = useState("");
+  const [lastPeriod, setLast] = useState("");
+  const [agreed, setAgreed]   = useState(false);
+  const [mode, setMode]       = useState(null);
+  const today = new Date().toISOString().split("T")[0];
 
   return (
-    <div className="fade">
-      <SectionHead title="Sound Intelligence" sub="Manage music direction, tracking, and performance for every video"/>
-
-      {/* Music rule banner */}
-      <div style={{ background:"linear-gradient(135deg,#1e3329,#2d4a3a)", borderRadius:16, padding:"18px 24px", marginBottom:20, display:"flex", gap:18, alignItems:"flex-start" }}>
-        <div style={{ fontSize:28, flexShrink:0 }}>🎵</div>
-        <div style={{ flex:1 }}>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:600, color:"#e8f0e8", marginBottom:6 }}>Sound is a content decision, not an afterthought</div>
-          <p style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"rgba(184,201,163,0.85)", lineHeight:1.7 }}>
-            Lumen Flow does not automatically attach trending songs — music rights and platform rules may restrict that. Instead, this system suggests the <strong style={{ color:"#b8e0c8" }}>right mood, type, and search terms</strong> for each video. You add the sound yourself inside TikTok, Instagram, or YouTube. Then mark it here so we can track what sounds actually grow the brand.
-          </p>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:22 }}>
-        {MUSIC_STATUSES.map(s=>(
-          <div key={s} className="ch" onClick={()=>setFilterStatus(filterStatus===s?"All":s)}
-            style={{ background:filterStatus===s?`${sColors[s]}22`:"#faf7f2", borderRadius:13, padding:16, border:`1.5px solid ${filterStatus===s?sColors[s]:"#e8e0d0"}`, cursor:"pointer" }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:600, color:sColors[s] }}>{videoQueue.filter(v=>v.music.musicStatus===s).length}</div>
-            <div style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#7a8a7a", marginTop:3 }}>{s}</div>
-          </div>
+    <div style={s.screen}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 40 }}>
+        {[1, 2, 3, 4, 5].map(i => (
+          <div key={i} style={{
+            height: 8, borderRadius: 100,
+            background: i <= step ? "#8FAF8F" : "#D9E8D9",
+            width: i === step ? 40 : 16, transition: "width 0.3s",
+          }} />
         ))}
       </div>
 
-      {needsMusic.length>0 && (
-        <div style={{ background:"#fff8f0", border:"1px solid #e8c080", borderRadius:12, padding:"12px 18px", marginBottom:18, display:"flex", gap:10, alignItems:"center" }}>
-          <I n="warn" s={15} c="#c08040"/>
-          <span style={{ fontFamily:"'Jost',sans-serif", fontSize:13, color:"#7a5020" }}><strong>{needsMusic.length} video{needsMusic.length>1?"s":""} need music</strong> before posting. Posting without music may reduce saves by up to 40% for Trust Building and Education content.</span>
+      {step === 1 && (
+        <div style={s.onboardBox}>
+          <div style={{ fontSize: 56, marginBottom: 16 }}>🌿</div>
+          <h1 style={{ fontFamily: "Georgia, serif", fontSize: 24, fontWeight: 400, color: "#2D3B2E", letterSpacing: "0.06em", marginBottom: 4 }}>Lumen Flow</h1>
+          <div style={{ width: 36, height: 1, background: "#C5D9C5", margin: "8px auto 16px" }} />
+          <p style={{ ...s.sub, marginBottom: 32, letterSpacing: "0.04em" }}>Know your body's rhythm.</p>
+          <button style={s.btn} onClick={() => setStep(2)}>Get Started</button>
         </div>
       )}
 
-      <div style={{ display:"grid", gridTemplateColumns: activeVideo?"1fr 1fr":"1fr", gap:18 }}>
-        {/* Video list */}
-        <div>
-          {filtered.map(v=>(
-            <div key={v.id} className="ch" onClick={()=>setActiveVideo(v===activeVideo?null:v)}
-              style={{ background: activeVideo?.id===v.id?"#f0f8f4":"#faf7f2", borderRadius:14, border:`1.5px solid ${activeVideo?.id===v.id?"#5a8a6a":"#e8e0d0"}`, padding:18, marginBottom:10, cursor:"pointer" }}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
-                <div style={{ flex:1 }}>
-                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:4 }}>{v.topic}</div>
-                  <div style={{ display:"flex", gap:7, alignItems:"center", flexWrap:"wrap" }}>
-                    <span style={{ padding:"2px 8px", borderRadius:10, fontSize:10, fontFamily:"'Jost',sans-serif", fontWeight:700, background:"#e8f0e8", color:"#3a5a4a" }}>{v.platform}</span>
-                    <PhaseDot phase={v.phase}/>
-                    <GrowthTagBadge tag={v.growthTag}/>
-                  </div>
-                </div>
-                <Tag label={v.music.musicStatus} color={sColors[v.music.musicStatus]||"#b8c9a3"}/>
+      {step === 2 && (
+        <div style={s.onboardBox}>
+          <div style={{ fontSize: 36, marginBottom: 16 }}>✨</div>
+          <h2 style={s.heading}>How would you like<br />to use Lumen Flow?</h2>
+          <div style={{ width: 36, height: 1, background: "#C5D9C5", margin: "8px auto 20px" }} />
+          <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+            <button onClick={() => { setMode("cycle"); setStep(3); }} style={{ width: "100%", padding: "16px 18px", borderRadius: 18, border: "0.5px solid #dce8dc", background: "#fff", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 20 }}>🌸</span>
+              <div>
+                <div style={{ fontFamily: "sans-serif", fontSize: 14, fontWeight: 600, color: "#2D3B2E" }}>I track a cycle</div>
+                <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", marginTop: 2 }}>Phase-synced fasting + cycle tracking</div>
               </div>
-
-              {/* Sound profile summary */}
-              <div style={{ background:"#f5f0e8", borderRadius:10, padding:12, marginBottom:10 }}>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
-                  <div>
-                    <div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#8a9a8a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:3 }}>Mood</div>
-                    <div style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#2d4a3a", fontWeight:500 }}>{v.music.mood}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#8a9a8a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:3 }}>Sound Type</div>
-                    <div style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#2d4a3a", fontWeight:500 }}>{v.music.recommendedType}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#8a9a8a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:3 }}>Add Where</div>
-                    <div style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#2d4a3a", fontWeight:500 }}>{v.music.addWhere}</div>
-                  </div>
-                </div>
-                <div style={{ marginTop:8 }}>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#8a9a8a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:4 }}>Search These Terms in {v.platform}</div>
-                  <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
-                    {v.music.searchTerms.map(t=>(
-                      <span key={t} style={{ background:"#e8f0e8", color:"#3a6a4a", padding:"2px 10px", borderRadius:20, fontFamily:"'Jost',sans-serif", fontSize:10, fontWeight:500, cursor:"pointer" }} title="Copy search term" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(t);}}>
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+            </button>
+            <button onClick={() => { setMode("fast"); setStep(3); }} style={{ width: "100%", padding: "16px 18px", borderRadius: 18, border: "0.5px solid #dce8dc", background: "#fff", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 20 }}>⚡</span>
+              <div>
+                <div style={{ fontFamily: "sans-serif", fontSize: 14, fontWeight: 600, color: "#2D3B2E" }}>Fasting focus only</div>
+                <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", marginTop: 2 }}>Timer, streaks and fasting tools</div>
               </div>
-
-              {/* Quick checkbox row */}
-              <div style={{ display:"flex", gap:14, alignItems:"center", flexWrap:"wrap" }}>
-                <label className="cb-label" onClick={e=>e.stopPropagation()}>
-                  <input type="checkbox" checked={v.music.addMusicLater} onChange={e=>updateMusic(v.id,"addMusicLater",e.target.checked)}/>
-                  Add music later
-                </label>
-                <label className="cb-label" onClick={e=>e.stopPropagation()}>
-                  <input type="checkbox" checked={v.music.musicAdded} onChange={e=>{updateMusic(v.id,"musicAdded",e.target.checked);if(e.target.checked)updateMusic(v.id,"musicStatus","Music Added");}}/>
-                  Music added ✓
-                </label>
-                {v.music.useVoiceover && <span style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#5a8a6a", fontWeight:600 }}>🎙 Voiceover recommended</span>}
-              </div>
-
-              {v.music.musicStatus==="Needs Music" && !v.music.addMusicLater && (
-                <div className="music-warn" style={{ marginTop:10 }}>
-                  <I n="warn" s={13} c="#c08040"/>
-                  <span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#7a5020" }}>This video is set to post without music. You can proceed, but we recommend adding sound. {SOUND_PROFILES[v.growthTag]?.note}</span>
-                </div>
-              )}
-            </div>
-          ))}
+            </button>
+          </div>
+          <button style={s.backBtn} onClick={() => setStep(1)}>← Back</button>
         </div>
+      )}
 
-        {/* Detail panel */}
-        {activeVideo && (
-          <div>
-            <Card style={{ padding:22, position:"sticky", top:20 }}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:18 }}>
-                <div>
-                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:600, color:"#2d4a3a" }}>Sound Settings</div>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#7a8a7a", marginTop:2 }}>{activeVideo.topic}</div>
-                </div>
-                <button onClick={()=>setActiveVideo(null)} style={{ background:"transparent", border:"none", color:"#8a9a8a" }}><I n="x" s={18}/></button>
+      {step === 3 && (
+        <div style={s.onboardBox}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🌸</div>
+          <h2 style={s.heading}>What's your name?</h2>
+          <p style={{ ...s.sub, marginBottom: 24 }}>We'll personalise your experience.</p>
+          <input value={name} onChange={e => setName(e.target.value)} placeholder="Your first name" style={{ ...s.input, textAlign: "center", marginBottom: 20 }} />
+          <button style={s.btn} onClick={() => name.trim() && setStep(mode === "cycle" ? 5 : 5)}>Continue</button>
+          <button style={s.backBtn} onClick={() => setStep(2)}>← Back</button>
+        </div>
+      )}
+
+      {step === 5 && mode === "cycle" && (
+        <div style={s.onboardBox}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🌙</div>
+          <h2 style={s.heading}>When did your<br />last period start?</h2>
+          <p style={{ ...s.sub, marginBottom: 24 }}>This helps us calculate your cycle phase.</p>
+          <input type="date" value={lastPeriod} max={today} onChange={e => setLast(e.target.value)} style={{ ...s.input, textAlign: "center", marginBottom: 20 }} />
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20, textAlign: "left" }}>
+            <input type="checkbox" id="agree" checked={agreed} onChange={e => setAgreed(e.target.checked)} style={{ marginTop: 3, accentColor: "#8FAF8F", width: 18, height: 18, flexShrink: 0, cursor: "pointer" }} />
+            <label htmlFor="agree" style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", lineHeight: 1.6, cursor: "pointer" }}>
+              I agree to the <span style={{ color: "#8FAF8F", fontWeight: 600 }}>Terms of Service</span> and <span style={{ color: "#8FAF8F", fontWeight: 600 }}>Privacy Policy</span>
+            </label>
+          </div>
+          <button style={{ ...s.btn, opacity: agreed ? 1 : 0.4, cursor: agreed ? "pointer" : "not-allowed" }} onClick={() => lastPeriod && agreed && onDone({ name, lastPeriod, cycleLength: 28, mode })}>
+            Start My Journey 🌿
+          </button>
+          <button style={s.backBtn} onClick={() => setStep(3)}>← Back</button>
+        </div>
+      )}
+
+      {step === 5 && mode === "fast" && (
+        <div style={s.onboardBox}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>⚡</div>
+          <h2 style={s.heading}>Almost there!</h2>
+          <p style={{ ...s.sub, marginBottom: 24 }}>Just one last thing.</p>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20, textAlign: "left" }}>
+            <input type="checkbox" id="agree2" checked={agreed} onChange={e => setAgreed(e.target.checked)} style={{ marginTop: 3, accentColor: "#8FAF8F", width: 18, height: 18, flexShrink: 0, cursor: "pointer" }} />
+            <label htmlFor="agree2" style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", lineHeight: 1.6, cursor: "pointer" }}>
+              I agree to the <span style={{ color: "#8FAF8F", fontWeight: 600 }}>Terms of Service</span> and <span style={{ color: "#8FAF8F", fontWeight: 600 }}>Privacy Policy</span>
+            </label>
+          </div>
+          <button style={{ ...s.btn, opacity: agreed ? 1 : 0.4, cursor: agreed ? "pointer" : "not-allowed" }} onClick={() => agreed && onDone({ name, lastPeriod: "", cycleLength: 28, mode })}>
+            Start My Journey 🌿
+          </button>
+          <button style={s.backBtn} onClick={() => setStep(3)}>← Back</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  HOME SCREEN
+// ─────────────────────────────────────────────
+249
+function BotanicalAccent({ phase }) {
+  const p = phase || "";
+  const style = { position: "fixed", top: 8, right: 8, width: 120, height: 120, opacity: 0.25, pointerEvents: "none", zIndex: 1 };
+  if (p === "Follicular") return (
+    <svg style={style} viewBox="0 0 120 120">
+      <g transform="translate(75,20)">
+        <path d="M0,-2 C-12,-18 -22,-8 -12,2 C-22,12 -12,20 0,4Z" fill="#f472b6"/>
+        <path d="M0,-2 C12,-18 22,-8 12,2 C22,12 12,20 0,4Z" fill="#fce7f3"/>
+        <path d="M0,4 C-8,10 -14,6 -10,14Z" fill="#f9a8c9"/>
+        <path d="M0,4 C8,10 14,6 10,14Z" fill="#fbcfe8"/>
+        <line x1="0" y1="-2" x2="0" y2="16" stroke="#9d174d" strokeWidth="0.8"/>
+        <line x1="0" y1="-2" x2="-3" y2="-8" stroke="#9d174d" strokeWidth="0.7"/>
+        <line x1="0" y1="-2" x2="3" y2="-8" stroke="#9d174d" strokeWidth="0.7"/>
+      </g>
+      <g transform="translate(100,60)">
+        <path d="M0,-2 C-9,-14 -17,-6 -9,2 C-17,9 -9,15 0,3Z" fill="#fce7f3"/>
+        <path d="M0,-2 C9,-14 17,-6 9,2 C17,9 9,15 0,3Z" fill="#f9a8c9"/>
+        <path d="M0,3 C-6,8 -10,5 -8,11Z" fill="#fbcfe8"/>
+        <path d="M0,3 C6,8 10,5 8,11Z" fill="#fce7f3"/>
+        <line x1="0" y1="-2" x2="0" y2="12" stroke="#9d174d" strokeWidth="0.7"/>
+        <line x1="0" y1="-2" x2="-2" y2="-7" stroke="#9d174d" strokeWidth="0.6"/>
+        <line x1="0" y1="-2" x2="2" y2="-7" stroke="#9d174d" strokeWidth="0.6"/>
+      </g>
+      <g transform="translate(45,75)">
+        <path d="M0,-2 C-8,-12 -15,-5 -8,2 C-15,8 -8,13 0,3Z" fill="#f472b6"/>
+        <path d="M0,-2 C8,-12 15,-5 8,2 C15,8 8,13 0,3Z" fill="#fbcfe8"/>
+        <path d="M0,3 C-5,7 -8,4 -6,9Z" fill="#f9a8c9"/>
+        <path d="M0,3 C5,7 8,4 6,9Z" fill="#fce7f3"/>
+        <line x1="0" y1="-2" x2="0" y2="10" stroke="#9d174d" strokeWidth="0.6"/>
+        <line x1="0" y1="-2" x2="-2" y2="-6" stroke="#9d174d" strokeWidth="0.5"/>
+        <line x1="0" y1="-2" x2="2" y2="-6" stroke="#9d174d" strokeWidth="0.5"/>
+      </g>
+      <g transform="translate(70,95)">
+        <path d="M0,-2 C-7,-10 -13,-4 -7,2 C-13,7 -7,11 0,3Z" fill="#fce7f3"/>
+        <path d="M0,-2 C7,-10 13,-4 7,2 C13,7 7,11 0,3Z" fill="#f472b6"/>
+        <line x1="0" y1="-2" x2="0" y2="9" stroke="#9d174d" strokeWidth="0.6"/>
+        <line x1="0" y1="-2" x2="-2" y2="-5" stroke="#9d174d" strokeWidth="0.5"/>
+        <line x1="0" y1="-2" x2="2" y2="-5" stroke="#9d174d" strokeWidth="0.5"/>
+      </g>
+      <g transform="translate(25,45)">
+        <path d="M0,-2 C-6,-9 -11,-3 -6,2 C-11,6 -6,10 0,3Z" fill="#f9a8c9"/>
+        <path d="M0,-2 C6,-9 11,-3 6,2 C11,6 6,10 0,3Z" fill="#fce7f3"/>
+        <line x1="0" y1="-2" x2="0" y2="8" stroke="#9d174d" strokeWidth="0.5"/>
+        <line x1="0" y1="-2" x2="-1" y2="-5" stroke="#9d174d" strokeWidth="0.4"/>
+        <line x1="0" y1="-2" x2="1" y2="-5" stroke="#9d174d" strokeWidth="0.4"/>
+      </g>
+      <g transform="translate(108,25)">
+        <path d="M0,-2 C-5,-8 -10,-3 -5,2 C-10,5 -5,9 0,3Z" fill="#f472b6"/>
+        <path d="M0,-2 C5,-8 10,-3 5,2 C10,5 5,9 0,3Z" fill="#fbcfe8"/>
+        <line x1="0" y1="-2" x2="0" y2="7" stroke="#9d174d" strokeWidth="0.5"/>
+      </g>
+    </svg>
+  );
+  if (p === "Ovulation") return (
+    <svg style={style} viewBox="0 0 120 120">
+      <g transform="translate(75,30)">
+        <path d="M0,-20 C5,-10 5,10 0,20 C-5,10 -5,-10 0,-20Z" fill="#fbbf24"/>
+        <path d="M-20,0 C-10,-5 10,-5 20,0 C10,5 -10,5 -20,0Z" fill="#f59e0b"/>
+        <path d="M-14,-14 C-7,-10 7,10 14,14 C7,10 -10,-7 -14,-14Z" fill="#fde68a"/>
+        <path d="M14,-14 C10,-7 -10,7 -14,14 C-7,10 10,-10 14,-14Z" fill="#fde68a"/>
+        <circle cx="0" cy="0" r="6" fill="#f97316"/>
+        <circle cx="0" cy="0" r="3" fill="#fbbf24"/>
+      </g>
+      <g transform="translate(100,75)">
+        <path d="M0,-14 C4,-7 4,7 0,14 C-4,7 -4,-7 0,-14Z" fill="#fb923c"/>
+        <path d="M-14,0 C-7,-4 7,-4 14,0 C7,4 -7,4 -14,0Z" fill="#fbbf24"/>
+        <circle cx="0" cy="0" r="4" fill="#f97316"/>
+      </g>
+      <g transform="translate(45,90)">
+        <ellipse cx="0" cy="0" rx="18" ry="12" fill="#fb923c" opacity="0.7"/>
+        <path d="M0,-22 C4,-11 4,0 0,6" stroke="#4ade80" strokeWidth="1.2" fill="none"/>
+        <path d="M0,6 C-6,2 -9,-3 -7,-8" fill="#4ade80"/>
+        <path d="M0,6 C6,2 9,-3 7,-8" fill="#4ade80"/>
+      </g>
+    </svg>
+  );
+  if (p === "Luteal") return (
+    <svg style={style} viewBox="0 0 120 120">
+      <g transform="translate(80,15) rotate(-20)">
+        <ellipse cx="0" cy="-18" rx="7" ry="18" fill="#ea580c"/>
+        <line x1="0" y1="-36" x2="0" y2="0" stroke="#c2410c" strokeWidth="0.8"/>
+        <line x1="0" y1="-28" x2="-6" y2="-22" stroke="#c2410c" strokeWidth="0.6"/>
+        <line x1="0" y1="-22" x2="6" y2="-16" stroke="#c2410c" strokeWidth="0.6"/>
+        <line x1="0" y1="-16" x2="-5" y2="-10" stroke="#c2410c" strokeWidth="0.6"/>
+      </g>
+      <g transform="translate(100,50) rotate(15)">
+        <ellipse cx="0" cy="-15" rx="6" ry="15" fill="#f97316"/>
+        <line x1="0" y1="-30" x2="0" y2="0" stroke="#ea580c" strokeWidth="0.7"/>
+        <line x1="0" y1="-22" x2="-5" y2="-17" stroke="#ea580c" strokeWidth="0.5"/>
+        <line x1="0" y1="-15" x2="5" y2="-10" stroke="#ea580c" strokeWidth="0.5"/>
+      </g>
+      <g transform="translate(60,70) rotate(-10)">
+        <ellipse cx="0" cy="-14" rx="5" ry="14" fill="#dc2626"/>
+        <line x1="0" y1="-28" x2="0" y2="0" stroke="#b91c1c" strokeWidth="0.7"/>
+        <line x1="0" y1="-20" x2="-4" y2="-15" stroke="#b91c1c" strokeWidth="0.5"/>
+        <line x1="0" y1="-13" x2="4" y2="-8" stroke="#b91c1c" strokeWidth="0.5"/>
+      </g>
+      <g transform="translate(95,90) rotate(25)">
+        <ellipse cx="0" cy="-12" rx="5" ry="12" fill="#f97316"/>
+        <line x1="0" y1="-24" x2="0" y2="0" stroke="#ea580c" strokeWidth="0.6"/>
+        <line x1="0" y1="-17" x2="-4" y2="-13" stroke="#ea580c" strokeWidth="0.5"/>
+      </g>
+      <g transform="translate(40,95) rotate(-30)">
+        <ellipse cx="0" cy="-10" rx="4" ry="10" fill="#c2410c"/>
+        <line x1="0" y1="-20" x2="0" y2="0" stroke="#9a3412" strokeWidth="0.6"/>
+      </g>
+    </svg>
+  );
+  if (p === "Menstrual") return (
+    <svg style={{ position: "fixed", top: 0, right: 0, width: "100%", height: "100%", opacity: 0.30, pointerEvents: "none", zIndex: 1 }} viewBox="0 0 390 844">
+      <g transform="translate(110,15)">
+        <line x1="0" y1="0" x2="0" y2="55" stroke="#93c5fd" strokeWidth="2"/>
+        <line x1="0" y1="15" x2="-18" y2="30" stroke="#93c5fd" strokeWidth="1.5"/>
+        <line x1="0" y1="25" x2="16" y2="38" stroke="#93c5fd" strokeWidth="1.5"/>
+        <line x1="0" y1="35" x2="-14" y2="46" stroke="#93c5fd" strokeWidth="1.2"/>
+        <line x1="-18" y1="30" x2="-26" y2="24" stroke="#93c5fd" strokeWidth="1"/>
+        <line x1="-18" y1="30" x2="-28" y2="35" stroke="#93c5fd" strokeWidth="1"/>
+        <line x1="16" y1="38" x2="24" y2="32" stroke="#93c5fd" strokeWidth="1"/>
+        <line x1="16" y1="38" x2="26" y2="44" stroke="#93c5fd" strokeWidth="1"/>
+        <circle cx="0" cy="0" r="4" fill="#e0f2fe"/>
+        <circle cx="-4" cy="-4" r="2" fill="#bfdbfe"/>
+        <circle cx="4" cy="-4" r="2" fill="#bfdbfe"/>
+        <circle cx="0" cy="-7" r="2" fill="#bfdbfe"/>
+        <circle cx="-26" cy="24" r="2.5" fill="#bfdbfe"/>
+        <circle cx="-28" cy="35" r="2" fill="#e0f2fe"/>
+        <circle cx="24" cy="32" r="2.5" fill="#bfdbfe"/>
+        <circle cx="26" cy="44" r="2" fill="#e0f2fe"/>
+      </g>
+      <g transform="translate(40,80)">
+        <line x1="0" y1="0" x2="0" y2="42" stroke="#93c5fd" strokeWidth="1.8"/>
+        <line x1="0" y1="12" x2="-14" y2="24" stroke="#93c5fd" strokeWidth="1.3"/>
+        <line x1="0" y1="22" x2="12" y2="32" stroke="#93c5fd" strokeWidth="1.3"/>
+        <line x1="0" y1="30" x2="-10" y2="38" stroke="#93c5fd" strokeWidth="1"/>
+        <line x1="-14" y1="24" x2="-20" y2="19" stroke="#93c5fd" strokeWidth="0.9"/>
+        <line x1="-14" y1="24" x2="-22" y2="28" stroke="#93c5fd" strokeWidth="0.9"/>
+        <circle cx="0" cy="0" r="3" fill="#e0f2fe"/>
+        <circle cx="-3" cy="-3" r="1.5" fill="#bfdbfe"/>
+        <circle cx="3" cy="-3" r="1.5" fill="#bfdbfe"/>
+        <circle cx="-20" cy="19" r="2" fill="#bfdbfe"/>
+        <circle cx="-22" cy="28" r="2" fill="#e0f2fe"/>
+      </g>
+      <circle cx="145" cy="120" r="2" fill="#bfdbfe" opacity="0.5"/>
+      <circle cx="20" cy="30" r="2" fill="#bfdbfe" opacity="0.4"/>
+      <circle cx="155" cy="55" r="1.5" fill="#bfdbfe" opacity="0.3"/>
+    </svg>
+  );
+  return null;
+}
+
+function MoonPhaseCard({ mode, lastPeriod, cycleDay, phase }) {
+  const moon = getMoonPhase();
+  const cycleSeasonMap = { Menstrual: "Winter 🌨️", Follicular: "Spring 🌸", Ovulation: "Summer ☀️", Luteal: "Autumn 🍂" };
+  const moonSync = () => {
+    if (!lastPeriod) return null;
+    const moonDay = (() => {
+      const now = new Date();
+      const known = new Date(2000, 0, 6, 18, 14, 0);
+      const synodic = 29.53058867;
+      const diff = (now - known) / (1000 * 60 * 60 * 24);
+      return ((diff % synodic) + synodic) % synodic;
+    })();
+    const isFullMoon = moonDay >= 13 && moonDay <= 17;
+    const isNewMoon = moonDay < 2 || moonDay > 27;
+    if (isFullMoon && phase === "ovulation") return "🌕 You are synced with the moon — full moon and ovulation together is a powerful time.";
+    if (isNewMoon && phase === "menstrual") return "🌑 You are synced with the dark moon — a powerful time for rest and release.";
+    if (isFullMoon) return "🌕 Full moon energy is here. Notice how your body feels.";
+    if (isNewMoon) return "🌑 New moon — a quiet time for intention setting.";
+    return null;
+  };
+  const sync = moonSync();
+  return (
+    <div style={{ margin: "0 16px 12px", background: mode === "fast" ? "linear-gradient(135deg, #0a1a10, #0f2218)" : phase === "Menstrual" ? "linear-gradient(135deg, #eef4ff, #dce8f8)" : phase === "Follicular" ? "linear-gradient(135deg, #fff0f8, #fce4ee)" : phase === "Ovulation" ? "linear-gradient(135deg, #fffbee, #fff0c0)" : "linear-gradient(135deg, #fff5ee, #ffd4a0)", borderRadius: 18, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : phase === "Menstrual" ? "0.5px solid rgba(147,197,253,0.5)" : phase === "Follicular" ? "0.5px solid rgba(244,114,182,0.4)" : phase === "Ovulation" ? "0.5px solid rgba(251,191,36,0.5)" : "0.5px solid rgba(234,88,12,0.4)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <p style={{ fontFamily: "sans-serif", fontSize: 10, letterSpacing: "2px", color: mode === "fast" ? "#7A9E7E" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c", margin: 0, textTransform: "uppercase" }}>🌙 Moon phase</p>
+        <span style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#7A9E7E" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c" }}>{moon.daysToNext}d until {moon.next}</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+        <span style={{ fontSize: 32 }}>{moon.emoji}</span>
+        <div>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 2px" }}>{moon.name}</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "rgba(255,255,255,0.6)" : "#6b7b6b", margin: 0, lineHeight: 1.5 }}>{moon.desc}</p>
+        </div>
+      </div>
+      {mode !== "fast" && (
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c", margin: "0 0 6px" }}>Your cycle season — {cycleSeasonMap[phase] || "—"}</p>
+      )}
+      {sync && <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", margin: "0 0 8px", lineHeight: 1.6, fontStyle: "italic" }}>{sync}</p>}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
+        <div style={{ background: mode === "fast" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.6)", borderRadius: 10, padding: "8px 12px" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.06em" }}>🕯️ Ritual</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#a8c4a8" : "#4a3a5a", margin: 0, lineHeight: 1.6 }}>{moon.ritual}</p>
+        </div>
+        <div style={{ background: mode === "fast" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.6)", borderRadius: 10, padding: "8px 12px" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.06em" }}>📝 Journal prompt</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#a8c4a8" : "#4a3a5a", margin: 0, lineHeight: 1.6 }}>{moon.journal}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HomeScreen({ name, lastPeriod, mode, settings }) {
+  const cycleDay = Math.max(1, getCycleDay(lastPeriod) - 1);
+
+  useEffect(() => {
+    if (localStorage.getItem("lf_auto_start_fast") === "true") {
+      localStorage.removeItem("lf_auto_start_fast");
+      if (!fastStart) startFast();
+    }
+  }, []);
+  const phase    = getPhase(cycleDay);
+  const info     = PHASE_INFO[phase];
+
+  const [fastStart, setFastStart]   = useState(null);
+  const [elapsed,   setElapsed]     = useState(0);
+  const [goalHours, setGoalHours]   = useState(16);
+  const [showGoals, setShowGoals]   = useState(false);
+  const [showEditFast, setShowEditFast] = useState(false);
+  const [waterToday, setWaterToday] = useState(() => parseInt(localStorage.getItem("lf_water_today") || "0"));
+
+  useEffect(() => {
+    const saved = localStorage.getItem("lf_fast_start");
+    if (saved) setFastStart(Number(saved));
+  }, []);
+
+  useEffect(() => {
+    if (!fastStart) return;
+    const iv = setInterval(() => setElapsed(Date.now() - fastStart), 1000);
+    return () => clearInterval(iv);
+  }, [fastStart]);
+
+  const startFast = () => {
+    const now = Date.now();
+    setFastStart(now);
+    localStorage.setItem("lf_fast_start", now);
+  };
+  const stopFast = () => {
+    const today = new Date().toISOString().split("T")[0];
+    const existing = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
+    if (!existing.includes(today)) {
+      localStorage.setItem("lf_fast_days", JSON.stringify([...existing, today]));
+    }
+    setFastStart(null);
+    setElapsed(0);
+    localStorage.removeItem("lf_fast_start");
+  };
+
+  const fmtTime = ms => {
+    const s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sc = s % 60;
+    return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(sc).padStart(2,"0")}`;
+  };
+
+  const progress  = fastStart ? Math.min(elapsed / (goalHours * 3600000), 1) : 0;
+  const circumference = 2 * Math.PI * 54;
+
+  const getFastStreak = () => {
+    const days = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
+    if (days.length === 0) return 0;
+    let streak = 0;
+    const today = new Date();
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = d.toISOString().split("T")[0];
+      if (days.includes(key)) { streak++; } else if (i > 0) { break; }
+    }
+    return streak;
+  };
+  const streak = getFastStreak();
+  const totalFasts = JSON.parse(localStorage.getItem("lf_fast_days") || "[]").length;
+  
+
+  return (
+    <div style={{ padding: "0 0 90px", background: getSeasonalBg(mode, phase), minHeight: "100vh", position: "relative" }}>
+      {mode !== "fast" && <BotanicalAccent phase={phase} />}
+      {/* Header */}
+      <div style={{ ...s.header, justifyContent: "space-between", paddingTop: 20 }}>
+        <div>
+          <p style={{ ...s.label, marginBottom: 2 }}>Good {getGreeting()},</p>
+          <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: 0, fontWeight: 400 }}>{name} 🌿</h2>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          {mode !== "fast" ? (
+            <>
+              <span style={{ ...s.chip, background: info.bg, color: info.color, fontFamily: "sans-serif" }}>
+                {info.emoji} {phase}
+              </span>
+              <p style={{ ...s.label, marginTop: 4 }}>Day {cycleDay}</p>
+            </>
+          ) : (
+            <span style={{ ...s.chip, background: "#EAF2EA", color: "#5C7F60", fontFamily: "sans-serif" }}>
+              ⚡ Fasting
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Fasting Timer — Arc for women, Bar for men */}
+      <div style={{ margin: "12px 16px", background: mode === "fast" ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.92)", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.2)" : "0.5px solid #dce8dc", padding: 16, position: "relative" }}>
+        {mode === "fast" ? (
+          <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div>
+                <p style={{ fontFamily: "sans-serif", fontSize: 9, color: "#3a5a3a", letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 2px" }}>Fasting window</p>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#e8e0ce", margin: 0 }}>{fastStart ? "In progress ⚡" : "Ready to begin"}</p>
               </div>
-
-              {/* Strategy note from the profile */}
-              {SOUND_PROFILES[activeVideo.growthTag] && (
-                <div style={{ background:"#f0f8f4", borderRadius:10, padding:12, marginBottom:16, border:"1px solid #c0e0d0" }}>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#3a6a4a", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:4 }}>💚 Strategy Note</div>
-                  <p style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#2d5a4a", lineHeight:1.6 }}>{SOUND_PROFILES[activeVideo.growthTag].note}</p>
-                </div>
-              )}
-
-              <div style={{ display:"grid", gap:12 }}>
-                <div>
-                  <Label>Music Status</Label>
-                  <Select value={activeVideo.music.musicStatus} onChange={e=>updateMusic(activeVideo.id,"musicStatus",e.target.value)} options={MUSIC_STATUSES}/>
-                </div>
-                <div>
-                  <Label>Sound Mood</Label>
-                  <Select value={activeVideo.music.mood} onChange={e=>updateMusic(activeVideo.id,"mood",e.target.value)} options={SOUND_MOODS}/>
-                </div>
-                <div>
-                  <Label>Audio Source / Type</Label>
-                  <Select value={activeVideo.music.audioSource} onChange={e=>updateMusic(activeVideo.id,"audioSource",e.target.value)} options={SOUND_TYPES}/>
-                </div>
-                <div>
-                  <Label>Where to Add Sound</Label>
-                  <Select value={activeVideo.music.addWhere} onChange={e=>updateMusic(activeVideo.id,"addWhere",e.target.value)} options={SOUND_SOURCES}/>
-                </div>
-                <div>
-                  <Label>Sound Used (enter after posting)</Label>
-                  <Input value={activeVideo.music.soundUsed} onChange={e=>updateMusic(activeVideo.id,"soundUsed",e.target.value)} placeholder="e.g. 'Soft Morning' by Artist Name"/>
-                </div>
-                <div>
-                  <Label>Sound Notes</Label>
-                  <textarea value={activeVideo.music.soundNotes} onChange={e=>updateMusic(activeVideo.id,"soundNotes",e.target.value)} className="inp" placeholder="Volume level, timing notes, cue points…"/>
-                </div>
-                <div>
-                  <Label>Performance Notes (after posting)</Label>
-                  <textarea value={activeVideo.music.performanceNotes} onChange={e=>updateMusic(activeVideo.id,"performanceNotes",e.target.value)} className="inp" placeholder="Did this sound drive more saves? Better watch time?"/>
-                </div>
-                <div style={{ display:"flex", gap:10 }}>
-                  <label className="cb-label">
-                    <input type="checkbox" checked={activeVideo.music.addMusicLater} onChange={e=>updateMusic(activeVideo.id,"addMusicLater",e.target.checked)}/>
-                    Add music later
-                  </label>
-                  <label className="cb-label">
-                    <input type="checkbox" checked={activeVideo.music.musicAdded} onChange={e=>{updateMusic(activeVideo.id,"musicAdded",e.target.checked);if(e.target.checked)updateMusic(activeVideo.id,"musicStatus","Music Added");}}/>
-                    Music added ✓
-                  </label>
-                </div>
+              <span style={{ fontSize: 9, color: "#C9A84C", background: "rgba(201,168,76,0.1)", border: "0.5px solid rgba(201,168,76,0.3)", borderRadius: 4, padding: "3px 8px", letterSpacing: "0.08em" }}>{goalHours}H FAST</span>
+            </div>
+            <div style={{ textAlign: "center", marginBottom: 10 }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 38, color: "#e8e0ce", margin: 0, letterSpacing: "0.02em", lineHeight: 1 }}>{fastStart ? fmtTime(elapsed) : "00:00:00"}</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 9, color: "#3a5a3a", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 4 }}>Hours fasted</p>
+            </div>
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                <span style={{ fontSize: 8, color: "#3a5a3a", textTransform: "uppercase", letterSpacing: "0.06em" }}>0h</span>
+                <span style={{ fontSize: 8, color: "#C9A84C" }}>{fastStart ? `${Math.round(progress * 100)}% complete ⚡` : "Begin your fast"}</span>
+                <span style={{ fontSize: 8, color: "#3a5a3a", textTransform: "uppercase", letterSpacing: "0.06em" }}>{goalHours}h</span>
               </div>
-
-              {/* Suggested sounds strip */}
-              <div style={{ marginTop:16, background:"#f5f0e8", borderRadius:10, padding:14 }}>
-                <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#8a9a8a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:8 }}>Suggested Sound Options (search inside {activeVideo.platform})</div>
-                <div style={{ display:"grid", gap:8 }}>
-                  {activeVideo.music.searchTerms.map((t,idx)=>(
-                    <div key={t} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"white", borderRadius:8, padding:"8px 12px", border:"1px solid #e8e0d0" }}>
-                      <div>
-                        <div style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#2d4a3a", fontWeight:500 }}>Option {idx+1}</div>
-                        <div style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#5a8a6a" }}>Search: "{t}"</div>
-                      </div>
-                      <button onClick={()=>navigator.clipboard?.writeText(t)} style={{ background:"#e8f0e8", border:"none", borderRadius:7, padding:"5px 10px", fontFamily:"'Jost',sans-serif", fontSize:10, color:"#3a6a4a", cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
-                        <I n="copy" s={11} c="#3a6a4a"/> Copy
-                      </button>
-                    </div>
-                  ))}
+              <div style={{ height: 4, background: "rgba(184,148,60,0.08)", borderRadius: 2, overflow: "hidden" }}>
+                <div style={{ width: `${fastStart ? Math.min(progress * 100, 100) : 0}%`, height: "100%", background: "linear-gradient(90deg, #C9A84C, rgba(201,168,76,0.4))", borderRadius: 2, transition: "width 1s linear" }} />
+              </div>
+              <div style={{ display: "flex", gap: 3, marginTop: 3 }}>
+                {[...Array(4)].map((_, i) => <div key={i} style={{ flex: 1, height: 2, background: `rgba(184,148,60,${0.3 - i * 0.06})`, borderRadius: 1 }} />)}
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+              {fastStart ? [
+                { label: "Started", val: (() => { const d = new Date(fastStart); const h = d.getHours() % 12 || 12; const m = d.getMinutes(); const ap = d.getHours() >= 12 ? "pm" : "am"; return `${h}:${m < 10 ? "0" : ""}${m}${ap}`; })() },
+                { label: "Ends", val: (() => { const end = new Date(fastStart + goalHours * 3600000); const h = end.getHours() % 12 || 12; const m = end.getMinutes(); const ap = end.getHours() >= 12 ? "pm" : "am"; return `${h}:${m < 10 ? "0" : ""}${m}${ap}`; })() },
+                { label: "Left", val: (() => { const rem = Math.max(0, (fastStart + goalHours * 3600000) - Date.now()); const rh = Math.floor(rem / 3600000); const rm = Math.floor((rem % 3600000) / 60000); return `${rh}:${rm < 10 ? "0" : ""}${rm}`; })() },
+              ].map((item, i) => (
+                <div key={i} style={{ textAlign: "center" }}>
+                  <p style={{ fontSize: 7, color: "#3a5a3a", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 2px" }}>{item.label}</p>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 11, color: "#e8e0ce", margin: 0 }}>{item.val}</p>
                 </div>
-                <p style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#9a9a8a", marginTop:10, lineHeight:1.6 }}>
-                  ⚠ Lumen Flow cannot automatically attach trending songs due to music rights and platform rules. Search these terms inside {activeVideo.platform} and choose a sound that fits the mood and is available for your account type.
+              )) : <p style={{ fontSize: 10, color: "#3a5a3a", margin: "0 auto" }}>Select your fasting window below</p>}
+            </div>
+          </>
+        ) : (
+          <>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 12px" }}>{fastStart ? "Fasting in progress 🌙" : "Start your fast"}</p>
+            <div style={{ position: "relative", width: 148, height: 148, margin: "0 auto 12px" }}>
+              <svg width="148" height="148" style={{ transform: "rotate(-90deg)" }}>
+                <circle cx="74" cy="74" r="62" fill="none" stroke="rgba(168,120,152,0.12)" strokeWidth="10" />
+                <circle cx="74" cy="74" r="62" fill="none" stroke="url(#wGrad)" strokeWidth="10"
+                  strokeDasharray={2 * Math.PI * 62}
+                  strokeDashoffset={2 * Math.PI * 62 * (1 - (fastStart ? Math.min(progress, 1) : 0))}
+                  strokeLinecap="round"
+                  style={{ transition: "stroke-dashoffset 1s linear" }}
+                />
+                <defs>
+                  <linearGradient id="wGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#A87898"/>
+                    <stop offset="100%" stopColor="#C4A0BA"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 22, color: "#6B4E5E", margin: 0, lineHeight: 1 }}>{fastStart ? fmtTime(elapsed) : "00:00:00"}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 9, color: "#b8a0b0", margin: "4px 0 0", letterSpacing: "0.04em" }}>
+                  {fastStart ? (() => { const end = new Date(fastStart + goalHours * 3600000); const h = end.getHours() % 12 || 12; const m = end.getMinutes(); const ap = end.getHours() >= 12 ? "pm" : "am"; return `ends ${h}:${m < 10 ? "0" : ""}${m}${ap}`; })() : "ready"}
                 </p>
+                {fastStart && <p style={{ fontFamily: "sans-serif", fontSize: 8, color: "#A87898", margin: "3px 0 0" }}>{Math.round(progress * 100)}% ✦</p>}
               </div>
-            </Card>
+            </div>
+          </>
+        )}
+        {fastStart ? (
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={stopFast} style={{ ...s.btn, background: mode === "fast" ? "linear-gradient(135deg,#1a3a2a,#2D5A3D)" : "linear-gradient(135deg,#8B5E7A,#7D5490)", color: mode === "fast" ? "#C9A84C" : "#fff", flex: 1, letterSpacing: mode === "fast" ? "0.06em" : "0" }}>
+              {mode === "fast" ? "END FAST ›" : "End Fast ✦"}
+            </button>
+            <button onClick={() => setShowEditFast(!showEditFast)} style={{ background: mode === "fast" ? "rgba(184,148,60,0.06)" : "#F0F6F0", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.3)" : "0.5px solid #C5D9C5", borderRadius: mode === "fast" ? 5 : 50, padding: "0 16px", fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#C9A84C" : "#5C7F60", cursor: "pointer" }}>✏️</button>
+          </div>
+        ) : (
+          <button onClick={startFast} style={{ ...s.btn, background: mode === "fast" ? "rgba(184,148,60,0.06)" : phase === "Menstrual" ? "linear-gradient(135deg,#7BA8C9,#5888b0)" : phase === "Follicular" ? "linear-gradient(135deg,#f472b6,#c4809a)" : phase === "Ovulation" ? "linear-gradient(135deg,#f59e0b,#d97706)" : "linear-gradient(135deg,#ea580c,#c2410c)", color: mode === "fast" ? "#C9A84C" : "#fff", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.3)" : "none", letterSpacing: mode === "fast" ? "0.1em" : "0", opacity: goalHours ? 1 : 0.5 }}>
+            {mode === "fast" ? "BEGIN FAST ›" : "Begin Fast 🌙"}
+          </button>
+        )}
+        {showEditFast && fastStart && (
+          <div style={{ background: "#F8FAF8", borderRadius: 16, padding: "16px", border: "0.5px solid #dce8dc", marginTop: 8 }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: "0 0 12px" }}>Edit your fast</p>
+            
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Fast start date</p>
+            <input
+              type="date"
+              defaultValue={fastStart ? new Date(fastStart).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]}
+              max={new Date().toISOString().split("T")[0]}
+              min={new Date(Date.now() - 2 * 86400000).toISOString().split("T")[0]}
+              onChange={e => {
+                const currentTime = fastStart ? new Date(fastStart).toTimeString().slice(0,5) : "00:00";
+                const newStart = new Date(e.target.value + "T" + currentTime).getTime();
+                setFastStart(newStart);
+                localStorage.setItem("lf_fast_start", newStart);
+              }}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12 }}
+            />
+
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Fast start time</p>
+            <input
+              type="time"
+              defaultValue={fastStart ? new Date(fastStart).toTimeString().slice(0,5) : "00:00"}
+              onChange={e => {
+                const currentDate = fastStart ? new Date(fastStart).toISOString().split("T")[0] : new Date().toISOString().split("T")[0];
+                const newStart = new Date(currentDate + "T" + e.target.value).getTime();
+                setFastStart(newStart);
+                localStorage.setItem("lf_fast_start", newStart);
+              }}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12 }}
+            />
+
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Goal hours</p>
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              {[12, 14, 16, 18, 20, 24].map(h => (
+                <button key={h} onClick={() => setGoalHours(h)} style={{ flex: 1, padding: "8px 4px", borderRadius: 10, border: "0.5px solid #dce8dc", background: goalHours === h ? "#7A9E7E" : "#fff", color: goalHours === h ? "#fff" : "#4a5a4b", fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{h}h</button>
+              ))}
+            </div>
+            <button onClick={() => setShowEditFast(false)} style={{ ...s.btn, fontSize: 13, padding: "10px 0" }}>Save changes</button>
           </div>
         )}
       </div>
 
-      {/* Sound performance insights */}
-      <div style={{ marginTop:22 }}>
-        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:600, color:"#2d4a3a", marginBottom:14, display:"flex", alignItems:"center", gap:8 }}>
-          <I n="analytics" s={16} c="#5a8a6a"/> Sound Performance Insights
-        </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
-          {[
-            { type:"Calm Instrumental", posts:8, avgSaves:"3.2K", avgFollowers:"+94", verdict:"Best for saves", color:"#8fb5a0" },
-            { type:"Trending Sound",    posts:5, avgSaves:"1.8K", avgFollowers:"+189", verdict:"Best for followers", color:"#7ab5d4" },
-            { type:"Voiceover Only",    posts:4, avgSaves:"2.4K", avgFollowers:"+72", verdict:"Best for trust", color:"#d4a574" },
-          ].map(s=>(
-            <Card key={s.type} style={{ padding:18, border:`1px solid ${s.color}33` }}>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:17, fontWeight:600, color:s.color, marginBottom:3 }}>{s.type}</div>
-              <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a", marginBottom:10 }}>{s.posts} posted videos</div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
-                <div style={{ background:`${s.color}12`, borderRadius:8, padding:10 }}>
-                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:600, color:s.color }}>{s.avgSaves}</div>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:9.5, color:"#7a8a7a" }}>avg saves</div>
-                </div>
-                <div style={{ background:`${s.color}12`, borderRadius:8, padding:10 }}>
-                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:600, color:s.color }}>{s.avgFollowers}</div>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:9.5, color:"#7a8a7a" }}>avg followers</div>
-                </div>
+      {/* Hormone card — changes based on mode */}
+      {mode === "fast" ? (
+        <div style={{ margin: "0 16px 12px", background: "linear-gradient(135deg, #1a3a2a, #0f2a1a)", borderRadius: 18, padding: "16px", border: "1px solid rgba(122,158,126,0.3)" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 9, letterSpacing: "2px", color: "#7A9E7E", margin: "0 0 6px", textTransform: "uppercase" }}>⚡ Testosterone Window</p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+            <div>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 24, fontWeight: 700, color: "#fff", margin: "0 0 2px" }}>
+                {new Date().getHours() < 10 ? "Peak 🔥" : new Date().getHours() < 14 ? "High ⚡" : new Date().getHours() < 18 ? "Moderate 🌿" : "Low 🌙"}
+              </p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#A8BEA8", margin: 0 }}>
+                {new Date().getHours() < 10 ? "Best time to train and tackle hard tasks" : new Date().getHours() < 14 ? "Focus work and key decisions" : new Date().getHours() < 18 ? "Meetings and collaborative work" : "Wind down and recover"}
+              </p>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 4, marginTop: 10 }}>
+            {[
+              { label: "Peak", time: "6-10am", active: new Date().getHours() < 10 },
+              { label: "High", time: "10-2pm", active: new Date().getHours() >= 10 && new Date().getHours() < 14 },
+              { label: "Mod", time: "2-6pm", active: new Date().getHours() >= 14 && new Date().getHours() < 18 },
+              { label: "Low", time: "6pm+", active: new Date().getHours() >= 18 },
+            ].map((w, i) => (
+              <div key={i} style={{ flex: 1, textAlign: "center" }}>
+                <div style={{ height: 4, borderRadius: 2, background: w.active ? "#7A9E7E" : "rgba(122,158,126,0.2)", marginBottom: 4, boxShadow: w.active ? "0 0 6px #7A9E7E" : "none" }} />
+                <p style={{ fontFamily: "sans-serif", fontSize: 9, color: w.active ? "#7A9E7E" : "#4a6a4a", margin: 0 }}>{w.label}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 8, color: "#3a5a3a", margin: 0 }}>{w.time}</p>
               </div>
-              <div style={{ marginTop:8, fontFamily:"'Jost',sans-serif", fontSize:11, color:s.color, fontWeight:600 }}>💚 {s.verdict}</div>
-            </Card>
+            ))}
+          </div>
+          {goalHours > 0 && fastStart && (
+            <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(122,158,126,0.2)" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#7A9E7E", margin: 0 }}>
+                🍽️ Eating window: {new Date(fastStart + goalHours * 3600000).toLocaleTimeString("en-CA", {hour: "numeric", minute: "2-digit"})} — {new Date(fastStart + (goalHours + 8) * 3600000).toLocaleTimeString("en-CA", {hour: "numeric", minute: "2-digit"})}
+              </p>
+            </div>
+          )}
+        </div>
+      ) : null}
+
+      {/* Water tracker - fasting mode only - now handled above for both */}
+      {false && (
+        <div style={{ margin: "0 16px 12px", background: "#fff", borderRadius: 18, padding: "14px 16px", border: "0.5px solid #dce8dc" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <p style={{ fontFamily: "sans-serif", fontSize: 11, letterSpacing: "1px", color: "#7BA8C9", margin: 0, textTransform: "uppercase" }}>💧 Water today</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: 0 }}>Goal: 8 glasses</p>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "center" }}>
+            <button onClick={() => { const w = Math.max(0, waterToday - 1); localStorage.setItem("lf_water_today", w); setWaterToday(w); }} style={{ width: 32, height: 32, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#EAF2F9", fontSize: 16, cursor: "pointer", color: "#7BA8C9" }}>−</button>
+            <div style={{ textAlign: "center" }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 26, color: "#7BA8C9", margin: 0 }}>{waterToday}</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#A8BEA8", margin: 0 }}>glasses</p>
+            </div>
+            <button onClick={() => { const w = Math.min(15, waterToday + 1); localStorage.setItem("lf_water_today", w); setWaterToday(w); }} style={{ width: 32, height: 32, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#EAF2F9", fontSize: 16, cursor: "pointer", color: "#7BA8C9" }}>+</button>
+          </div>
+          <div style={{ display: "flex", gap: 4, marginTop: 10 }}>
+            {[...Array(8)].map((_, i) => (
+              <div key={i} style={{ flex: 1, height: 6, borderRadius: 3, background: i < waterToday ? "#7BA8C9" : "#EAF2F9" }} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Level cards */}
+      <div style={{ display: "flex", gap: 8, margin: "0 16px 12px" }}>
+        {[{ h: 12, icon: "🌱", label: "Beginner" }, { h: 16, icon: "🌿", label: "Intermediate" }, { h: 18, icon: "🔥", label: "Advanced" }].map(({ h, icon, label }) => (
+          <div key={h} onClick={() => setGoalHours(h)} style={{
+            flex: 1, background: goalHours === h ? (mode === "fast" ? "rgba(26,58,42,0.9)" : "rgba(212,160,184,0.1)") : (mode === "fast" ? "rgba(255,255,255,0.05)" : "#fff"),
+            border: goalHours === h ? (mode === "fast" ? "1.5px solid #7A9E7E" : "1.5px solid #D4A0B8") : (mode === "fast" ? "1px solid rgba(122,158,126,0.2)" : "1px solid #dce8dc"),
+            borderRadius: 16, padding: "12px 8px", textAlign: "center", cursor: "pointer",
+          }}>
+            <div style={{ fontSize: 20, marginBottom: 4 }}>{icon}</div>
+            <div style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 600, color: goalHours === h ? (mode === "fast" ? "#7A9E7E" : "#A0607A") : (mode === "fast" ? "#A8BEA8" : "#4a5a4b"), letterSpacing: "0.02em" }}>{label}</div>
+            <div style={{ fontFamily: "sans-serif", fontSize: 10, color: "#A8BEA8", marginTop: 2 }}>{h}h</div>
+          </div>
+        ))}
+      </div>
+
+      <MoonPhaseCard mode={mode} lastPeriod={lastPeriod} cycleDay={cycleDay} phase={phase} />
+      {(() => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const known = new Date(2000, 0, 6, 18, 14, 0);
+        const synodic = 29.53058867;
+        const moonDays = [];
+        for (let d = 1; d <= daysInMonth; d++) {
+          const date = new Date(year, month, d);
+          const diff = (date - known) / (1000 * 60 * 60 * 24);
+          const phase = ((diff % synodic) + synodic) % synodic;
+          const isNew = phase < 0.5 || phase > 29.0;
+          const isFull = phase >= 14.5 && phase < 15.2;
+          const isFirst = phase >= 7.1 && phase < 7.8;
+          const isLast = phase >= 21.9 && phase < 22.6;
+          if (isNew) moonDays.push({ d, name: "New Moon", emoji: "🌑" });
+          else if (isFull) moonDays.push({ d, name: "Full Moon", emoji: "🌕" });
+          else if (isFirst) moonDays.push({ d, name: "First Quarter", emoji: "🌓" });
+          else if (isLast) moonDays.push({ d, name: "Last Quarter", emoji: "🌗" });
+        }
+        if (moonDays.length === 0) return null;
+        const monthName = now.toLocaleDateString("en-CA", { month: "long" });
+        return (
+          <div style={{ margin: "0 16px 12px", background: mode === "fast" ? "linear-gradient(135deg, #0a1a10, #0f2218)" : "linear-gradient(135deg, #1a1a2e, #16213e)", borderRadius: 18, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid rgba(155,123,201,0.3)" }}>
+            <p style={{ fontFamily: "sans-serif", fontSize: 10, letterSpacing: "2px", color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: "0 0 10px", textTransform: "uppercase" }}>🌙 {monthName} moon dates</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {moonDays.map((m, i) => {
+                const date = new Date(year, month, m.d);
+                const dayName = date.toLocaleDateString("en-CA", { weekday: "long" });
+                const isPast = m.d < now.getDate();
+                return (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, opacity: isPast ? 0.5 : 1 }}>
+                    <span style={{ fontSize: 20 }}>{m.emoji}</span>
+                    <div>
+                      <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: mode === "fast" ? "#e8e0ce" : "#fff", margin: 0 }}>{m.name}</p>
+                      <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: 0 }}>{dayName}, {monthName} {m.d}</p>
+                    </div>
+                    {!isPast && <span style={{ marginLeft: "auto", fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#C9A84C" : "#9B7BC9" }}>in {m.d - now.getDate()} days</span>}
+                    {isPast && <span style={{ marginLeft: "auto", fontFamily: "sans-serif", fontSize: 10, color: "#8FA090" }}>passed</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Partner rhythm card */}
+      {settings && settings.partnerConnected && (
+        <div style={{ margin: "0 16px 12px", background: "#F5F0FF", borderRadius: 18, padding: "14px 16px", border: "0.5px solid #D4C5E9" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <p style={{ fontFamily: "sans-serif", fontSize: 10, letterSpacing: "2px", color: "#9B7BC9", margin: 0, textTransform: "uppercase" }}>🤝 Partner rhythm</p>
+            <span style={{ fontSize: 10, color: "#9B7BC9", fontFamily: "sans-serif" }}>Connected</span>
+          </div>
+          {mode === "cycle" ? (
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0 }}>Your partner can see your cycle phase and fasting window. Share Lumen Flow with them to sync.</p>
+          ) : (
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0 }}>Your partner can see your fasting progress and testosterone window. You are fasting together! 🔥</p>
+          )}
+        </div>
+      )}
+
+      {/* Water tracker - both modes */}
+      <div style={{ margin: "0 16px 12px", background: mode === "fast" ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.7)", borderRadius: 18, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.15)" : "0.5px solid rgba(160,120,145,0.2)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, letterSpacing: "1px", color: mode === "fast" ? "#C9A84C" : "#A87898", margin: 0, textTransform: "uppercase" }}>💧 Water today</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#3a5a3a" : "#b8a0b0", margin: 0 }}>Goal: 8 glasses</p>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "center" }}>
+          <button onClick={() => { const w = Math.max(0, waterToday - 1); localStorage.setItem("lf_water_today", w); setWaterToday(w); }} style={{ width: 32, height: 32, borderRadius: mode === "fast" ? 5 : "50%", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.3)" : "0.5px solid rgba(160,120,145,0.2)", background: mode === "fast" ? "rgba(184,148,60,0.06)" : "rgba(168,120,152,0.08)", fontSize: 16, cursor: "pointer", color: mode === "fast" ? "#C9A84C" : "#A87898" }}>−</button>
+          <div style={{ textAlign: "center" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 26, color: mode === "fast" ? "#e8e0ce" : "#6B4E5E", margin: 0 }}>{waterToday}</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#3a5a3a" : "#b8a0b0", margin: 0 }}>glasses</p>
+          </div>
+          <button onClick={() => { const w = Math.min(15, waterToday + 1); localStorage.setItem("lf_water_today", w); setWaterToday(w); }} style={{ width: 32, height: 32, borderRadius: mode === "fast" ? 5 : "50%", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.3)" : "0.5px solid rgba(160,120,145,0.2)", background: mode === "fast" ? "rgba(184,148,60,0.06)" : "rgba(168,120,152,0.08)", fontSize: 16, cursor: "pointer", color: mode === "fast" ? "#C9A84C" : "#A87898" }}>+</button>
+        </div>
+        <div style={{ display: "flex", gap: 4, marginTop: 10 }}>
+          {[...Array(8)].map((_, i) => (
+            <div key={i} style={{ flex: 1, height: mode === "fast" ? 3 : 5, borderRadius: 2, background: i < waterToday ? (mode === "fast" ? "#C9A84C" : "#A87898") : (mode === "fast" ? "rgba(184,148,60,0.08)" : "rgba(168,120,152,0.1)") }} />
+          ))}
+        </div>
+      </div>
+
+      {/* Streak + Badges */}
+      <div style={{ padding: "4px 16px 8px" }}>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+          <div style={{ background: mode === "fast" ? "rgba(26,58,42,0.9)" : "rgba(212,160,184,0.12)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.4)" : "0.5px solid #D4A0B8", borderRadius: 50, padding: "6px 18px", display: "flex", alignItems: "center", gap: 6, fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#A0607A" }}>
+            <span style={{ fontSize: 14 }}>🔥</span> {streak} day{streak !== 1 ? "s" : ""} fasting streak
+          </div>
+        </div>
+        <div style={{ fontFamily: "sans-serif", fontSize: 9, color: mode === "fast" ? "#3a5a3a" : "#b8a0b0", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Your badges</div>
+        <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4 }}>
+          {[
+            { icon: "🗓️", name: "Streak", prog: `${streak} day${streak !== 1 ? "s" : ""}`, earned: streak > 0 },
+            { icon: "⚡", name: "3 Fasts", prog: `${Math.min(totalFasts, 3)} / 3`, earned: totalFasts >= 3 },
+            ...(mode !== "fast" ? [{ icon: "🌙", name: "Cycle Mo.", prog: `${Math.min(totalFasts, 1)} / 1`, earned: totalFasts >= 1 }] : []),
+            { icon: "💚", name: "Recovery", prog: streak >= 2 ? "Earned" : "Locked", earned: streak >= 2 },
+            { icon: "⏰", name: "On Time", prog: totalFasts >= 5 ? "Earned" : `${Math.min(totalFasts, 5)} / 5`, earned: totalFasts >= 5 },
+            { icon: "🧘", name: "Listen", prog: streak >= 7 ? "Earned" : `${Math.min(streak, 7)} / 7`, earned: streak >= 7 },
+          ].map((b, i) => (
+            <div key={i} style={{
+              flexShrink: 0,
+              background: mode === "fast" ? (b.earned ? "rgba(201,168,76,0.08)" : "rgba(255,255,255,0.03)") : (b.earned ? "rgba(168,120,152,0.08)" : "rgba(255,255,255,0.6)"),
+              border: mode === "fast" ? (b.earned ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(184,148,60,0.1)") : (b.earned ? "0.5px solid rgba(168,120,152,0.3)" : "0.5px solid rgba(160,120,145,0.15)"),
+              borderRadius: mode === "fast" ? 8 : 14, padding: "11px 12px", textAlign: "center", minWidth: 76,
+            }}>
+              <div style={{ fontSize: 19, marginBottom: 4, opacity: b.earned ? 1 : 0.25 }}>{b.icon}</div>
+              <div style={{ fontFamily: "sans-serif", fontSize: 9, color: mode === "fast" ? (b.earned ? "#C9A84C" : "#3a5a3a") : (b.earned ? "#7D5470" : "#b8a0b0"), fontWeight: 500, letterSpacing: "0.05em", textTransform: "uppercase" }}>{b.name}</div>
+              <div style={{ fontFamily: "sans-serif", fontSize: 9, color: mode === "fast" ? "#3a5a3a" : "#b8a0b0", marginTop: 2 }}>{b.prog}</div>
+            </div>
           ))}
         </div>
       </div>
@@ -704,1166 +769,3309 @@ function SoundIntelligencePage({ videoQueue, setVideoQueue }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// POST FROM PHONE  — simplified mobile posting mode
-// ─────────────────────────────────────────────────────────────────────────────
-function PostFromPhonePage({ packages, setPackages, videoQueue, setVideoQueue }) {
-  const [copied, setCopied] = useState(null);
-  const [checkedMusic, setCheckedMusic] = useState({});
-  const [markedPosted, setMarkedPosted] = useState({});
-  const readyPkgs = packages.filter(p=>p.status==="Approved");
+// ─────────────────────────────────────────────
+//  CHECK-IN SCREEN
+// ─────────────────────────────────────────────
+function CheckInScreen({ mode, lastPeriod, onNavigate, onNourishDigestion }) {
+  const today = new Date().toISOString().split("T")[0];
+  const key   = `lf_checkin_${today}`;
+  const autoSave = (() => { try { return JSON.parse(localStorage.getItem("lf_settings"))?.autoSave; } catch (e) { return false; } })();
 
-  const copy = (text, key) => {
-    navigator.clipboard?.writeText(text).catch(()=>{});
-    setCopied(key); setTimeout(()=>setCopied(null),2000);
+  const autoSaveData = (updates) => {
+    if (!autoSave) return;
+    try {
+      const existing = JSON.parse(localStorage.getItem(key)) || {};
+      localStorage.setItem(key, JSON.stringify({ ...existing, ...updates, date: today }));
+    } catch (e) {}
   };
 
-  const markPosted = (id) => {
-    setPackages(prev=>prev.map(p=>p.id===id?{...p,status:"Posted",postedDate:new Date().toISOString().split("T")[0]}:p));
-    setMarkedPosted(prev=>({...prev,[id]:true}));
+  const [saved,  setSaved]  = useState(() => {
+    try { return JSON.parse(localStorage.getItem(key)) || null; } catch { return null; }
+  });
+  const [energy, setEnergy] = useState(3);
+  const [mood,   setMood]   = useState(3);
+  const [flow,   setFlow]   = useState("none");
+  const [notes,  setNotes]  = useState("");
+
+  const save = () => {
+    const data = { energy, mood, flow, notes, date: today, gut, clarity, workout, sleep, water, movement, movements, bodyCheck, weightUnit, namedMood, moodNote, symptoms, bowelCheck: { entries: bowelEntries, didPoopToday: bowelEntries.length > 0 }, morningSignal, driveLevel, hadAlcohol, gotSunlight, libido };
+    localStorage.setItem(key, JSON.stringify(data));
+    setSaved(data);
   };
 
-  return (
-    <div className="fade">
-      <SectionHead title="Post From Phone" sub="Simple posting mode — copy, download, check music, mark as posted"/>
+  const flowOptions  = ["none","spotting","light","medium","heavy"];
+  const gutOptions   = ["good","none","bloating","constipation","diarrhea","cramps","nausea","reflux","gas","sensitive"];
+  const [gut, setGut] = useState([]);
+  const [clarity, setClarity] = useState(3);
+  const [workout, setWorkout] = useState(3);
+  const [sleep, setSleep] = useState(3);
+  const [water, setWater] = useState(() => parseInt(localStorage.getItem("lf_water_today") || "0"));
 
-      {/* Phone mode header */}
-      <div style={{ background:"linear-gradient(135deg,#2d4a3a,#1e3329)", borderRadius:16, padding:"18px 22px", marginBottom:20, display:"flex", gap:14, alignItems:"center" }}>
-        <div style={{ width:44, height:44, borderRadius:12, background:"rgba(143,181,160,0.2)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-          <I n="phone" s={22} c="#8fb5a0"/>
-        </div>
-        <div>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:600, color:"#e8f0e8", marginBottom:4 }}>Ready for phone posting</div>
-          <p style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"rgba(184,201,163,0.8)", lineHeight:1.5 }}>{readyPkgs.length} approved post{readyPkgs.length!==1?"s":""} ready. Copy captions, download assets, check music, then post directly in each app. Come back and mark as posted when done.</p>
+  
+  const [movement, setMovement] = useState("none");
+  const [movements, setMovements] = useState([]);
+  const MOVEMENT_TYPES = ["🚶 Walk","🏃 Run","🏋️ Weights","🧘 Yoga","⚡ HIIT","🚴 Cycling","🏊 Swimming","🏀 Sport","💃 Dance","🤸 Stretching","🌀 Mobility","🧘 Pilates","🌿 Yard work","🔨 Carpentry","🎨 Painting","🧹 Cleaning","📦 Moving","🛒 Errands","🪴 Gardening","🛌 None today","🌙 Rest day"];
+  const INTENSITIES = ["🌿 Gentle","🚶 Moderate","💪 Strong","🔥 Intense","🌙 Recovery"];
+  const DURATIONS = ["5 min","10 min","15 min","20 min","30 min","45 min","60 min","90 min","2 hours","2.5 hours","3 hours","4 hours","5 hours","6 hours","7 hours","8 hours"];
+  const DISTANCES = ["0.5 km","1 km","2 km","5 km","10 km"];
+  const BODY_FOCUS = ["💪 Upper body","🦵 Lower body","✨ Full body","🔥 Core","❤️ Cardio","🌿 Flexibility","⚖️ Balance","🌙 Recovery"];
+  const addMovement = () => setMovements(prev => [...prev, { type: "", intensity: "🌿 Gentle", duration: "20 min", distance: "", bodyFocus: "", lbs: "" }]);
+  const updateMovement = (i, field, val) => setMovements(prev => prev.map((m, idx) => idx === i ? { ...m, [field]: val } : m));
+  const removeMovement = (i) => setMovements(prev => prev.filter((_, idx) => idx !== i));
+  const needsDistance = (type) => ["Walk","Run","Cycling","Swimming"].some(t => type.includes(t));
+  const needsWeight = (type) => type.includes("Weights");
+  const [bodyCheck, setBodyCheck] = useState("");
+  const [symptoms, setSymptoms] = useState([]);
+  const [weightUnit, setWeightUnit] = useState("lbs");
+  const [bowelEntries, setBowelEntries] = useState([]);
+  const [showBowelForm, setShowBowelForm] = useState(false);
+  const [bowelTime, setBowelTime] = useState("");
+  const [bowelTexture, setBowelTexture] = useState("");
+  const [bowelNotes, setBowelNotes] = useState("");
+  const [bowelDate, setBowelDate] = useState(today);
+  const ratingEmojis = ["😞","😔","😐","🙂","😄"];
+  const [namedMood, setNamedMood] = useState(null);
+  const [moodNote, setMoodNote] = useState("");
+  const [showMoodNote, setShowMoodNote] = useState(false);
+  const [morningSignal, setMorningSignal] = useState(null);
+  const [driveLevel, setDriveLevel] = useState(null);
+  const [hadAlcohol, setHadAlcohol] = useState(null);
+  const [gotSunlight, setGotSunlight] = useState(null);
+  const [libido, setLibido] = useState(null);
+  const [showLogPreview, setShowLogPreview] = useState(false);
+  const [selectedPastDay, setSelectedPastDay] = useState(null);
+
+  const NAMED_MOODS = {
+    "Happy":       { emoji: "😊", color: "#7A9E7E", bg: "#F0F6F0", message: "You're glowing today. Let that energy carry you gently through the day.", actions: ["Open Nourish", "Log a fast", "Add Note"] },
+    "Calm":        { emoji: "😌", color: "#7BA8C9", bg: "#EAF2F9", message: "You're in a peaceful place. This is a good time to rest into yourself.", actions: ["Open Nourish", "Add Note"] },
+    "Energized":   { emoji: "⚡", color: "#C9A87B", bg: "#FDF6EA", message: "Your energy is high. Use it with intention — move, create, or connect.", actions: ["Log a fast", "Add Note"] },
+    "Tired":       { emoji: "😴", color: "#8FA090", bg: "#F0F6F0", message: "Your body is asking for rest. One small gentle choice is enough today.", actions: ["Open Nourish", "Ground Me", "Add Note"] },
+    "Sad":         { emoji: "🥺", color: "#9B7BC9", bg: "#F5F0FF", message: "You're feeling tender today. Start with one small supportive choice.", actions: ["Open Nourish", "Ground Me", "Journal Prompt", "Add Note"] },
+    "Anxious":     { emoji: "😰", color: "#9B7BC9", bg: "#F5F0FF", message: "Your nervous system needs softness right now. You are safe and you are okay.", actions: ["Ground Me", "Open Nourish", "Add Note"] },
+    "Irritated":   { emoji: "😤", color: "#C9A87B", bg: "#FDF6EA", message: "Something is asking for your attention. Be gentle with yourself first.", actions: ["Ground Me", "Open Nourish", "Add Note"] },
+    "Emotional":   { emoji: "🥹", color: "#9B7BC9", bg: "#F5F0FF", message: "Feeling deeply is not a weakness. Let yourself feel without judgment.", actions: ["Journal Prompt", "Open Nourish", "Ground Me", "Add Note"] },
+    "Unmotivated": { emoji: "😶", color: "#8FA090", bg: "#F0F6F0", message: "Low motivation is often your body asking for something. Rest counts too.", actions: ["Open Nourish", "Ground Me", "Add Note"] },
+    "Overwhelmed": { emoji: "😵", color: "#C9A87B", bg: "#FDF6EA", message: "One thing at a time. You don't have to do everything today.", actions: ["Ground Me", "Journal Prompt", "Add Note"] },
+  };
+
+  const GROUND_ME = [
+    "Take 5 slow deep breaths — in for 4, hold for 4, out for 4.",
+    "Put both feet flat on the floor. Feel the ground beneath you.",
+    "Name 5 things you can see right now.",
+    "Place your hand on your heart and breathe slowly.",
+    "Drink a glass of cold water slowly and mindfully.",
+    "Step outside for 2 minutes and feel the air.",
+    "Unclench your jaw, drop your shoulders, and exhale.",
+  ];
+
+  const JOURNAL_PROMPTS = [
+    "What is one thing that felt heavy today?",
+    "What do you need most right now that you haven't given yourself?",
+    "What would you say to a friend feeling the way you feel today?",
+    "What is one small thing that brought you comfort today?",
+    "What are you carrying that you could put down, even just for today?",
+  ];
+
+  const [groundPrompt] = useState(() => GROUND_ME[Math.floor(Math.random() * GROUND_ME.length)]);
+  const [journalPrompt] = useState(() => JOURNAL_PROMPTS[Math.floor(Math.random() * JOURNAL_PROMPTS.length)]);
+  const [showGround, setShowGround] = useState(false);
+  const [showJournal, setShowJournal] = useState(false);
+
+if (saved) {
+    const days7 = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const dk = d.toISOString().split("T")[0];
+      const e = localStorage.getItem(`lf_checkin_${dk}`);
+      days7.push({ dk, data: e ? (() => { try { return JSON.parse(e); } catch { return null; } })() : null, label: d.toLocaleDateString("en-CA", { weekday: "short" }) });
+    }
+    const totalMins = (saved.movements || []).reduce((acc, m) => acc + (parseInt(m.duration) || 0), 0);
+    const history = [];
+    for (let i = 1; i <= 7; i++) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const dk = d.toISOString().split("T")[0];
+      const e = localStorage.getItem(`lf_checkin_${dk}`);
+      if (e) { try { history.push({ ...JSON.parse(e), dk }); } catch {} }
+    }
+    const insight = (() => {
+      const issues = [...(saved.gut || []).filter(g => g !== "good"), ...(saved.symptoms || [])];
+      if (issues.length > 0) return `You logged ${issues.slice(0,3).join(", ")} today. Keep things gentle, hydrate, and notice how sleep, food, and your cycle may be shaping how you feel.`;
+      if ((saved.energy || 3) >= 4) return `Your energy is ${(saved.energy||3) >= 5 ? "great" : "good"} today! A wonderful time to move, create, or connect with yourself.`;
+      return "Every check-in is a small act of self-awareness. You are building a picture of your body over time — that is powerful.";
+    })();
+    return (
+    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: getSeasonalBg(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))), minHeight: "100vh" }}>
+      <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.75)", borderRadius: 20, padding: 20, marginBottom: 16, textAlign: "center", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid rgba(180,160,210,0.3)" }}>
+        <p style={{ fontSize: 28, marginBottom: 6 }}>✦</p>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 18, color: "#2D3B2E", marginBottom: 4 }}>Today's check-in saved!</p>
+        <p style={{ fontSize: 12, color: "#8FA090" }}>Come back tomorrow 🌿</p>
+      </div>
+      <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 10px" }}>Today's Snapshot ✦</p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+        {[
+          { label: "⚡ Energy", value: ["Very low","Low","Neutral","Good","Great"][(saved.energy||3)-1] },
+          { label: "🌙 Sleep",  value: ["Poor","Light","Fair","Good","Great"][(saved.sleep||3)-1] },
+          { label: "💧 Water",  value: `${saved.water||0} glasses` },
+          { label: "💭 Mood",   value: saved.namedMood || (saved.namedMoods||[]).slice(0,2).join(", ") || "—" },
+        ].map((item,i) => (
+          <div key={i} style={{ background: "#fff", borderRadius: 14, border: "0.5px solid #dce8dc", padding: "10px 12px" }}>
+            <p style={{ fontSize: 10, color: "#8FA090", margin: "0 0 4px" }}>{item.label}</p>
+            <p style={{ fontSize: 13, color: "#2D3B2E", fontWeight: 600, margin: 0 }}>{item.value}</p>
+          </div>
+        ))}
+        {mode !== "fast" && saved.flow && saved.flow !== "none" && (
+          <div style={{ background: "#FDEAEA", borderRadius: 14, border: "0.5px solid #C97B7B22", padding: "10px 12px" }}>
+            <p style={{ fontSize: 10, color: "#C97B7B", margin: "0 0 4px" }}>🩸 Flow</p>
+            <p style={{ fontSize: 13, color: "#C97B7B", fontWeight: 600, margin: 0, textTransform: "capitalize" }}>{saved.flow}</p>
+          </div>
+        )}
+        {saved.gut && saved.gut.length > 0 && (
+          <div style={{ background: "#F5F0FF", borderRadius: 14, border: "0.5px solid rgba(155,123,201,0.2)", padding: "10px 12px" }}>
+            <p style={{ fontSize: 10, color: "#9B7BC9", margin: "0 0 4px" }}>🦠 Gut</p>
+            <p style={{ fontSize: 12, color: "#9B7BC9", fontWeight: 600, margin: 0 }}>{Array.isArray(saved.gut) ? saved.gut.slice(0,2).join(", ") : saved.gut}</p>
+          </div>
+        )}
+        {saved.movements && saved.movements.length > 0 && (
+          <div style={{ gridColumn: "1/-1", background: "#fff", borderRadius: 14, border: "0.5px solid #dce8dc", padding: "10px 12px" }}>
+            <p style={{ fontSize: 10, color: "#8FA090", margin: "0 0 4px" }}>🏃 Movement — {totalMins} min total</p>
+            <p style={{ fontSize: 12, color: "#2D3B2E", fontWeight: 600, margin: 0 }}>{saved.movements.map(m => `${m.type} ${m.duration}`).join(" · ")}</p>
+          </div>
+        )}
+        {!saved.movements && saved.movement && saved.movement !== "none" && (
+          <div style={{ background: "#fff", borderRadius: 14, border: "0.5px solid #dce8dc", padding: "10px 12px" }}>
+            <p style={{ fontSize: 10, color: "#8FA090", margin: "0 0 4px" }}>🏃 Movement</p>
+            <p style={{ fontSize: 13, color: "#2D3B2E", fontWeight: 600, margin: 0, textTransform: "capitalize" }}>{saved.movement}</p>
+          </div>
+        )}
+        {saved.bodyCheck && (
+          <div style={{ background: "#fff", borderRadius: 14, border: "0.5px solid #dce8dc", padding: "10px 12px" }}>
+            <p style={{ fontSize: 10, color: "#8FA090", margin: "0 0 4px" }}>🌿 Body check</p>
+            <p style={{ fontSize: 13, color: "#2D3B2E", fontWeight: 600, margin: 0 }}>{saved.bodyCheck} {saved.weightUnit || "lbs"}</p>
+          </div>
+        )}
+        {saved.symptoms && saved.symptoms.length > 0 && (
+          <div style={{ background: mode === "fast" ? "rgba(122,158,126,0.1)" : "#FDEAEA", borderRadius: 14, border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid rgba(201,123,123,0.2)", padding: "10px 12px" }}>
+            <p style={{ fontSize: 10, color: mode === "fast" ? "#7A9E7E" : "#C97B7B", margin: "0 0 4px" }}>🩺 Symptoms</p>
+            <p style={{ fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#C97B7B", fontWeight: 600, margin: 0 }}>{saved.symptoms.slice(0,2).join(", ")}</p>
+          </div>
+        )}
+      </div>
+      <button onClick={() => setSaved(null)} style={{ width: "100%", padding: "10px", borderRadius: 50, border: "0.5px solid #dce8dc", background: "#fff", color: "#5C7F60", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", marginBottom: 20 }}>✎ Edit Check-In</button>
+      <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>Your Lumen Trends ✦</p>
+      <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Last 7 days</p>
+      <div style={{ background: "linear-gradient(135deg, #F0F8F0, #fff)", borderRadius: 18, border: "0.5px solid rgba(122,158,126,0.3)", padding: "14px 16px", marginBottom: 12 }}>
+        <p style={{ fontSize: 11, color: "#7A9E7E", fontWeight: 600, margin: "0 0 10px" }}>⚡ Energy</p>
+        <svg width="100%" height="80" viewBox="0 0 300 80" preserveAspectRatio="none">
+          {days7.map((day, i) => { const val = day.data?.energy || 0; const x = (i/6)*260+20; const y = val ? 70-((val-1)/4)*55 : null; return y ? <circle key={i} cx={x} cy={y} r="4" fill={i===6?"#7A9E7E":"#C5D9C5"} /> : null; })}
+          {days7.map((day, i) => { if (i===0) return null; const prev=days7[i-1]; const v1=prev.data?.energy; const v2=day.data?.energy; if (!v1||!v2) return null; const x1=((i-1)/6)*260+20; const y1=70-((v1-1)/4)*55; const x2=(i/6)*260+20; const y2=70-((v2-1)/4)*55; return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#C5D9C5" strokeWidth="2" />; })}
+          {days7.map((day, i) => <text key={i} x={(i/6)*260+20} y="78" textAnchor="middle" fontSize="8" fill="#A8BEA8">{day.label}</text>)}
+        </svg>
+      </div>
+      <div style={{ background: "linear-gradient(135deg, #F5F0FF, #fff)", borderRadius: 18, border: "0.5px solid rgba(155,123,201,0.3)", padding: "14px 16px", marginBottom: 12 }}>
+        <p style={{ fontSize: 11, color: "#9B7BC9", fontWeight: 600, margin: "0 0 10px" }}>🌙 Sleep quality</p>
+        <svg width="100%" height="80" viewBox="0 0 300 80" preserveAspectRatio="none">
+          {days7.map((day, i) => { const val = day.data?.sleep || 0; const x = (i/6)*260+20; const y = val ? 70-((val-1)/4)*55 : null; return y ? <circle key={i} cx={x} cy={y} r="4" fill={i===6?"#9B7BC9":"#D4C5E9"} /> : null; })}
+          {days7.map((day, i) => { if (i===0) return null; const prev=days7[i-1]; const v1=prev.data?.sleep; const v2=day.data?.sleep; if (!v1||!v2) return null; const x1=((i-1)/6)*260+20; const y1=70-((v1-1)/4)*55; const x2=(i/6)*260+20; const y2=70-((v2-1)/4)*55; return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#D4C5E9" strokeWidth="2" />; })}
+          {days7.map((day, i) => <text key={i} x={(i/6)*260+20} y="78" textAnchor="middle" fontSize="8" fill="#A8BEA8">{day.label}</text>)}
+        </svg>
+      </div>
+      <div style={{ background: "linear-gradient(135deg, #EAF4FF, #fff)", borderRadius: 18, border: "0.5px solid rgba(123,168,201,0.3)", padding: "14px 16px", marginBottom: 12 }}>
+        <p style={{ fontSize: 11, color: "#7BA8C9", fontWeight: 600, margin: "0 0 10px" }}>💧 Water intake</p>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 60 }}>
+          {days7.map((day, i) => { const val = Math.min(day.data?.water || 0, 10); return (
+            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+              <div style={{ width: "100%", height: `${val ? Math.max(4, val*5) : 4}px`, background: i===6?"#7BA8C9":"#B5D4F4", borderRadius: "4px 4px 0 0" }} />
+              <span style={{ fontSize: 8, color: "#A8BEA8" }}>{day.label}</span>
+            </div>
+          ); })}
         </div>
       </div>
-
-      {readyPkgs.length===0 ? (
-        <Card style={{ padding:"50px 0", textAlign:"center" }}>
-          <div style={{ fontSize:36, marginBottom:12 }}>💚</div>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, color:"#2d4a3a" }}>Nothing ready to post right now.</div>
-          <div style={{ fontFamily:"'Jost',sans-serif", fontSize:13, color:"#7a8a7a", marginTop:6 }}>Go to Approvals to approve content first.</div>
-        </Card>
-      ) : (
-        <div>
-          {readyPkgs.map(pkg=>{
-            const vid = videoQueue.find(v=>v.topic===pkg.title);
-            const musicOk = !vid || vid.music.musicAdded || vid.music.musicStatus==="Not Needed";
-            const isPosted = markedPosted[pkg.id];
+      {saved.movements && saved.movements.length > 0 && (
+        <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+          <p style={{ fontSize: 11, color: "#C9A87B", fontWeight: 600, margin: "0 0 10px" }}>🏃 Movement breakdown</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#EAF2EA" strokeWidth="12"/>
+              {saved.movements.slice(0,4).map((m, i) => { const colors=["#7BA8C9","#7A9E7E","#C9A87B","#9B7BC9"]; const total=saved.movements.reduce((a,mv)=>a+(parseInt(mv.duration)||0),0)||1; const pct=(parseInt(m.duration)||0)/total; const circ=2*Math.PI*30; const off=saved.movements.slice(0,i).reduce((a,mv)=>a+((parseInt(mv.duration)||0)/total)*circ,0); return <circle key={i} cx="40" cy="40" r="30" fill="none" stroke={colors[i]} strokeWidth="12" strokeDasharray={`${pct*circ} ${circ}`} strokeDashoffset={-(off-circ/4)} transform="rotate(-90 40 40)" />; })}
+              <text x="40" y="37" textAnchor="middle" fontSize="11" fontWeight="500" fill="#2D3B2E">{totalMins}</text>
+              <text x="40" y="49" textAnchor="middle" fontSize="8" fill="#8FA090">min</text>
+            </svg>
+            <div style={{ flex: 1 }}>
+              {saved.movements.slice(0,4).map((m, i) => { const colors=["#7BA8C9","#7A9E7E","#C9A87B","#9B7BC9"]; return (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 2, background: colors[i], flexShrink: 0 }} />
+                  <span style={{ fontSize: 11, color: "#2D3B2E" }}>{m.type || "Activity"}</span>
+                  <span style={{ fontSize: 11, color: "#8FA090", marginLeft: "auto" }}>{m.duration}</span>
+                </div>
+              ); })}
+            </div>
+          </div>
+        </div>
+      )}
+      <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+        <p style={{ fontSize: 11, color: mode === "fast" ? "#7A9E7E" : "#C97B7B", fontWeight: 600, margin: "0 0 10px" }}>💭 Mood this week</p>
+        <div style={{ display: "flex", gap: 4 }}>
+          {days7.map((day, i) => { const moods=day.data?.namedMoods||[]; const moodMap={Happy:"😊",Calm:"😌",Energized:"⚡",Tired:"😴",Sad:"🥺",Anxious:"😰",Irritated:"😤",Emotional:"🥹",Unmotivated:"😶",Overwhelmed:"😵"}; const emoji=moods.length>0?(moodMap[moods[0]]||"🌿"):day.data?.namedMood?(moodMap[day.data.namedMood]||"🌿"):"·"; return (
+            <div key={i} style={{ flex: 1, textAlign: "center" }}>
+              <div style={{ fontSize: 16 }}>{emoji}</div>
+              <div style={{ fontSize: 8, color: "#A8BEA8", marginTop: 2 }}>{day.label}</div>
+            </div>
+          ); })}
+        </div>
+      </div>
+      <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "#fff", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <p style={{ fontSize: 11, color: "#7A9E7E", fontWeight: 600, margin: 0 }}>🚽 Bowel Movement — last 7 days</p>
+          <button onClick={() => onNourishDigestion && onNourishDigestion()} style={{ background: "rgba(122,158,126,0.1)", border: "0.5px solid rgba(122,158,126,0.3)", borderRadius: 50, padding: "4px 10px", fontFamily: "sans-serif", fontSize: 10, color: "#7A9E7E", cursor: "pointer" }}>🌱 Get support ›</button>
+        </div>
+        <div style={{ display: "flex", gap: 4 }}>
+          {days7.map((day, i) => {
+            const bowel = day.data?.bowelCheck;
+            const entries = bowel?.entries || [];
+            const count = entries.length;
+            const didPoop = bowel?.didPoopToday || count > 0;
+            const textures = entries.map(e => e.texture || "");
+            const hasHard = textures.some(t => t.includes("Rocky") || t.includes("pellets") || t.includes("Straining") || t.includes("Painful"));
+            const hasLoose = textures.some(t => t.includes("Liquid") || t.includes("Semi-liquid"));
+            const color = count === 0 ? "rgba(150,150,150,0.08)" : hasHard ? "#C97B7B" : hasLoose ? "#7BA8C9" : "#7A9E7E";
+            const display = count === 0 ? "·" : count > 1 ? `${count}x` : "✅";
             return (
-              <div key={pkg.id} className="phone-card" style={{ opacity:isPosted?0.55:1, transition:"opacity 0.3s" }}>
-                {/* Post header */}
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
-                  <div>
-                    <div style={{ display:"flex", gap:6, marginBottom:5, flexWrap:"wrap" }}>
-                      {pkg.platforms.map(p=><span key={p} style={{ padding:"2px 8px", borderRadius:10, fontSize:10, fontFamily:"'Jost',sans-serif", fontWeight:700, background:"#e8f0e8", color:"#3a5a4a" }}>{p}</span>)}
-                      <PhaseDot phase={pkg.phase}/>
-                      <GrowthTagBadge tag={(pkg.growthTags||[])[0]||"Education"}/>
-                    </div>
-                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:17, fontWeight:600, color:"#2d4a3a" }}>{pkg.title}</div>
-                  </div>
-                  {isPosted && <span style={{ background:"#5a8a6a", color:"white", borderRadius:10, padding:"3px 10px", fontFamily:"'Jost',sans-serif", fontSize:11, fontWeight:700 }}>✓ Posted</span>}
-                </div>
-
-                {/* Pre-post checklist */}
-                <div style={{ background:"#f5f0e8", borderRadius:10, padding:12, marginBottom:12 }}>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:8 }}>Pre-post checklist</div>
-                  {[
-                    ["Caption ready", true],
-                    ["Asset downloaded", true],
-                    ["Music added", musicOk],
-                    ["CTA includes link in bio", pkg.cta?.includes("link in bio")],
-                  ].map(([l,done])=>(
-                    <div key={l} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5 }}>
-                      <div style={{ width:16, height:16, borderRadius:"50%", background:done?"#5a8a6a":"#e0c8a0", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                        {done ? <I n="check" s={10} c="white"/> : <span style={{ fontSize:10, color:"#c08040" }}>!</span>}
-                      </div>
-                      <span style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:done?"#2d4a3a":"#8a7030" }}>{l}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Music warning if needed */}
-                {vid && !musicOk && (
-                  <div className="music-warn" style={{ marginBottom:12 }}>
-                    <I n="music" s={14} c="#c08040"/>
-                    <div>
-                      <div style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#7a5020", fontWeight:600, marginBottom:3 }}>Music not yet added</div>
-                      <div style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#7a5020", lineHeight:1.5 }}>Recommended: {vid.music.recommendedType}. Search inside {vid.platform}: <strong>"{vid.music.searchTerms[0]}"</strong>. You can still post without music — but saves may be lower.</div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Caption */}
-                <div style={{ background:"white", borderRadius:10, border:"1px solid #e8e0d0", padding:12, marginBottom:10 }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
-                    <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#8a9a8a", textTransform:"uppercase", letterSpacing:"0.1em" }}>Caption 💚</div>
-                    <button onClick={()=>copy(pkg.caption,`cap-${pkg.id}`)} style={{ background:copied===`cap-${pkg.id}`?"#5a8a6a":"#e8f0e8", border:"none", borderRadius:7, padding:"4px 10px", fontFamily:"'Jost',sans-serif", fontSize:10, color:copied===`cap-${pkg.id}`?"white":"#3a6a4a", cursor:"pointer", display:"flex", alignItems:"center", gap:4, transition:"all 0.2s" }}>
-                      <I n="copy" s={11} c={copied===`cap-${pkg.id}`?"white":"#3a6a4a"}/>
-                      {copied===`cap-${pkg.id}`?"Copied!":"Copy"}
-                    </button>
-                  </div>
-                  <p style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#2d4a3a", lineHeight:1.65 }}>{pkg.caption}</p>
-                </div>
-
-                {/* Hashtags */}
-                <div style={{ background:"white", borderRadius:10, border:"1px solid #e8e0d0", padding:10, marginBottom:10, display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
-                  <p style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#5a8a6a", lineHeight:1.6, flex:1 }}>{pkg.hashtags}</p>
-                  <button onClick={()=>copy(pkg.hashtags,`hash-${pkg.id}`)} style={{ background:copied===`hash-${pkg.id}`?"#5a8a6a":"#e8f0e8", border:"none", borderRadius:7, padding:"4px 10px", fontFamily:"'Jost',sans-serif", fontSize:10, color:copied===`hash-${pkg.id}`?"white":"#3a6a4a", cursor:"pointer", flexShrink:0, marginLeft:10, transition:"all 0.2s" }}>
-                    {copied===`hash-${pkg.id}`?"✓":"Copy"}
-                  </button>
-                </div>
-
-                {/* CTA */}
-                <div style={{ background:"white", borderRadius:10, border:"1px solid #e8e0d0", padding:10, marginBottom:14, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <span style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#2d4a3a" }}>{pkg.cta}</span>
-                  <button onClick={()=>copy(pkg.cta,`cta-${pkg.id}`)} style={{ background:copied===`cta-${pkg.id}`?"#5a8a6a":"#e8f0e8", border:"none", borderRadius:7, padding:"4px 10px", fontFamily:"'Jost',sans-serif", fontSize:10, color:copied===`cta-${pkg.id}`?"white":"#3a6a4a", cursor:"pointer", flexShrink:0, marginLeft:10, transition:"all 0.2s" }}>
-                    {copied===`cta-${pkg.id}`?"✓":"Copy"}
-                  </button>
-                </div>
-
-                {/* Actions */}
-                <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-                  <Btn variant="ghost" style={{ fontSize:11 }}><I n="download" s={12}/> Download Asset</Btn>
-                  {vid && (
-                    <Btn variant="sm" onClick={()=>{}} style={{ background:"#f0f8f4", color:"#3a6a4a" }}><I n="music" s={11}/> {vid.music.musicAdded?"Music Added":"Add Music First"}</Btn>
-                  )}
-                  <Btn onClick={()=>markPosted(pkg.id)} disabled={isPosted} style={{ marginLeft:"auto", padding:"10px 18px", fontSize:12 }}>
-                    <I n="check" s={13} c="white"/> {isPosted?"Posted!":"Mark as Posted"}
-                  </Btn>
-                </div>
+              <div key={i} style={{ flex: 1, textAlign: "center" }}>
+                <div style={{ width: "100%", height: 28, borderRadius: 6, background: color, border: "0.5px solid rgba(150,150,150,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: count > 1 ? 10 : 12, fontWeight: count > 1 ? 700 : 400, color: count > 0 ? "#fff" : "#A8BEA8", fontFamily: "sans-serif" }}>{display}</div>
+                <div style={{ fontSize: 8, color: "#A8BEA8", marginTop: 3 }}>{day.label}</div>
               </div>
             );
           })}
         </div>
+        <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
+          {[["#7A9E7E","Normal / Soft"],["#C97B7B","Hard / Straining"],["#7BA8C9","Loose / Liquid"],["#C9A87B","Logged"]].map(([color, label]) => (
+            <div key={label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <div style={{ width: 8, height: 8, borderRadius: 2, background: color }} />
+              <span style={{ fontFamily: "sans-serif", fontSize: 9, color: "#6b7b6b" }}>{label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "#fff", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+        <p style={{ fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", fontWeight: 600, margin: "0 0 12px" }}>✦ Today's wellness snapshot</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <svg width="90" height="90" viewBox="0 0 90 90">
+            {(() => {
+              const segments = [
+                { label: "Energy", value: saved.energy || 0, max: 5, color: "#7A9E7E" },
+                { label: "Sleep", value: saved.sleep || 0, max: 5, color: "#9B7BC9" },
+                { label: "Water", value: Math.min(saved.water || 0, 8), max: 8, color: "#7BA8C9" },
+                { label: "Mood", value: saved.namedMood ? 1 : 0, max: 1, color: "#C9A87B" },
+                { label: "Movement", value: saved.movements?.length ? 1 : 0, max: 1, color: "#C97B7B" },
+              ];
+              const total = segments.reduce((a, s) => a + s.max, 0);
+              const filled = segments.reduce((a, s) => a + s.value, 0);
+              const pct = Math.round((filled / total) * 100);
+              let offset = 0;
+              const circ = 2 * Math.PI * 35;
+              return (
+                <>
+                  <circle cx="45" cy="45" r="35" fill="none" stroke={mode === "fast" ? "rgba(255,255,255,0.06)" : "#F0F6F0"} strokeWidth="14" />
+                  {segments.map((seg, i) => {
+                    const segPct = seg.value / total;
+                    const segLen = segPct * circ;
+                    const segOffset = -(offset * circ / total) + circ / 4;
+                    offset += seg.value;
+                    if (seg.value === 0) return null;
+                    return <circle key={i} cx="45" cy="45" r="35" fill="none" stroke={seg.color} strokeWidth="14" strokeDasharray={`${segLen} ${circ}`} strokeDashoffset={segOffset} transform="rotate(-90 45 45)" />;
+                  })}
+                  <text x="45" y="42" textAnchor="middle" fontSize="13" fontWeight="600" fill={mode === "fast" ? "#e8e0ce" : "#2D3B2E"}>{pct}%</text>
+                  <text x="45" y="54" textAnchor="middle" fontSize="8" fill="#8FA090">logged</text>
+                </>
+              );
+            })()}
+          </svg>
+          <div style={{ flex: 1 }}>
+            {[
+              { label: "⚡ Energy", value: saved.energy ? ["Very low","Low","Neutral","Good","Great"][saved.energy-1] : "—", color: "#7A9E7E" },
+              { label: "🌙 Sleep", value: saved.sleep ? ["Poor","Light","Fair","Good","Great"][saved.sleep-1] : "—", color: "#9B7BC9" },
+              { label: "💧 Water", value: saved.water ? `${saved.water} glasses` : "—", color: "#7BA8C9" },
+              { label: "💭 Mood", value: saved.namedMood || "—", color: "#C9A87B" },
+              { label: "🏃 Movement", value: saved.movements?.length ? `${saved.movements.length} logged` : "—", color: "#C97B7B" },
+            ].map((item, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
+                <span style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090" }}>{item.label}</span>
+                <span style={{ fontFamily: "sans-serif", fontSize: 11, color: item.value === "—" ? "#d0d0d0" : item.color, fontWeight: 600 }}>{item.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {mode === "fast" && (() => {
+        const last7 = [];
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(); d.setDate(d.getDate() - i);
+          const dk = d.toISOString().split("T")[0];
+          try { const e = JSON.parse(localStorage.getItem(`lf_checkin_${dk}`)); if (e) last7.push(e); } catch {}
+        }
+        const drives = last7.filter(e => e.driveLevel).map(e => e.driveLevel);
+        const signals = last7.filter(e => e.morningSignal).map(e => e.morningSignal);
+        const alcoholDays = last7.filter(e => e.hadAlcohol && e.hadAlcohol !== "None").length;
+        const highDrive = drives.filter(d => d === "🔥 High").length;
+        const lowDrive = drives.filter(d => d === "💤 Low" || d === "— None").length;
+        const strongSignal = signals.filter(s => s === "✅ Strong").length;
+        if (last7.length === 0) return null;
+        return (
+          <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 18, border: "0.5px solid rgba(201,168,76,0.2)", padding: 16, marginBottom: 12 }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#C9A84C", margin: "0 0 12px" }}>⚡ Performance Pattern ✦</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {drives.length > 0 && (
+                <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: "10px 12px" }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#7A9E7E", margin: "0 0 4px" }}>🔥 Drive this week</p>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#e8e0ce", margin: 0 }}>
+                    {highDrive > lowDrive ? `${highDrive} high days — good week` : lowDrive > highDrive ? `${lowDrive} low days — check sleep and stress` : "Mixed — track patterns over time"}
+                  </p>
+                </div>
+              )}
+              {signals.length > 0 && (
+                <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: "10px 12px" }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#7A9E7E", margin: "0 0 4px" }}>🌅 Morning signal this week</p>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#e8e0ce", margin: 0 }}>
+                    {strongSignal >= 4 ? `${strongSignal} strong mornings — testosterone looking good` : strongSignal >= 2 ? `${strongSignal} strong mornings — room to improve` : "Low signal week — prioritise sleep and reduce alcohol"}
+                  </p>
+                </div>
+              )}
+              {alcoholDays > 0 && (
+                <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: "10px 12px" }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#7A9E7E", margin: "0 0 4px" }}>🍺 Alcohol this week</p>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#e8e0ce", margin: 0 }}>
+                    {alcoholDays >= 4 ? `${alcoholDays} days — likely affecting drive and sleep quality` : alcoholDays >= 2 ? `${alcoholDays} days — may be affecting recovery` : `${alcoholDays} day — minimal impact`}
+                  </p>
+                </div>
+              )}
+              {drives.length === 0 && signals.length === 0 && (
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#7A9E7E", margin: 0, lineHeight: 1.6 }}>Log your morning signal and drive in Check-In to see your performance patterns here.</p>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      <div style={{ background: "#F8F0FF", borderRadius: 18, border: "0.5px solid rgba(155,123,201,0.2)", padding: 16, marginBottom: 16 }}>
+        {(() => {
+          const weightData = days7.filter(d => d.data?.bodyCheck && !isNaN(parseFloat(d.data.bodyCheck)));
+          if (weightData.length < 2) return null;
+          const weights = weightData.map(d => parseFloat(d.data.bodyCheck));
+          const unit = weightData[weightData.length-1].data?.weightUnit || "lbs";
+          const minW = Math.min(...weights) - 2;
+          const maxW = Math.max(...weights) + 2;
+          const range = maxW - minW || 1;
+          const w = 280; const h = 60;
+          const points = weightData.map((d, i) => {
+            const x = (i / (weightData.length - 1)) * w;
+            const y = h - ((parseFloat(d.data.bodyCheck) - minW) / range) * h;
+            return `${x},${y}`;
+          }).join(" ");
+          return (
+            <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "#fff", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+              <p style={{ fontSize: 11, color: "#7A9E7E", fontWeight: 600, margin: "0 0 10px" }}>🌿 Body — last 7 days ({unit})</p>
+              <svg width="100%" viewBox={`0 0 ${w} ${h}`} style={{ overflow: "visible" }}>
+                <polyline points={points} fill="none" stroke={mode === "fast" ? "#C9A84C" : "#9B7BC9"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                {weightData.map((d, i) => {
+                  const x = (i / (weightData.length - 1)) * w;
+                  const y = h - ((parseFloat(d.data.bodyCheck) - minW) / range) * h;
+                  return (
+                    <g key={i}>
+                      <circle cx={x} cy={y} r="4" fill={mode === "fast" ? "#C9A84C" : "#9B7BC9"}/>
+                      <text x={x} y={y - 8} textAnchor="middle" fontSize="8" fill={mode === "fast" ? "#C9A84C" : "#9B7BC9"}>{d.data.bodyCheck}</text>
+                      <text x={x} y={h + 12} textAnchor="middle" fontSize="8" fill="#A8BEA8">{d.label}</text>
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+          );
+        })()}
+
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#9B7BC9", margin: "0 0 8px" }}>Today's Lumen Note ✦</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>{insight}</p>
+      </div>
+      {history.length > 0 && (
+        <div style={{ background: "#fff", borderRadius: 18, border: "0.5px solid #dce8dc", padding: "14px 16px", marginBottom: 12 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 12px" }}>Recent Check-Ins ✦</p>
+          {history.slice(0,3).map((entry, i) => (
+            <div key={i} onClick={() => setSelectedPastDay(entry)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? "0.5px solid #EAF2EA" : "none", cursor: "pointer" }}>
+              <div>
+                <p style={{ fontSize: 11, color: "#8FA090", margin: "0 0 2px" }}>{new Date(entry.dk + "T12:00:00").toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" })}</p>
+                <p style={{ fontSize: 13, color: "#2D3B2E", margin: 0 }}>{["Very low","Low","Neutral","Good","Great"][(entry.energy||3)-1]} · {entry.water||0} glasses</p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 11, color: "#C97B7B", background: "#FDEAEA", padding: "3px 8px", borderRadius: 50 }}>
+                  {(entry.symptoms||[]).length > 0 ? entry.symptoms[0] : (entry.namedMoods||[])[0] || entry.namedMood || "—"}
+                </span>
+                <span style={{ fontSize: 14, color: "#8FA090" }}>›</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+    );
+  }
+  return (
+    <div style={{ padding: "16px 16px 90px", background: getSeasonalBg(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))), minHeight: "100vh" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+        <h3 style={{ ...s.title, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: 0 }}>Daily Check-In {mode !== "fast" ? "🌸" : ""}</h3>
+        <button onClick={() => setShowLogPreview(true)} style={{ background: mode === "fast" ? "rgba(201,168,76,0.1)" : "rgba(155,123,201,0.1)", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(155,123,201,0.3)", borderRadius: 50, padding: "6px 12px", fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", cursor: "pointer" }}>📋 View log</button>
+      </div>
+      <p style={{ ...s.label, marginBottom: 20 }}>How are you feeling today?</p>
+
+      {showLogPreview && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setShowLogPreview(false)}>
+          <div style={{ background: mode === "fast" ? "#1a2f1e" : "#fff", borderRadius: 24, padding: 24, width: "100%", maxWidth: 400, position: "relative" }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowLogPreview(false)} style={{ position: "absolute", top: 12, right: 16, background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#8FA090" }}>✕</button>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 16px" }}>📋 Today so far</p>
+            {(() => {
+              try {
+                const existing = JSON.parse(localStorage.getItem(key)) || {};
+                if (Object.keys(existing).length === 0) return <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#8FA090", textAlign: "center" }}>Nothing logged yet today.</p>;
+                return (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    {[
+                      { label: "⚡ Energy", value: existing.energy ? ["Very low","Low","Neutral","Good","Great"][existing.energy-1] : "—" },
+                      { label: "🌙 Sleep", value: existing.sleep ? ["Poor","Light","Fair","Good","Great"][existing.sleep-1] : "—" },
+                      { label: "💧 Water", value: existing.water ? `${existing.water} glasses` : "—" },
+                      { label: "💭 Mood", value: existing.namedMood || "—" },
+                      { label: "🚽 Bowel", value: existing.bowelCheck?.entries?.length ? `${existing.bowelCheck.entries.length} logged` : "—" },
+                      { label: "🩺 Symptoms", value: existing.symptoms?.length ? existing.symptoms.slice(0,2).join(", ") : "—" },
+                      { label: "🌿 Body", value: existing.bodyCheck ? `${existing.bodyCheck} ${existing.weightUnit||"lbs"}` : "—" },
+                      { label: "🏃 Movement", value: existing.movements?.length ? `${existing.movements.length} logged` : "—" },
+                    ].map((item, i) => (
+                      <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "#F8FAF8", borderRadius: 10, padding: "8px 10px", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.2)" : "0.5px solid #dce8dc" }}>
+                        <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 3px" }}>{item.label}</p>
+                        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", fontWeight: 600, margin: 0 }}>{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                );
+              } catch (e) { return null; }
+            })()}
+            <button onClick={() => setShowLogPreview(false)} style={{ ...s.btn, marginTop: 16, background: mode === "fast" ? "#7A9E7E" : "linear-gradient(135deg, #C4809A, #A87898)", fontSize: 13 }}>Close</button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>⚡ Energy</p>
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          {ratingEmojis.map((e, i) => (
+            <button key={i} onClick={() => setEnergy(i + 1)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "8px 2px", borderRadius: 12, border: `0.5px solid ${energy===i+1?"#7A9E7E":"transparent"}`, background: energy===i+1?"rgba(122,158,126,0.1)":"none", cursor: "pointer" }}>
+              <span style={{ fontSize: 24 }}>{e}</span>
+              <span style={{ fontSize: 8, color: energy===i+1?"#7A9E7E":"#A8BEA8" }}>{["Very low","Low","Neutral","Good","Great"][i]}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {mode === "fast" && <div style={{ ...s.card, background: "rgba(255,255,255,0.07)", border: "0.5px solid rgba(122,158,126,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#C9A84C", margin: "0 0 4px" }}>⚡ Morning Report</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#7A9E7E", margin: "0 0 12px" }}>Your daily performance signals — private, data only, no judgment.</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🌅 Morning signal</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+          {["✅ Strong","〰️ Partial","❌ None","💤 Didn't notice"].map(opt => (
+            <button key={opt} onClick={() => setMorningSignal(morningSignal === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: morningSignal === opt ? "#7A9E7E" : "rgba(255,255,255,0.06)", color: morningSignal === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🔥 Drive today</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+          {["🔥 High","⚡ Medium","💤 Low","— None"].map(opt => (
+            <button key={opt} onClick={() => setDriveLevel(driveLevel === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: driveLevel === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: driveLevel === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🌶️ Libido today</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+          {["🔥 High","😏 Moderate","😐 Low","— None"].map(opt => (
+            <button key={opt} onClick={() => setLibido(libido === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: libido === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: libido === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🍺 Alcohol yesterday</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+          {["None","1–2 drinks","3+ drinks"].map(opt => (
+            <button key={opt} onClick={() => setHadAlcohol(hadAlcohol === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: hadAlcohol === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: hadAlcohol === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🌞 Sunlight today</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+          {["✅ Got outside","❌ Stayed in"].map(opt => (
+            <button key={opt} onClick={() => setGotSunlight(gotSunlight === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: gotSunlight === opt ? "#7A9E7E" : "rgba(255,255,255,0.06)", color: gotSunlight === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+        {(morningSignal || driveLevel || hadAlcohol === "1–2 drinks" || hadAlcohol === "3+ drinks" || gotSunlight === "❌ Stayed in") && (
+          <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: "12px 14px", marginTop: 10, borderLeft: "3px solid #C9A84C" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 12, color: "#C9A84C", margin: "0 0 6px" }}>⚡ What your data says</p>
+            {hadAlcohol && hadAlcohol !== "None" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🍺 Alcohol affects testosterone and sleep quality. You may notice lower drive or energy today.</p>}
+            {morningSignal === "❌ None" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🌅 No morning signal can be linked to poor sleep, stress, alcohol, or low testosterone. Track it over time.</p>}
+            {(driveLevel === "💤 Low" || driveLevel === "— None") && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🔥 Low drive is often linked to poor sleep, high stress, or low zinc and magnesium. Fasting may help restore it over time.</p>}
+            {gotSunlight === "❌ Stayed in" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🌞 Morning sunlight supports testosterone and circadian rhythm. Even 10 minutes outside makes a difference.</p>}
+            {driveLevel === "🔥 High" && morningSignal === "✅ Strong" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#7A9E7E", margin: 0, lineHeight: 1.6 }}>💪 Strong signal and high drive — your testosterone window looks good today. Good day to train hard.</p>}
+          </div>
+        )}
+      </div>}
+
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>💭 How are you feeling?</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: namedMood ? 12 : 0 }}>
+          {Object.entries(NAMED_MOODS).map(([name, m]) => (
+            <button key={name} onClick={() => setNamedMood(namedMood === name ? null : name)} style={{
+              padding: "7px 12px", borderRadius: 50, border: "none",
+              background: namedMood === name ? m.color : m.bg,
+              color: namedMood === name ? "#fff" : m.color,
+              fontFamily: "sans-serif", fontSize: 12, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 5,
+            }}><span>{m.emoji}</span>{name}</button>
+          ))}
+        </div>
+        {namedMood && (
+          <div style={{ background: NAMED_MOODS[namedMood].bg, borderRadius: 12, padding: "12px 14px", marginTop: 8 }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: NAMED_MOODS[namedMood].color, margin: "0 0 10px", lineHeight: 1.6 }}>{NAMED_MOODS[namedMood].message}</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {NAMED_MOODS[namedMood].actions.map((action, i) => (
+                <button key={i} onClick={() => {
+                  if (action === "Ground Me") setShowGround(!showGround);
+                  else if (action === "Journal Prompt") setShowJournal(!showJournal);
+                  else if (action === "Open Nourish" && onNavigate) onNavigate("recipes");
+                  else if (action === "Add Note") setShowMoodNote(!showMoodNote);
+                }} style={{ padding: "6px 12px", borderRadius: 50, border: `0.5px solid ${NAMED_MOODS[namedMood].color}`, background: "#fff", color: NAMED_MOODS[namedMood].color, fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{action === "Add Note" ? (showMoodNote ? "✕ Close note" : "📝 Add note") : action}</button>
+              ))}
+            </div>
+            {showMoodNote && (
+              <div style={{ marginTop: 10 }}>
+                <textarea
+                  value={moodNote}
+                  onChange={e => { setMoodNote(e.target.value); autoSaveData({ moodNote: e.target.value }); }}
+                  placeholder="Write how you are feeling right now... this is just for you."
+                  spellCheck={true}
+                  autoCorrect="on"
+                  autoCapitalize="sentences"
+                  style={{ ...s.input, height: 80, resize: "none", fontFamily: "sans-serif", marginBottom: 6 }}
+                />
+                {moodNote && <p style={{ fontFamily: "sans-serif", fontSize: 10, color: NAMED_MOODS[namedMood]?.color || "#8FA090", margin: 0 }}>✅ Note saved with your check-in</p>}
+              </div>
+            )}
+            {showGround && (
+              <div style={{ marginTop: 10, background: "#fff", borderRadius: 10, padding: "10px 12px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>🌿 {groundPrompt}</p>
+              </div>
+            )}
+            {showJournal && (
+              <div style={{ marginTop: 10, background: "#fff", borderRadius: 10, padding: "10px 12px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>📝 {journalPrompt}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {mode !== "fast" && (
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🩸 Flow</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {[
+            { val: "none",     label: "None",     emoji: "🚫" },
+            { val: "spotting", label: "Spotting", emoji: "🩸" },
+            { val: "light",    label: "Light",    emoji: "🩸🩸" },
+            { val: "medium",   label: "Medium",   emoji: "🩸🩸🩸" },
+            { val: "heavy",    label: "Heavy",    emoji: "🩸🩸🩸🩸" },
+          ].map(f => (
+            <button key={f.val} onClick={() => setFlow(f.val)} style={{
+              padding: "7px 14px", borderRadius: 100, border: "none",
+              background: flow === f.val ? "#C97B7B" : "#FDEAEA",
+              color: flow === f.val ? "#fff" : "#C97B7B",
+              fontFamily: "sans-serif", fontSize: 12, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 4,
+            }}><span>{f.emoji}</span> {f.label}</button>
+          ))}
+        </div>
+      </div>
+      )}
+
+      {mode !== "fast" && (
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🦠 Gut health</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {[
+            { val: "good",         label: "Good",         emoji: "✅" },
+            { val: "bloating",     label: "Bloating",     emoji: "🎈" },
+            { val: "constipation", label: "Constipation", emoji: "🚽" },
+            { val: "diarrhea",     label: "Diarrhea",     emoji: "💧" },
+            { val: "cramps",       label: "Cramps",       emoji: "⚡" },
+            { val: "nausea",       label: "Nausea",       emoji: "🤢" },
+            { val: "reflux",       label: "Reflux",       emoji: "🔥" },
+            { val: "gas",          label: "Gas",          emoji: "💨" },
+            { val: "sensitive",    label: "Sensitive",    emoji: "🌿" },
+          ].map(g => (
+            <button key={g.val} onClick={() => { if (g.val === "good") { setGut(prev => prev.includes("good") ? [] : ["good"]); } else { setGut(prev => { const without = prev.filter(x => x !== "good"); return without.includes(g.val) ? without.filter(x => x !== g.val) : [...without, g.val]; }); } }}
+              style={{ padding: "7px 12px", borderRadius: 100, border: "none", background: gut.includes(g.val) ? "#7A9E7E" : "#EAF2EA", color: gut.includes(g.val) ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+              {g.emoji} {g.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      )}
+
+      {mode === "fast" && (
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🧠 Mental clarity</p>
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          {ratingEmojis.map((e, i) => (
+            <button key={i} onClick={() => setClarity(i + 1)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "8px 2px", borderRadius: 12, border: `0.5px solid ${clarity===i+1?"#7A9E7E":"transparent"}`, background: clarity===i+1?"rgba(122,158,126,0.15)":"none", cursor: "pointer" }}>
+              <span style={{ fontSize: 22 }}>{e}</span>
+              <span style={{ fontSize: 8, color: clarity===i+1?"#7A9E7E":"#A8BEA8" }}>{["Foggy","Low","Fair","Sharp","Peak"][i]}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      )}
+
+      {mode === "fast" && (
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>💪 Workout performance</p>
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          {ratingEmojis.map((e, i) => (
+            <button key={i} onClick={() => setWorkout(i + 1)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "8px 2px", borderRadius: 12, border: `0.5px solid ${workout===i+1?"#7A9E7E":"transparent"}`, background: workout===i+1?"rgba(122,158,126,0.15)":"none", cursor: "pointer" }}>
+              <span style={{ fontSize: 22 }}>{e}</span>
+              <span style={{ fontSize: 8, color: workout===i+1?"#7A9E7E":"#A8BEA8" }}>{["Poor","Low","Fair","Good","Peak"][i]}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      )}
+
+      {mode === "fast" && false && (
+      <div style={{ ...s.card, background: "rgba(255,255,255,0.07)", border: "0.5px solid rgba(201,168,76,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#e8eaf0", margin: "0 0 4px" }}>⚡ Morning Report OLD</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#7A9E7E", margin: "0 0 14px" }}>Your daily performance signals — private, data only, no judgment.</p>
+
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🌅 Morning signal</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+          {["✅ Strong","〰️ Partial","❌ None","💤 Didn't notice"].map(opt => (
+            <button key={opt} onClick={() => setMorningSignal(morningSignal === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: morningSignal === opt ? "#7A9E7E" : "rgba(255,255,255,0.06)", color: morningSignal === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🔥 Drive today</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+          {["🔥 High","⚡ Medium","💤 Low","— None"].map(opt => (
+            <button key={opt} onClick={() => setDriveLevel(driveLevel === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: driveLevel === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: driveLevel === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🌶️ Libido today</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+          {["🔥 High","😏 Moderate","😐 Low","— None"].map(opt => (
+            <button key={opt} onClick={() => setLibido(libido === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: libido === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: libido === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🍺 Alcohol yesterday</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+          {["None","1–2 drinks","3+ drinks"].map(opt => (
+            <button key={opt} onClick={() => setHadAlcohol(hadAlcohol === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: hadAlcohol === opt ? "#C9A84C" : "rgba(255,255,255,0.06)", color: hadAlcohol === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 8px" }}>🌞 Sunlight today</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+          {["✅ Got outside","❌ Stayed in"].map(opt => (
+            <button key={opt} onClick={() => setGotSunlight(gotSunlight === opt ? null : opt)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: gotSunlight === opt ? "#7A9E7E" : "rgba(255,255,255,0.06)", color: gotSunlight === opt ? "#fff" : "#a8c4a8", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{opt}</button>
+          ))}
+        </div>
+
+        {(morningSignal || driveLevel || hadAlcohol || gotSunlight) && (morningSignal || driveLevel || hadAlcohol === "1–2 drinks" || hadAlcohol === "3+ drinks" || gotSunlight === "❌ Stayed in") && (
+          <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: "12px 14px", marginTop: 10, borderLeft: "3px solid #C9A84C" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 12, color: "#C9A84C", margin: "0 0 6px" }}>⚡ What your data says</p>
+            {hadAlcohol && hadAlcohol !== "None" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🍺 Alcohol affects testosterone and sleep quality. You may notice lower drive or energy today.</p>}
+            {morningSignal === "❌ None" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🌅 No morning signal can be linked to poor sleep, stress, alcohol, or low testosterone. Track it over time.</p>}
+            {driveLevel === "💤 Low" || driveLevel === "— None" ? <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🔥 Low drive is often linked to poor sleep, high stress, or low zinc and magnesium. Fasting may help restore it over time.</p> : null}
+            {gotSunlight === "❌ Stayed in" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#a8c4a8", margin: "0 0 4px", lineHeight: 1.6 }}>🌞 Morning sunlight supports testosterone and circadian rhythm. Even 10 minutes outside makes a difference.</p>}
+            {driveLevel === "🔥 High" && morningSignal === "✅ Strong" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#7A9E7E", margin: "0 0 4px", lineHeight: 1.6 }}>💪 Strong signal and high drive — your testosterone window looks good today. Good day to train hard.</p>}
+          </div>
+        )}
+      </div>
+      )}
+
+      {mode === "fast" && (
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🦠 Gut health</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {[
+            { val: "good",         label: "Good",         emoji: "✅" },
+            { val: "bloating",     label: "Bloating",     emoji: "🎈" },
+            { val: "constipation", label: "Constipation", emoji: "🚽" },
+            { val: "diarrhea",     label: "Diarrhea",     emoji: "💧" },
+            { val: "nausea",       label: "Nausea",       emoji: "🤢" },
+            { val: "reflux",       label: "Reflux",       emoji: "🔥" },
+            { val: "gas",          label: "Gas",          emoji: "💨" },
+            { val: "sensitive",    label: "Sensitive",    emoji: "🌿" },
+          ].map(g => (
+            <button key={g.val} onClick={() => { if (g.val === "good") { setGut(prev => prev.includes("good") ? [] : ["good"]); } else { setGut(prev => { const without = prev.filter(x => x !== "good"); return without.includes(g.val) ? without.filter(x => x !== g.val) : [...without, g.val]; }); } }}
+              style={{ padding: "7px 12px", borderRadius: 100, border: "none", background: gut.includes(g.val) ? "#7A9E7E" : "#EAF2EA", color: gut.includes(g.val) ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+              {g.emoji} {g.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      )}
+
+      {mode === "fast" && (
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🩺 Symptoms</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Select all that apply today</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {[
+            { val: "none",          label: "None today",     emoji: "✅" },
+            { val: "headache",      label: "Headache",       emoji: "🤕" },
+            { val: "fatigue",       label: "Fatigue",        emoji: "🔋" },
+            { val: "brain fog",     label: "Brain fog",      emoji: "🧠" },
+            { val: "insomnia",      label: "Insomnia",       emoji: "😴" },
+            { val: "muscle soreness", label: "Muscle soreness", emoji: "💪" },
+            { val: "back pain",     label: "Back pain",      emoji: "🔙" },
+            { val: "irritability",  label: "Irritability",   emoji: "😤" },
+            { val: "nausea",        label: "Nausea",         emoji: "🤢" },
+          ].map(sym => {
+            const isOn = symptoms.includes(sym.val);
+            return (
+              <button key={sym.val} onClick={() => setSymptoms(prev => prev.includes(sym.val) ? prev.filter(x => x !== sym.val) : [...prev, sym.val])}
+                style={{ padding: "7px 12px", borderRadius: 100, border: "none", background: isOn ? "rgba(122,158,126,0.3)" : "rgba(122,158,126,0.08)", color: isOn ? "#a8d4a8" : "#7A9E7E", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                {sym.emoji} {sym.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      )}
+
+      {mode !== "fast" && (
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🩺 Symptoms</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Select all that apply today</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {[
+            { val: "none",              label: "None today",        emoji: "✅" },
+            { val: "cramps",            label: "Cramps",            emoji: "⚡" },
+            { val: "headache",          label: "Headache",          emoji: "🤕" },
+            { val: "breast tenderness", label: "Breast tenderness", emoji: "💗" },
+            { val: "back pain",         label: "Back pain",         emoji: "🔙" },
+            { val: "acne",              label: "Acne",              emoji: "🌋" },
+            { val: "bloating",          label: "Bloating",          emoji: "🎈" },
+            { val: "insomnia",          label: "Insomnia",          emoji: "🌙" },
+            { val: "fatigue",           label: "Fatigue",           emoji: "🔋" },
+            { val: "nausea",            label: "Nausea",            emoji: "🤢" },
+            { val: "hot flashes",       label: "Hot flashes",       emoji: "🔥" },
+            { val: "irritability",      label: "Irritability",      emoji: "😤" },
+            { val: "brain fog",         label: "Brain fog",         emoji: "🧠" },
+          ].map(sym => (
+            <button key={sym.val} onClick={() => setSymptoms(prev => prev.includes(sym.val) ? prev.filter(x => x !== sym.val) : [...prev, sym.val])} style={{
+              padding: "7px 12px", borderRadius: 100, border: "none",
+              background: symptoms.includes(sym.val) ? "#C97B7B" : "#FDEAEA",
+              color: symptoms.includes(sym.val) ? "#fff" : "#C97B7B",
+              fontFamily: "sans-serif", fontSize: 12, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 4,
+            }}>{sym.emoji} {sym.label}</button>
+          ))}
+        </div>
+      </div>
+      )}
+
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🌙 Sleep quality</p>
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          {["😴","😪","😐","🙂","✨"].map((e, i) => (
+            <button key={i} onClick={() => setSleep(i + 1)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "8px 2px", borderRadius: 12, border: `0.5px solid ${sleep===i+1?"#9B7BC9":"transparent"}`, background: sleep===i+1?"rgba(155,123,201,0.1)":"none", cursor: "pointer" }}>
+              <span style={{ fontSize: 24 }}>{e}</span>
+              <span style={{ fontSize: 8, color: sleep===i+1?"#9B7BC9":"#A8BEA8" }}>{["Poor","Light","Fair","Good","Great"][i]}</span>
+            </button>
+          ))}
+        </div>
+        
+      </div>
+
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 4px" }}>🏃 Movement</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Log each activity separately</p>
+        {movements.map((m, i) => (
+          <div key={i} style={{ background: "#F0F6F0", borderRadius: 14, border: "0.5px solid #dce8dc", padding: 12, marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <select value={m.type} onChange={e => updateMovement(i,"type",e.target.value)}
+                style={{ flex: 1, padding: "7px 10px", borderRadius: 10, border: "0.5px solid #dce8dc", background: "#fff", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", marginRight: 8 }}>
+                <option value="">Select activity</option>
+                {MOVEMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <button onClick={() => removeMovement(i)} style={{ fontSize: 10, color: "#C97B7B", background: "#FDEAEA", border: "none", borderRadius: 50, padding: "4px 10px", cursor: "pointer", fontFamily: "sans-serif" }}>Remove</button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              <div>
+                <p style={{ fontSize: 9, color: "#8FA090", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 4px" }}>Intensity</p>
+                <select value={m.intensity} onChange={e => updateMovement(i,"intensity",e.target.value)}
+                  style={{ width: "100%", padding: "7px 10px", borderRadius: 10, border: "0.5px solid #dce8dc", background: "#fff", fontFamily: "sans-serif", fontSize: 12, color: "#2D3B2E" }}>
+                  {INTENSITIES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <p style={{ fontSize: 9, color: "#8FA090", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 4px" }}>Duration</p>
+                <select value={m.duration} onChange={e => updateMovement(i,"duration",e.target.value)}
+                  style={{ width: "100%", padding: "7px 10px", borderRadius: 10, border: "0.5px solid #dce8dc", background: "#fff", fontFamily: "sans-serif", fontSize: 12, color: "#2D3B2E" }}>
+                  {DURATIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              {needsDistance(m.type) && (
+                <div>
+                  <p style={{ fontSize: 9, color: "#8FA090", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 4px" }}>Distance</p>
+                  <select value={m.distance} onChange={e => updateMovement(i,"distance",e.target.value)}
+                    style={{ width: "100%", padding: "7px 10px", borderRadius: 10, border: "0.5px solid #dce8dc", background: "#fff", fontFamily: "sans-serif", fontSize: 12, color: "#2D3B2E" }}>
+                    <option value="">Optional</option>
+                    {DISTANCES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              )}
+              {needsWeight(m.type) && (
+                <div>
+                  <p style={{ fontSize: 9, color: "#8FA090", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 4px" }}>Weight used</p>
+                  <input type="text" value={m.lbs} onChange={e => updateMovement(i,"lbs",e.target.value)} placeholder="e.g. 35 lbs"
+                    style={{ width: "100%", padding: "7px 10px", borderRadius: 10, border: "0.5px solid #dce8dc", background: "#fff", fontFamily: "sans-serif", fontSize: 12, color: "#2D3B2E" }} />
+                </div>
+              )}
+              <div style={{ gridColumn: needsDistance(m.type) || needsWeight(m.type) ? "auto" : "1/-1" }}>
+                <p style={{ fontSize: 9, color: "#8FA090", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 4px" }}>Body focus</p>
+                <select value={m.bodyFocus} onChange={e => updateMovement(i,"bodyFocus",e.target.value)}
+                  style={{ width: "100%", padding: "7px 10px", borderRadius: 10, border: "0.5px solid #dce8dc", background: "#fff", fontFamily: "sans-serif", fontSize: 12, color: "#2D3B2E" }}>
+                  <option value="">Select</option>
+                  {BODY_FOCUS.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
+        ))}
+        <button onClick={addMovement} style={{ width: "100%", padding: 10, borderRadius: 12, border: "1px dashed #C5D9C5", background: "none", color: "#7A9E7E", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>+ Add movement</button>
+      </div>
+
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>🚽 Bowel Check</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 12px" }}>Log each bowel movement separately — you can add as many as needed</p>
+        {bowelEntries.length > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            {bowelEntries.map((entry, i) => (
+              <div key={i} style={{ background: "#F0F6F0", borderRadius: 12, padding: "10px 12px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#2D3B2E", margin: 0, fontWeight: 600 }}>{entry.texture || "Logged"} · {entry.time || "—"}</p>
+                  {entry.notes && <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "2px 0 0" }}>{entry.notes}</p>}
+                </div>
+                <button onClick={() => setBowelEntries(prev => prev.filter((_, idx) => idx !== i))} style={{ background: "none", border: "none", color: "#C97B7B", fontSize: 11, cursor: "pointer", fontFamily: "sans-serif" }}>Remove</button>
+              </div>
+            ))}
+          </div>
+        )}
+        <button onClick={() => setShowBowelForm(!showBowelForm)} style={{ width: "100%", padding: 10, borderRadius: 12, border: "1px dashed #C5D9C5", background: "none", color: "#7A9E7E", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", marginBottom: showBowelForm ? 12 : 0 }}>+ Log bowel movement</button>
+        {showBowelForm && (
+          <div style={{ background: "#F0F6F0", borderRadius: 14, padding: 12, marginTop: 8 }}>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Which day?</p>
+            <input type="date" value={bowelDate} max={today} onChange={e => setBowelDate(e.target.value)} style={{ ...s.input, marginBottom: 12 }} />
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>When?</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+              {["🌅 Morning","☀️ Afternoon","🌆 Evening","🌙 Night"].map(t => (
+                <button key={t} onClick={() => setBowelTime(t)} style={{ padding: "6px 14px", borderRadius: 50, border: "none", background: bowelTime === t ? "#7A9E7E" : "#EAF2EA", color: bowelTime === t ? "#fff" : "#5C7F60", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{t}</button>
+              ))}
+            </div>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Texture?</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+              {["🪨 Rocky / hard","🌰 Small pellets","✅ Normal","🟤 Soft","🫠 Semi-liquid","💧 Liquid","😣 Painful","🚧 Straining"].map(t => (
+                <button key={t} onClick={() => setBowelTexture(t)} style={{ padding: "6px 14px", borderRadius: 50, border: "none", background: bowelTexture === t ? "#7A9E7E" : "#EAF2EA", color: bowelTexture === t ? "#fff" : "#5C7F60", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>{t}</button>
+              ))}
+            </div>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Any notes?</p>
+            <input value={bowelNotes} onChange={e => setBowelNotes(e.target.value)} placeholder="Optional — anything you want to remember" style={{ ...s.input, marginBottom: 12 }} />
+            <button onClick={() => {
+              if (bowelTime || bowelTexture) {
+                const entry = { time: bowelTime, texture: bowelTexture, notes: bowelNotes, date: bowelDate };
+                if (bowelDate === today) {
+                  setBowelEntries(prev => [...prev, entry]);
+                } else {
+                  const pastKey = `lf_checkin_${bowelDate}`;
+                  try {
+                    const existing = JSON.parse(localStorage.getItem(pastKey)) || {};
+                    const existingEntries = existing.bowelCheck?.entries || [];
+                    localStorage.setItem(pastKey, JSON.stringify({ ...existing, date: bowelDate, bowelCheck: { entries: [...existingEntries, entry], didPoopToday: true } }));
+                  } catch (e) {}
+                }
+                setBowelTime("");
+                setBowelTexture("");
+                setBowelNotes("");
+                setBowelDate(today);
+                setShowBowelForm(false);
+              }
+            }} style={{ ...s.btn, fontSize: 13, padding: "10px 0", background: "#7A9E7E" }}>+ Add this entry</button>
+          </div>
+        )}
+      </div>
+
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>💧 Water intake</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "center" }}>
+          <button onClick={() => setWater(Math.max(0, water - 1))} style={{ width: 36, height: 36, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#F0F6F0", fontSize: 18, cursor: "pointer" }}>−</button>
+          <div style={{ textAlign: "center" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 28, color: "#7BA8C9", margin: 0 }}>{water}</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: 0 }}>glasses today</p>
+          </div>
+          <button onClick={() => setWater(Math.min(15, water + 1))} style={{ width: 36, height: 36, borderRadius: "50%", border: "0.5px solid #dce8dc", background: "#F0F6F0", fontSize: 18, cursor: "pointer" }}>+</button>
+        </div>
+      </div>
+
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 4px" }}>🌿 Body check</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: "0 0 10px" }}>Your body changes throughout your cycle and fasting journey. This is just a snapshot — not a score.</p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+          <button onClick={() => setWeightUnit("lbs")} style={{ padding: "6px 14px", borderRadius: 50, border: "none", background: weightUnit === "lbs" ? "#7A9E7E" : "#EAF2EA", color: weightUnit === "lbs" ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>lbs</button>
+          <button onClick={() => setWeightUnit("kg")} style={{ padding: "6px 14px", borderRadius: 50, border: "none", background: weightUnit === "kg" ? "#7A9E7E" : "#EAF2EA", color: weightUnit === "kg" ? "#fff" : "#6b7b6b", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>kg</button>
+        </div>
+        <input
+          type="number"
+          value={bodyCheck}
+          onChange={e => setBodyCheck(e.target.value)}
+          placeholder={`Optional — your body snapshot today (${weightUnit})`}
+          style={{ ...s.input, marginBottom: 0 }}
+        />
+      </div>
+
+      <div style={{ ...s.card, background: mode === "fast" ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.72)", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.25)" : "0.5px solid rgba(180,160,210,0.25)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: "0 0 12px" }}>📝 Notes</p>
+        <textarea
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          placeholder="How are you feeling? Any symptoms?"
+          spellCheck={true}
+          autoCorrect="on"
+          autoCapitalize="sentences"
+          style={{ ...s.input, height: 80, resize: "none", fontFamily: "sans-serif" }}
+        />
+      </div>
+
+      <button onClick={save} style={{ ...s.btn, background: mode === "fast" ? "#8FAF8F" : getSeasonalAccent(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))).btn }}>Save Check-In ✅</button>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  CALENDAR SCREEN
+// ─────────────────────────────────────────────
+function getSeasonalAccent(mode, phase) {
+  if (mode === "fast") return { color: "#7A9E7E", bg: "rgba(122,158,126,0.12)", border: "rgba(122,158,126,0.3)", btn: "#7A9E7E" };
+  if (phase === "Menstrual") return { color: "#7BA8C9", bg: "rgba(123,168,201,0.12)", border: "rgba(123,168,201,0.3)", btn: "linear-gradient(135deg,#7BA8C9,#5888b0)" };
+  if (phase === "Follicular") return { color: "#f472b6", bg: "rgba(244,114,182,0.12)", border: "rgba(244,114,182,0.3)", btn: "linear-gradient(135deg,#f472b6,#c4809a)" };
+  if (phase === "Ovulation") return { color: "#f59e0b", bg: "rgba(245,158,11,0.12)", border: "rgba(245,158,11,0.3)", btn: "linear-gradient(135deg,#f59e0b,#d97706)" };
+  return { color: "#ea580c", bg: "rgba(234,88,12,0.12)", border: "rgba(234,88,12,0.3)", btn: "linear-gradient(135deg,#ea580c,#c2410c)" };
+}
+
+function getSeasonalBg(mode, phase) {
+  if (mode === "fast") return "linear-gradient(180deg, #0c1410 0%, #141e16 40%, #0f1a12 100%)";
+  if (phase === "Menstrual") return "linear-gradient(160deg, #f8fbff 0%, #eef4ff 25%, #dce8f8 50%, #c8daf0 100%)";
+  if (phase === "Follicular") return "linear-gradient(160deg, #fff8ff 0%, #fde8f8 25%, #f8c8f0 50%, #f0d0f8 75%, #fce4f4 100%)";
+  if (phase === "Ovulation") return "linear-gradient(160deg, #fffbee 0%, #fff4cc 25%, #ffe880 50%, #ffd940 75%, #ffca00 100%)";
+  return "linear-gradient(160deg, #fffaf4 0%, #ffeedd 25%, #ffd4a0 50%, #ffb060 75%, #f08040 100%)";
+}
+
+function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, periodLength = 7, mode }) {
+  const [showMenu, setShowMenu] = useState(false);
+  const [calendarKey, setCalendarKey] = useState(0);
+  const [periodMsg, setPeriodMsg] = useState(null);
+  const [showEditCycle, setShowEditCycle] = useState(false);
+  const [periodRangesState, setPeriodRangesState] = useState(() => JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"));
+  const [editDateInput, setEditDateInput] = useState("");
+  const [editCycleLength, setEditCycleLength] = useState(cycleLength);
+  const [editPeriodLength, setEditPeriodLength] = useState(periodLength);
+  const today   = new Date();
+  const [month, setMonth] = useState(today.getMonth());
+  const [year,  setYear]  = useState(today.getFullYear());
+  const [selDay, setSelDay] = useState(today.getDate());
+  const [showPlanner, setShowPlanner] = useState(false);
+  const [plannerData, setPlannerData] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("lf_monthly_plan") || "{}"); } catch (e) { return {}; }
+  });
+  const [editPlanDay, setEditPlanDay] = useState(null);
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDow    = new Date(year, month, 1).getDay();
+
+  const isFertileDay = (d) => {
+    if (!lastPeriod) return false;
+    const date = new Date(year, month, d);
+    const start = lastPeriod.split("-");
+    const periodStart = new Date(parseInt(start[0]), parseInt(start[1])-1, parseInt(start[2]));
+    const diff = Math.floor((date - periodStart) / 86400000);
+    const dayInCycle = ((diff % cycleLength) + cycleLength) % cycleLength;
+    return dayInCycle >= 11 && dayInCycle <= 16;
+  };
+
+  const getCycleDayFor = (d) => {
+    if (!lastPeriod) return 1;
+    const date = new Date(year, month, d);
+    const diff = Math.floor((date - new Date(lastPeriod)) / 86400000);
+    return ((diff % 28) + 28) % 28 + 1;
+  };
+
+  const selPhase = getPhase(getCycleDayFor(selDay));
+  const selInfo  = PHASE_INFO[selPhase];
+
+  return (
+    <div style={{ padding: "16px 16px 90px", background: getSeasonalBg(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))), minHeight: "100vh" }}>
+      {/* Mini Dashboard */}
+      {lastPeriod && mode !== "fast" && (
+        <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.75)", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.25)" : "0.5px solid rgba(180,160,200,0.3)", padding: "16px", marginBottom: 14 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 12px" }}>Your cycle overview</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+            <div style={{ background: "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Last period</p>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: 0 }}>{new Date(lastPeriod + "T12:00:00").toLocaleDateString("en-CA", { month: "short", day: "numeric" })}</p>
+            </div>
+            <div style={{ background: "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Next period</p>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#C97B7B", margin: 0 }}>
+                {(() => { const next = new Date(lastPeriod); next.setDate(next.getDate() + cycleLength); return next.toLocaleDateString("en-CA", { month: "short", day: "numeric" }); })()}
+              </p>
+            </div>
+            <div style={{ background: "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Cycle length</p>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: 0 }}>{cycleLength} days</p>
+            </div>
+            <div style={{ background: "#FDEAEA", borderRadius: 12, padding: "10px 12px" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#C97B7B", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Period length</p>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#C97B7B", margin: 0 }}>{periodLength} days</p>
+            </div>
+          </div>
+          {/* Cycle bar chart */}
+          <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Cycle chart</p>
+          <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", height: 12 }}>
+            <div style={{ width: "25%", background: "#C97B7B" }} title="Menstrual" />
+            <div style={{ width: "29%", background: "#7BA8C9" }} title="Follicular" />
+            <div style={{ width: "4%", background: "#C9A87B" }} title="Ovulation" />
+            <div style={{ width: "42%", background: "#9B7BC9" }} title="Luteal" />
+          </div>
+          <div style={{ display: "flex", gap: 10, marginTop: 6, flexWrap: "wrap" }}>
+            {[["#C97B7B","Menstrual","~7d"],["#7BA8C9","Follicular","~8d"],["#C9A87B","Ovulation","~2d"],["#9B7BC9","Luteal","~12d"]].map(([color, name, days]) => (
+              <div key={name} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <div style={{ width: 8, height: 8, borderRadius: 2, background: color }} />
+                <span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#6b7b6b" }}>{name} {days}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Month nav */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <button onClick={() => { if (month === 0) { setMonth(11); setYear(y => y-1); } else setMonth(m => m-1); }}
+          style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#8FAF8F" }}>‹</button>
+        <h3 style={{ ...s.title, margin: 0, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E" }}>{MONTHS[month]} {year}</h3>
+        <button onClick={() => { if (month === 11) { setMonth(0); setYear(y => y+1); } else setMonth(m => m+1); }}
+          style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#8FAF8F" }}>›</button>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+        <button onClick={() => setShowPlanner(!showPlanner)} style={{ padding: "9px 20px", borderRadius: 50, border: "none", background: mode === "fast" ? "rgba(201,168,76,0.15)" : getSeasonalAccent(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))).btn, color: "#fff", fontFamily: "Georgia, serif", fontSize: 13, cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.1)" }}>
+          {showPlanner ? "✕ Close Planner" : "🗓️ Plan My Month"}
+        </button>
+      </div>
+
+      {showPlanner && (() => {
+        const PLAN_LABELS = [
+          { key: "rest",    label: "Rest Day",  hours: 0,  color: "#C97B7B", bg: "#FDEAEA" },
+          { key: "gentle",  label: "Gentle",    hours: 12, color: "#7BA8C9", bg: "#EAF2F9" },
+          { key: "balanced",label: "Balanced",  hours: 14, color: "#7A9E7E", bg: "#EAF2EA" },
+          { key: "steady",  label: "Steady",    hours: 16, color: "#C9A87B", bg: "#FDF6EA" },
+          { key: "strong",  label: "Strong",    hours: 18, color: "#9B7BC9", bg: "#F5F0FF" },
+        ];
+
+        const getPhaseForDay = (d) => {
+          if (!lastPeriod) return "follicular";
+          const date = new Date(year, month, d);
+          const parts = lastPeriod.split("-");
+          const start = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+          const diff = Math.floor((date - start) / 86400000);
+          const dayInCycle = ((diff % cycleLength) + cycleLength) % cycleLength;
+          if (dayInCycle < periodLength) return "menstrual";
+          if (dayInCycle < 13) return "follicular";
+          if (dayInCycle < 16) return "ovulation";
+          return "luteal";
+        };
+
+        const getSuggestion = (phase) => {
+          if (mode === "fast") {
+            const dayOfWeek = new Date(year, month, parseInt(phase)).getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 6) return "gentle";
+            if (dayOfWeek === 1 || dayOfWeek === 4) return "steady";
+            return "balanced";
+          }
+          if (phase === "menstrual") return "gentle";
+          if (phase === "follicular") return "balanced";
+          if (phase === "ovulation") return "steady";
+          return "balanced";
+        };
+
+        const planKey = `${year}-${month}`;
+        const currentPlan = plannerData[planKey] || {};
+
+        const autoFill = () => {
+          const newPlan = {};
+          for (let d = 1; d <= daysInMonth; d++) {
+            const phase = mode === "fast" ? String(d) : getPhaseForDay(d);
+            newPlan[d] = getSuggestion(phase);
+          }
+          const updated = { ...plannerData, [planKey]: newPlan };
+          setPlannerData(updated);
+          localStorage.setItem("lf_monthly_plan", JSON.stringify(updated));
+        };
+
+        const resetPlan = () => {
+          const updated = { ...plannerData };
+          delete updated[planKey];
+          setPlannerData(updated);
+          localStorage.setItem("lf_monthly_plan", JSON.stringify(updated));
+          setEditPlanDay(null);
+        };
+
+        const setDayPlan = (d, key) => {
+          const newPlan = { ...currentPlan, [d]: key };
+          const updated = { ...plannerData, [planKey]: newPlan };
+          setPlannerData(updated);
+          localStorage.setItem("lf_monthly_plan", JSON.stringify(updated));
+          setEditPlanDay(null);
+        };
+
+        const hasPlan = Object.keys(currentPlan).length > 0;
+
+        return (
+          <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 18, padding: "16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : "0.5px solid rgba(180,160,200,0.3)", marginBottom: 16 }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 4px" }}>🗓️ Monthly Rhythm Planner</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: "0 0 14px", lineHeight: 1.6 }}>Plan your month with your body, not against it.</p>
+            <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+              <button onClick={autoFill} style={{ padding: "8px 16px", borderRadius: 50, border: "none", background: mode === "fast" ? "#7A9E7E" : "#9B7BC9", color: "#fff", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>✨ Suggest my month</button>
+              {hasPlan && <button onClick={resetPlan} style={{ padding: "8px 16px", borderRadius: 50, border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(155,123,201,0.3)", background: "none", color: mode === "fast" ? "#C9A84C" : "#9B7BC9", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>↺ Reset</button>}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 12 }}>
+              {["S","M","T","W","T","F","S"].map((d,i) => (
+                <div key={i} style={{ textAlign: "center", fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", fontWeight: 600, padding: "4px 0" }}>{d}</div>
+              ))}
+              {Array.from({ length: new Date(year, month, 1).getDay() }).map((_, i) => <div key={`e${i}`} />)}
+              {Array.from({ length: daysInMonth }).map((_, i) => {
+                const d = i + 1;
+                const planKey2 = currentPlan[d];
+                const planItem = PLAN_LABELS.find(p => p.key === planKey2);
+                return (
+                  <div key={d} onClick={() => setEditPlanDay(editPlanDay === d ? null : d)} style={{ aspectRatio: "1", borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", background: planItem ? planItem.bg : mode === "fast" ? "rgba(255,255,255,0.04)" : "#F8FAF8", border: `0.5px solid ${planItem ? planItem.color + "44" : "rgba(150,150,150,0.15)"}`, padding: 2 }}>
+                    <span style={{ fontFamily: "sans-serif", fontSize: 11, color: planItem ? planItem.color : "#8FA090", fontWeight: 600 }}>{d}</span>
+                    {planItem && <span style={{ fontFamily: "sans-serif", fontSize: 7, color: planItem.color, lineHeight: 1, textAlign: "center" }}>{planItem.label}</span>}
+                  </div>
+                );
+              })}
+            </div>
+            {editPlanDay && (
+              <div style={{ background: mode === "fast" ? "rgba(0,0,0,0.2)" : "#fff", borderRadius: 14, padding: "14px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : "0.5px solid #dce8dc", marginBottom: 12 }}>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 10px" }}>Day {editPlanDay} — choose your rhythm</p>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {PLAN_LABELS.map(p => (
+                    <button key={p.key} onClick={() => setDayPlan(editPlanDay, p.key)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: currentPlan[editPlanDay] === p.key ? p.color : p.bg, color: currentPlan[editPlanDay] === p.key ? "#fff" : p.color, fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", fontWeight: currentPlan[editPlanDay] === p.key ? 600 : 400 }}>
+                      {p.label} {p.hours > 0 ? `${p.hours}h` : ""}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {PLAN_LABELS.map(p => (
+                <div key={p.key} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 2, background: p.color }} />
+                  <span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#6b7b6b" }}>{p.label} {p.hours > 0 ? `${p.hours}h` : ""}</span>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "10px 0 0", lineHeight: 1.6 }}>🌿 Free during beta — premium coming soon. These are gentle suggestions, not rules. Always listen to your body first.</p>
+          </div>
+        );
+      })()}
+
+      {/* Day of week headers */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 8 }}>
+        {["S","M","T","W","T","F","S"].map((d,i) => (
+          <div key={i} style={{ textAlign: "center", fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", aspectRatio: "1" }}>{d}</div>
+        ))}
+      </div>
+
+      {/* Calendar grid */}
+      <div key={calendarKey} style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
+        {Array.from({ length: firstDow }).map((_, i) => <div key={`e${i}`} />)}
+        {(() => {
+          const allPeriodRanges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]");
+          const allFastDays = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
+          return Array.from({ length: daysInMonth }, (_, i) => i + 1).map(d => {
+          const cycDay  = getCycleDayFor(d);
+          const phase   = getPhase(cycDay);
+          const info    = PHASE_INFO[phase];
+          const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+          const isSel   = d === selDay;
+          const fertile = isFertileDay(d);
+          const dayMoon = (() => {
+            const date = new Date(year, month, d);
+            const known = new Date(2000, 0, 6, 18, 14, 0);
+            const synodic = 29.53058867;
+            const diff = (date - known) / (1000 * 60 * 60 * 24);
+            const phase = ((diff % synodic) + synodic) % synodic;
+            if (phase < 1.85) return "🌑";
+            if (phase < 7.38) return "🌒";
+            if (phase < 9.22) return "🌓";
+            if (phase < 14.77) return "🌔";
+            if (phase < 16.61) return "🌕";
+            if (phase < 22.15) return "🌖";
+            if (phase < 23.99) return "🌗";
+            return "🌘";
+          })();
+          const isOvulationDay = (() => {
+            if (!lastPeriod) return false;
+            const date = new Date(year, month, d);
+            const parts = lastPeriod.split("-");
+            const start = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+            const diff = Math.floor((date - start) / 86400000);
+            const dayInCycle = ((diff % cycleLength) + cycleLength) % cycleLength;
+            return dayInCycle === 14;
+          })();
+          const fastDays = allFastDays;
+          const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+          const isFasted = fastDays.includes(dateStr);
+          const periodRanges = allPeriodRanges;
+          const isPeriodDay = periodRanges.some(r => {
+            if (!r.start) return false;
+            const start = r.start;
+            const end = r.end || r.start;
+            return dateStr >= start && dateStr <= end;
+          });
+          const isPredictedPeriod = !isPeriodDay && lastPeriod && (() => {
+            const next = new Date(lastPeriod + "T12:00:00");
+            next.setDate(next.getDate() + cycleLength);
+            const nextStr = next.toISOString().split("T")[0];
+            const nextEnd = new Date(lastPeriod + "T12:00:00");
+            nextEnd.setDate(nextEnd.getDate() + cycleLength + (periodLength - 1));
+            const nextEndStr = nextEnd.toISOString().split("T")[0];
+            return dateStr >= nextStr && dateStr <= nextEndStr;
+          })();
+          return (
+            <button key={d} onClick={() => setSelDay(d)} style={{
+              aspectRatio: "1", borderRadius: "50%",
+              border: isOvulationDay ? "2px solid #f59e0b" : isToday ? `2px solid #8FAF8F` : isFasted ? "2px solid #7A9E7E" : "none",
+              boxShadow: isOvulationDay ? "0 0 8px rgba(245,158,11,0.5)" : "none",
+              background: mode === "fast" ? (isSel ? "#7A9E7E" : "#F0F6F0") : isPeriodDay ? (isSel ? "#C97B7B" : "#FDEAEA") : isPredictedPeriod ? (isSel ? "#E8B4B4" : "#FDF0F0") : (isSel ? info.color : info.bg),
+              cursor: "pointer", fontFamily: "sans-serif", fontSize: 13,
+              color: mode === "fast" ? (isSel ? "#fff" : "#5C7F60") : (isSel ? "#fff" : info.color),
+              fontWeight: isToday ? 700 : 400,
+              display: "flex", alignItems: "center", justifyContent: "center", position: "relative",
+            }}>
+              <span style={{ fontSize: 11, lineHeight: 1 }}>{d}</span>
+              {mode !== "fast" && <span style={{ fontSize: 7, lineHeight: 1, position: "absolute", top: 1, right: 1 }}>{dayMoon}</span>}
+              {fertile && mode !== "fast" && <span style={{ position: "absolute", bottom: 1, right: 1, width: 4, height: 4, borderRadius: "50%", background: "#86efac" }} />}
+            </button>
+          );
+        });
+        })()}
+      </div>
+
+      {/* Legend */}
+      {mode !== "fast" && (
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16, paddingTop: 12, borderTop: "1px solid #EAF2EA" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#86efac" }} />
+          <span style={{ fontFamily: "sans-serif", fontSize: 11, color: "#6b7b6b" }}>Fertile</span>
+        </div>
+        
+        {Object.entries(PHASE_INFO).map(([name, info]) => (
+          <div key={name} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: info.color }} />
+            <span style={{ fontFamily: "sans-serif", fontSize: 11, color: name === "Menstrual" ? "#7BA8C9" : name === "Follicular" ? "#f472b6" : name === "Ovulation" ? "#f59e0b" : "#ea580c" }}>{name}</span>
+          </div>
+        ))}
+      </div>
+      )}
+
+      {/* Selected day detail */}
+      {mode !== "fast" ? (
+      <div style={{ ...s.card, background: selInfo.bg, border: `1px solid ${selInfo.color}33`, textAlign: "left", marginTop: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+          <span style={{ fontSize: 24 }}>{selInfo.emoji}</span>
+          <div>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: selInfo.color, margin: 0 }}>
+              {MONTHS[month]} {selDay}
+            </p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0 }}>
+              {selPhase} phase · Day {getCycleDayFor(selDay)}
+            </p>
+          </div>
+        </div>
+        {(() => {
+          const fertile = isFertileDay(selDay);
+          const cycDay = getCycleDayFor(selDay);
+          const isOvulation = cycDay >= 14 && cycDay <= 16;
+          const moon = getMoonPhase();
+          return (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
+              {fertile && (
+                <div style={{ background: "rgba(134,239,172,0.15)", borderRadius: 10, padding: "6px 10px", border: "0.5px solid rgba(134,239,172,0.4)" }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#16a34a", margin: 0 }}>
+                    {isOvulation ? "🌕 Estimated ovulation day" : "🌱 Possible fertile window"}
+                  </p>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#6b7b6b", margin: "2px 0 0" }}>Prediction only — not birth control</p>
+                </div>
+              )}
+              <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: selInfo.color, margin: 0 }}>{selInfo.energy}</p>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#4a5a4b", margin: 0 }}>💧 <b>Fast:</b> {selInfo.fast}</p>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#4a5a4b", margin: 0 }}>🏋️ <b>Move:</b> {selInfo.move}</p>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#4a5a4b", margin: 0 }}>🌿 <b>Nourish:</b> {selInfo.nourish}</p>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#7BA8C9", margin: 0 }}>🌙 {moon.emoji} {moon.name} — {moon.desc}</p>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: selInfo.color, margin: 0, fontStyle: "italic" }}>✨ {selInfo.reflection}</p>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+
+      ) : (
+        <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "#fff", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.25)" : "0.5px solid #dce8dc", padding: "16px", marginTop: 12 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 12px" }}>⚡ Fasting overview</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {(() => {
+              const fastDays = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
+              const streak = (() => {
+                let s = 0;
+                const today = new Date();
+                while (true) {
+                  const d = new Date(today);
+                  d.setDate(d.getDate() - s);
+                  const str = d.toISOString().split("T")[0];
+                  if (fastDays.includes(str)) s++;
+                  else break;
+                }
+                return s;
+              })();
+              const stats = [
+                { label: "Total fasts", value: fastDays.length, icon: "🔥" },
+                { label: "Current streak", value: `${streak} days`, icon: "⚡" },
+                { label: "This month", value: fastDays.filter(d => d.startsWith(new Date().toISOString().slice(0,7))).length, icon: "📅" },
+                { label: "Best window", value: "16h", icon: "⏰" },
+              ];
+              return stats.map((stat, i) => (
+                <div key={i} style={{ background: mode === "fast" ? "rgba(201,168,76,0.08)" : "#F8FAF8", borderRadius: 12, padding: "10px 12px" }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#C9A84C" : "#8FA090", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{stat.icon} {stat.label}</p>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: 0, fontWeight: 600 }}>{stat.value}</p>
+                </div>
+              ));
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Cycle Section */}
+      {mode !== "fast" && <div style={{ marginTop: 12 }}>
+        <button onClick={() => setShowEditCycle(!showEditCycle)} style={{ background: "none", border: "0.5px solid #dce8dc", borderRadius: 50, padding: "8px 16px", fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+          ✏️ Edit cycle date {showEditCycle ? "▴" : "▾"}
+        </button>
+        {showEditCycle && (
+          <div style={{ background: "#F8FAF8", borderRadius: 16, padding: "16px", border: "0.5px solid #dce8dc", marginTop: 10 }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: "0 0 12px" }}>When did your last period start?</p>
+            <input
+              type="date"
+              value={editDateInput}
+              onChange={e => setEditDateInput(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              min="2015-01-01"
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12 }}
+            />
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Cycle length (days)</p>
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              {[21, 24, 28, 30, 35, 40].map(d => (
+                <button key={d} onClick={() => setEditCycleLength(d)} style={{ flex: 1, padding: "8px 4px", borderRadius: 10, border: "0.5px solid #dce8dc", background: editCycleLength === d ? "#7A9E7E" : "#fff", color: editCycleLength === d ? "#fff" : "#4a5a4b", fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{d}</button>
+              ))}
+            </div>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Period length (days)</p>
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              {[3, 4, 5, 6, 7, 8].map(d => (
+                <button key={d} onClick={() => setEditPeriodLength(d)} style={{ flex: 1, padding: "8px 4px", borderRadius: 10, border: "0.5px solid #dce8dc", background: editPeriodLength === d ? "#C97B7B" : "#fff", color: editPeriodLength === d ? "#fff" : "#4a5a4b", fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{d}</button>
+              ))}
+            </div>
+            <button onClick={() => { if (editDateInput) { onSave && onSave(editDateInput, editCycleLength, editPeriodLength); setShowEditCycle(false); setPeriodMsg("✅ Cycle date updated!"); setTimeout(() => setPeriodMsg(null), 3000); }}} style={{ background: "#7A9E7E", border: "none", borderRadius: 50, padding: "10px 0", width: "100%", fontFamily: "sans-serif", fontSize: 13, color: "#fff", cursor: "pointer", fontWeight: 600 }}>
+              Save cycle date
+            </button>
+          </div>
+        )}
+      </div>}
+      {/* Floating + button */}
+      {showMenu && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 998 }} onClick={() => setShowMenu(false)} />
+      )}
+      <div style={{ position: "fixed", bottom: 140, right: 20, zIndex: 999, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+        {showMenu && (
+          <div style={{ background: "#fff", borderRadius: 18, padding: "8px 0", boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "0.5px solid #dce8dc", minWidth: 200 }}>
+            {mode !== "fast" ? (
+              <>
+                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); const isDuplicate = ranges.some(r => r.start === selectedDate); if (!isDuplicate) { ranges.push({ start: selectedDate, end: null, predicted: false }); } const deduped = ranges.filter((r, i, arr) => arr.findIndex(x => x.start === r.start) === i); localStorage.setItem("lf_period_ranges", JSON.stringify(deduped)); setPeriodRangesState(deduped); setCalendarKey(k => k + 1); onSave && onSave(selectedDate); setShowMenu(false); setPeriodMsg(`🩸 Period started ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#C97B7B", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 18 }}>🩸</span> Period started today
+                </button>
+                <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
+                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); if (ranges.length > 0 && !ranges[ranges.length-1].end) { ranges[ranges.length-1].end = selectedDate; localStorage.setItem("lf_period_ranges", JSON.stringify(ranges)); setPeriodRangesState([...ranges]); } setShowMenu(false); setPeriodMsg(`✅ Period ended ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#7A9E7E", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 18 }}>✅</span> Period ended today
+                </button>
+<div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
+                <button onClick={() => { const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); const filtered = ranges.filter(r => r.start !== `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`); localStorage.setItem("lf_period_ranges", JSON.stringify(filtered)); setPeriodRangesState(filtered); setCalendarKey(k => k + 1); setShowMenu(false); setPeriodMsg("🗑️ Period entry removed"); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#8FA090", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 18 }}>🗑️</span> Remove period entry
+                </button>
+                <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
+              </>
+            ) : (
+              <>
+                <button onClick={() => { setShowMenu(false); localStorage.setItem("lf_auto_start_fast", "true"); onNavigate && onNavigate("home"); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#5C7F60", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 18 }}>🔥</span> Start a fast
+                </button>
+                <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
+              </>
+            )}
+            <button onClick={() => { setShowMenu(false); onNavigate && onNavigate("checkin"); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#8FA090", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 18 }}>😊</span> Log mood
+            </button>
+          </div>
+        )}
+        {periodMsg && (
+          <div style={{ background: "#fff", borderRadius: 50, padding: "8px 16px", boxShadow: "0 2px 12px rgba(0,0,0,0.1)", fontFamily: "sans-serif", fontSize: 12, color: "#5C7F60", border: "0.5px solid #C5D9C5" }}>
+            {periodMsg}
+          </div>
+        )}
+        <button onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }} style={{ width: 52, height: 52, borderRadius: "50%", background: mode === "fast" ? "#5C7F60" : getSeasonalAccent(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))).btn, border: "none", color: "#fff", fontSize: 26, cursor: "pointer", boxShadow: mode === "fast" ? "0 4px 16px rgba(92,127,96,0.4)" : "0 4px 16px rgba(234,88,12,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          +
+        </button>
+      </div>
+    </div>
+    );
+}
+
+// ─────────────────────────────────────────────
+//  LEARN SCREEN
+// ─────────────────────────────────────────────
+function PaywallScreen({ onClose, mode }) {
+  const [selected, setSelected] = useState("yearly");
+  return (
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 2000, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div style={{ background: "linear-gradient(160deg, #1a1a2e, #16213e)", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 480, maxHeight: "90vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 22, color: "#fff", margin: 0 }}>🌿 Lumen Flow</p>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#8FA090", fontSize: 22, cursor: "pointer" }}>✕</button>
+        </div>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "rgba(255,255,255,0.8)", margin: "0 0 6px", lineHeight: 1.6, fontStyle: "italic" }}>Your body has a rhythm. Lumen Flow helps you live inside it.</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "rgba(255,255,255,0.5)", margin: "0 0 16px", lineHeight: 1.6 }}>Unlock the full Lumen Flow experience — cycle-synced fasting, moon phase guidance, seasonal tools, rituals, journaling, and premium insights.</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
+          {["Cycle-synced fasting guidance", "Full check-in — gut, bowel, movement, sleep", "7 / 30 / 90 day trend charts", "Lumen Suggests — AI food recommendations", "Dietary preferences and allergy filtering", "Move Map and cycle workouts", "Lumen Life — 10 cycle empowerment tools", "Lumen Mirror — private journal", "Monthly Rhythm Planner", "Moon phase rituals and journal prompts", "Almanac — seasonal wisdom"].map((f, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ color: "#9B7BC9", fontSize: 12 }}>✦</span>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "rgba(255,255,255,0.8)", margin: 0 }}>{f}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+          <button onClick={() => setSelected("yearly")} style={{ flex: 1, padding: "14px 10px", borderRadius: 14, border: selected === "yearly" ? "2px solid #9B7BC9" : "1px solid rgba(255,255,255,0.2)", background: selected === "yearly" ? "rgba(155,123,201,0.15)" : "rgba(255,255,255,0.05)", cursor: "pointer", position: "relative" }}>
+            {selected === "yearly" && <span style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", background: "#9B7BC9", color: "#fff", fontFamily: "sans-serif", fontSize: 10, padding: "2px 8px", borderRadius: 50 }}>BEST VALUE</span>}
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#fff", margin: "0 0 2px" }}>$69.99</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "rgba(255,255,255,0.6)", margin: 0 }}>per year · $5.83/mo</p>
+          </button>
+          <button onClick={() => setSelected("monthly")} style={{ flex: 1, padding: "14px 10px", borderRadius: 14, border: selected === "monthly" ? "2px solid #9B7BC9" : "1px solid rgba(255,255,255,0.2)", background: selected === "monthly" ? "rgba(155,123,201,0.15)" : "rgba(255,255,255,0.05)", cursor: "pointer" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#fff", margin: "0 0 2px" }}>$9.99</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "rgba(255,255,255,0.6)", margin: 0 }}>per month</p>
+          </button>
+        </div>
+        <button style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #9B7BC9, #7B5BA9)", color: "#fff", fontFamily: "Georgia, serif", fontSize: 16, cursor: "pointer", marginBottom: 8 }}>Start 7-day free trial ✦</button>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", textAlign: "center", margin: "0 0 6px" }}>Cancel anytime. No charge during trial.</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#9B7BC9", textAlign: "center", margin: 0 }}>🌿 Everything is free during beta — premium coming soon</p>
+      </div>
+    </div>
+  );
+}
+
+function PremiumLock({ tier = "premium", mode }) {
+  const isPlus = tier === "plus";
+  const isPartner = tier === "partner";
+  const color = mode === "fast" ? "#C9A84C" : isPlus ? "#9B7BC9" : "#7A9E7E";
+  const bg = mode === "fast" ? "rgba(201,168,76,0.08)" : isPlus ? "rgba(155,123,201,0.08)" : "rgba(122,158,126,0.08)";
+  const border = mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : isPlus ? "0.5px solid rgba(155,123,201,0.2)" : "0.5px solid rgba(122,158,126,0.2)";
+  const title = isPartner ? "Partner Sharing Coming Soon" : isPlus ? "Coming Soon to Lumen Flow Plus" : "Unlock with Lumen Flow Premium";
+  const body = isPartner ? "Supportive rhythm tools for men and partners are planned for a future Lumen Flow update." : isPlus ? "Moon reflections, emotional patterns, rituals, and deeper wellness tools are being built for a future update." : "Go deeper with full check-ins, cycle insights, Nourish support, trend charts, movement guidance, and gentle fasting tools.";
+  return (
+    <div style={{ background: bg, borderRadius: 16, padding: "16px", border, marginBottom: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        <span style={{ fontSize: 18 }}>{isPlus ? "✨" : isPartner ? "🤝" : "🔒"}</span>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color, margin: 0 }}>{title}</p>
+      </div>
+      <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#a8c4a8" : "#6b7b6b", margin: "0 0 10px", lineHeight: 1.7 }}>{body}</p>
+      <p style={{ fontFamily: "sans-serif", fontSize: 11, color, margin: 0, fontStyle: "italic" }}>🌿 Free during beta — premium coming soon</p>
+    </div>
+  );
+}
+
+function LumenLifeCard({ section, mode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : section.bg, borderRadius: 16, border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.15)" : `0.5px solid ${section.color}33`, overflow: "hidden" }}>
+      <button onClick={() => setOpen(!open)} style={{ width: "100%", padding: "14px 16px", background: "none", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", textAlign: "left" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : section.color, margin: 0 }}>{section.title}</p>
+        <span style={{ fontSize: 18, color: mode === "fast" ? "#C9A84C" : section.color }}>{open ? "▴" : "▾"}</span>
+      </button>
+      {open && (
+        <div style={{ padding: "0 16px 16px" }}>
+          {section.content.map((item, i) => (
+            <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.75)", borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : section.color, margin: "0 0 4px", fontWeight: 600, textTransform: item.phase.startsWith("Prompt") || item.phase.startsWith("Step") ? "none" : "none" }}>{item.phase.startsWith("Prompt") || item.phase.startsWith("Step") ? "" : item.phase}</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#a8c4a8" : "#4a3a5a", margin: 0, lineHeight: 1.7 }}>{item.text}</p>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DASHBOARD
-// ─────────────────────────────────────────────────────────────────────────────
-function DashboardPage({ topics, packages, setPage, hasMens }) {
-  const [tab, setTab] = useState("overview");
-  const posted = packages.filter(p=>p.analytics);
-  const totalFollowers = PLATFORM_GROWTH.reduce((a,p)=>a+parseInt(p.followers),0);
-  const totalAppClicks = posted.reduce((a,p)=>a+(p.analytics?.appStoreClicks||0),0);
+function MoveMapCard({ item, mode }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div className="fade">
-      <div style={{ marginBottom:20 }}>
-        <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:300, color:"#2d4a3a" }}>Dashboard 💚</h2>
-        <p style={{ fontFamily:"'Jost',sans-serif", fontSize:13, color:"#7a8a7a", marginTop:3 }}>Your full marketing overview.</p>
+    <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : item.bg, borderRadius: 16, border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.15)" : `0.5px solid ${item.color}33`, overflow: "hidden" }}>
+      <button onClick={() => setOpen(!open)} style={{ width: "100%", padding: "14px 16px", background: "none", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", textAlign: "left" }}>
+        <div>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : item.color, margin: "0 0 2px" }}>{item.group}</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#7A9E7E" : "#8FA090", margin: 0 }}>{item.phase}</p>
+        </div>
+        <span style={{ fontSize: 18, color: mode === "fast" ? "#C9A84C" : item.color }}>{open ? "▴" : "▾"}</span>
+      </button>
+      {open && (
+        <div style={{ padding: "0 16px 16px" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : item.color, margin: "0 0 12px", lineHeight: 1.6 }}>⚡ Fasting: {item.fasting}</p>
+          {item.exercises.map((ex, i) => (
+            <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.7)", borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: 0 }}>{ex.name}</p>
+                <span style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#C9A84C" : item.color, background: mode === "fast" ? "rgba(201,168,76,0.1)" : `${item.color}22`, borderRadius: 50, padding: "2px 8px", whiteSpace: "nowrap", marginLeft: 8 }}>{ex.level}</span>
+              </div>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#5C7F60", margin: "0 0 4px" }}>🔁 {ex.reps}</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#a8c4a8" : "#6b7b6b", margin: "0 0 4px" }}>🛠️ {ex.equipment}</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#a8c4a8" : "#6b7b6b", margin: 0, fontStyle: "italic" }}>💡 {ex.tip}</p>
+            </div>
+          ))}
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : item.color, margin: "8px 0 0", lineHeight: 1.6 }}>⚠️ {item.note}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LumenMirror({ mode, lastPeriod }) {
+  const today = new Date().toISOString().split("T")[0];
+  const mirrorKey = `lf_mirror_${today}`;
+  const phase = getPhase(Math.max(1, getCycleDay(lastPeriod) - 1));
+  const [note, setNote] = useState(() => { try { return JSON.parse(localStorage.getItem(mirrorKey))?.note || ""; } catch(e) { return ""; } });
+  const [saved, setSaved] = useState(false);
+  const [promptIdx, setPromptIdx] = useState(0);
+
+  const prompts = {
+    Menstrual: ["What am I ready to release?", "What has this cycle taught me?", "What does my body need right now?", "What truth am I avoiding?", "What would rest look like today?"],
+    Follicular: ["What am I excited to create?", "What new idea is asking for my attention?", "What do I want to learn right now?", "What feels possible today?", "What am I planting this cycle?"],
+    Ovulation: ["What do I want to share with the world?", "Who do I want to connect with?", "What lights me up right now?", "What truth am I ready to speak?", "What am I most proud of lately?"],
+    Luteal: ["What needs my attention?", "What am I holding on to?", "What would I simplify if I could?", "What is my body telling me?", "What boundary would protect my peace?"],
+  };
+  const todayPrompts = prompts[phase] || prompts.Luteal;
+
+  const saveEntry = () => {
+    localStorage.setItem(mirrorKey, JSON.stringify({ note, date: today, phase }));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const last7 = [];
+  for (let i = 1; i <= 7; i++) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const dk = d.toISOString().split("T")[0];
+    try {
+      const e = JSON.parse(localStorage.getItem(`lf_mirror_${dk}`));
+      if (e?.note) last7.push({ dk, ...e, label: d.toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" }) });
+    } catch {}
+  }
+
+  const accentColor = mode === "fast" ? "#C9A84C" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg, #1a1a2e, #16213e)", borderRadius: 18, padding: "18px 16px", border: `0.5px solid ${accentColor}44` }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 20, color: "#fff", margin: "0 0 6px" }}>🪞 Lumen Mirror</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "rgba(255,255,255,0.7)", margin: 0, lineHeight: 1.7 }}>A private space to notice your patterns, reflect on your emotions, and track your inner world alongside your cycle.</p>
       </div>
-      <div style={{ display:"flex", gap:5, marginBottom:22, background:"#f0ebe0", padding:4, borderRadius:14, width:"fit-content" }}>
-        {[["overview","Overview"],["growth-view","Growth View"],["recommendations","Recommendations"]].map(([t,l])=>(
-          <button key={t} className="tab-pill" onClick={()=>setTab(t)} style={{ background:tab===t?"#faf7f2":"transparent", color:tab===t?"#2d4a3a":"#7a8a7a", boxShadow:tab===t?"0 1px 4px rgba(0,0,0,0.08)":"none", fontWeight:tab===t?600:400 }}>{l}</button>
+      <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 16, padding: "16px", border: `0.5px solid ${accentColor}33` }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 4px" }}>📝 Today's reflection</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: accentColor, margin: "0 0 12px" }}>{phase} phase · {new Date().toLocaleDateString("en-CA", { weekday: "long", month: "long", day: "numeric" })}</p>
+        <div style={{ background: mode === "fast" ? "rgba(0,0,0,0.2)" : `${accentColor}12`, borderRadius: 12, padding: "12px 14px", marginBottom: 12 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: accentColor, margin: "0 0 8px", fontStyle: "italic" }}>✨ {todayPrompts[promptIdx]}</p>
+          <button onClick={() => setPromptIdx((promptIdx + 1) % todayPrompts.length)} style={{ background: "none", border: "none", fontFamily: "sans-serif", fontSize: 11, color: accentColor, cursor: "pointer", padding: 0 }}>↻ New prompt</button>
+        </div>
+        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Write freely — this is just for you..." spellCheck autoCorrect="on" style={{ width: "100%", minHeight: 100, padding: "10px 12px", borderRadius: 12, border: `0.5px solid ${accentColor}33`, background: mode === "fast" ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.8)", fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", resize: "none", lineHeight: 1.7, boxSizing: "border-box", marginBottom: 10 }} />
+        <button onClick={saveEntry} style={{ width: "100%", padding: "10px", borderRadius: 12, border: "none", background: mode === "fast" ? "#7A9E7E" : `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`, color: "#fff", fontFamily: "Georgia, serif", fontSize: 13, cursor: "pointer" }}>{saved ? "✅ Saved" : "Save reflection"}</button>
+      </div>
+      {last7.length > 0 && (
+        <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 16, padding: "16px", border: `0.5px solid ${accentColor}33` }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 12px" }}>📖 Past reflections</p>
+          {last7.map((e, i) => (
+            <div key={i} style={{ padding: "10px 0", borderBottom: i < last7.length - 1 ? `0.5px solid ${accentColor}22` : "none" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 11, color: accentColor, margin: "0 0 4px" }}>{e.label} · {e.phase}</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#a8c4a8" : "#4a3a5a", margin: 0, lineHeight: 1.6 }}>{e.note.slice(0, 120)}{e.note.length > 120 ? "..." : ""}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
+  const learnPhase = getPhase(Math.max(1, getCycleDay(lastPeriod) - 1));
+  const [tab, setTab] = useState(mode === "fast" ? "Fasting" : "Phases");
+  const tabs = mode === "fast"
+    ? ["Lumen Life", "Lumen Mirror", "Fasting Basics", "Movement Map", "Partner Wellness", "Body Glossary", "Cycle Workouts", "Craving Wisdom", "Grooming", "Gut + Cycle Health"]
+    : ["Lumen Life", "Lumen Mirror", "Fasting Basics", "Cycle Phases", "Health Conditions", "Partner Wellness", "Body Glossary", "Cycle Workouts", "Cycle Nutrition", "Period Blood Guide", "Craving Wisdom", "Cycle Guide", "Gut + Cycle Health", "Movement Map"];
+
+  const MOVE_MAP = [
+    { group: "🔥 Core", color: "#C9A87B", bg: "#FDF6EA", phase: "All phases — gentler in Menstrual and Luteal", fasting: "Core work is great fasted — low intensity, high focus", exercises: [{ name: "Dead bug", reps: "8–10 reps each side", equipment: "None", level: "Beginner", tip: "Press lower back into floor throughout" }, { name: "Plank hold", reps: "20–40 seconds", equipment: "None", level: "Beginner", tip: "Keep hips level, breathe steadily" }, { name: "Bird dog", reps: "8 reps each side", equipment: "None", level: "Beginner", tip: "Move slowly and with control" }, { name: "Hollow hold", reps: "15–20 seconds", equipment: "None", level: "Intermediate", tip: "Press ribs down, avoid holding your breath" }, { name: "Pallof press", reps: "10 reps each side", equipment: "Resistance band", level: "Intermediate", tip: "Resist rotation — that is the work" }], note: "Avoid heavy core work during heavy flow days. Listen to your body." },
+    { group: "🍑 Glutes", color: "#C97B7B", bg: "#FDEAEA", phase: "Best in Follicular and Ovulation — lighter in Luteal and Menstrual", fasting: "Moderate intensity glute work is fine fasted — stay hydrated", exercises: [{ name: "Glute bridge", reps: "15 reps", equipment: "None", level: "Beginner", tip: "Squeeze at the top for 2 seconds" }, { name: "Clamshell", reps: "15 reps each side", equipment: "Optional band", level: "Beginner", tip: "Keep hips stacked, move from the hip not the waist" }, { name: "Side lying leg raise", reps: "12 reps each side", equipment: "None", level: "Beginner", tip: "Slow and controlled beats fast" }, { name: "Hip thrust", reps: "10–12 reps", equipment: "Bench and weight optional", level: "Intermediate", tip: "Drive through heels, not toes" }, { name: "Bulgarian split squat", reps: "8 reps each side", equipment: "Chair or bench", level: "Intermediate", tip: "Keep front knee tracking over toes" }], note: "Heavy glute work near your period may increase cramping for some. Adjust accordingly." },
+    { group: "🦵 Legs", color: "#9B7BC9", bg: "#F5F0FF", phase: "Peak performance in Ovulation — gentle in Menstrual", fasting: "Keep leg sessions moderate when fasted — heavy squats fed is better", exercises: [{ name: "Bodyweight squat", reps: "15 reps", equipment: "None", level: "Beginner", tip: "Sit back into hips, chest tall" }, { name: "Reverse lunge", reps: "10 reps each side", equipment: "None", level: "Beginner", tip: "Step back not forward — easier on the knee" }, { name: "Wall sit", reps: "30–45 seconds", equipment: "Wall", level: "Beginner", tip: "Thighs parallel to floor, back flat" }, { name: "Goblet squat", reps: "10–12 reps", equipment: "One weight or bottle", level: "Intermediate", tip: "Keep elbows inside knees at the bottom" }, { name: "Romanian deadlift", reps: "10 reps", equipment: "Weights optional", level: "Intermediate", tip: "Hinge at hips, soft knee, feel the hamstring stretch" }], note: "Leg DOMS can feel worse in the Luteal phase. Reduce volume if you feel unusually sore." },
+    { group: "🔙 Back", color: "#7BA8C9", bg: "#EAF2F9", phase: "Good in all phases — keep it gentle in Menstrual", fasting: "Back work is well suited to fasted training — posture focus", exercises: [{ name: "Cat cow stretch", reps: "10 slow cycles", equipment: "None", level: "Beginner", tip: "Breathe in on the arch, out on the round" }, { name: "Superman hold", reps: "8–10 reps, 3 second hold", equipment: "None", level: "Beginner", tip: "Lift from the back not the neck" }, { name: "Resistance band row", reps: "12 reps", equipment: "Resistance band", level: "Beginner", tip: "Pull elbows back, squeeze shoulder blades" }, { name: "Single arm dumbbell row", reps: "10 reps each side", equipment: "One weight", level: "Intermediate", tip: "Keep back flat, pull to hip not shoulder" }, { name: "Lat pulldown", reps: "10–12 reps", equipment: "Cable or band", level: "Intermediate", tip: "Pull bar to chest, lean back slightly" }], note: "If you experience lower back pain during your period, stick to gentle stretching only." },
+    { group: "💪 Arms", color: "#7A9E7E", bg: "#F0F6F0", phase: "Great in Follicular and Ovulation — lighter in Luteal", fasting: "Arm work fasted is fine — great for morning sessions", exercises: [{ name: "Wall push up", reps: "12–15 reps", equipment: "Wall", level: "Beginner", tip: "Keep body in a straight line" }, { name: "Bicep curl", reps: "12 reps", equipment: "Weights or water bottles", level: "Beginner", tip: "Slow on the way down — that is where the work happens" }, { name: "Tricep dip", reps: "10 reps", equipment: "Chair", level: "Beginner", tip: "Keep elbows pointing back not out" }, { name: "Hammer curl", reps: "10 reps", equipment: "Weights", level: "Intermediate", tip: "Neutral grip targets forearms and biceps together" }, { name: "Overhead tricep extension", reps: "12 reps", equipment: "One weight", level: "Intermediate", tip: "Keep elbows close to your head" }], note: "Arms are generally safe to train in all cycle phases. Go lighter if fatigue is high." },
+    { group: "🏔️ Shoulders", color: "#C9A87B", bg: "#FDF6EA", phase: "Best in Follicular and Ovulation", fasting: "Shoulder work fasted is well tolerated — keep weight moderate", exercises: [{ name: "Shoulder circles", reps: "10 forward, 10 back", equipment: "None", level: "Beginner", tip: "Warm up before any shoulder work" }, { name: "Lateral raise", reps: "12 reps", equipment: "Light weights", level: "Beginner", tip: "Lead with elbows not wrists, stop at shoulder height" }, { name: "Front raise", reps: "10 reps", equipment: "Light weights", level: "Beginner", tip: "Controlled — avoid swinging" }, { name: "Arnold press", reps: "10 reps", equipment: "Weights", level: "Intermediate", tip: "Rotate palms as you press up" }, { name: "Face pull", reps: "12 reps", equipment: "Resistance band", level: "Intermediate", tip: "Pull to face height, elbows high and wide" }], note: "Warm up thoroughly and avoid heavy overhead pressing during high fatigue days." },
+    { group: "💎 Chest", color: "#7BA8C9", bg: "#EAF2F9", phase: "Strongest in Follicular and Ovulation", fasting: "Chest work fasted is fine for moderate sessions", exercises: [{ name: "Incline push up", reps: "12–15 reps", equipment: "Elevated surface", level: "Beginner", tip: "Hands on a bench or step — easier than floor" }, { name: "Knee push up", reps: "10–12 reps", equipment: "None", level: "Beginner", tip: "Keep hips down, full range of motion" }, { name: "Chest squeeze", reps: "15 reps", equipment: "None", level: "Beginner", tip: "Press palms together at chest height and hold 2 seconds" }, { name: "Dumbbell chest press", reps: "10–12 reps", equipment: "Weights and floor or bench", level: "Intermediate", tip: "Lower slowly, press up with control" }, { name: "Resistance band chest fly", reps: "12 reps", equipment: "Resistance band", level: "Intermediate", tip: "Slight bend in elbows throughout" }], note: "Chest sensitivity can increase before your period. Reduce pressure or skip if uncomfortable." },
+    { group: "✨ Full Body", color: "#8FAF8F", bg: "#EAF2EA", phase: "Best in Ovulation — gentle version in all phases", fasting: "Full body fasted is manageable at low intensity — keep sessions under 30 minutes", exercises: [{ name: "Inchworm", reps: "6–8 reps", equipment: "None", level: "Beginner", tip: "Walk hands out slowly, feel the stretch" }, { name: "Squat to press", reps: "10 reps", equipment: "Light weights optional", level: "Beginner", tip: "Squat down, press up as you stand" }, { name: "Reverse lunge with curl", reps: "8 reps each side", equipment: "Light weights optional", level: "Intermediate", tip: "Curl on the way down, stand tall on the way up" }, { name: "Low impact burpee", reps: "8–10 reps", equipment: "None", level: "Intermediate", tip: "Step feet back instead of jumping — same benefit, gentler on joints" }, { name: "Dumbbell swing", reps: "12 reps", equipment: "One weight", level: "Intermediate", tip: "Hinge at hips, drive with glutes — not a squat" }], note: "Full body sessions are intense. In Menstrual phase, replace with a gentle walk or yoga instead." },
+  ];
+
+  const BLOOD_COLORS = [
+    { color: "#B22222", label: "Bright Red",    note: "Fresh flow. Healthy and normal at peak flow." },
+    { color: "#8B0000", label: "Dark Red",       note: "Older blood. Common at start or end of period." },
+    { color: "#3D1C02", label: "Brown",          note: "Very old blood. Normal at the very start or end." },
+    { color: "#E8A090", label: "Light Pink",     note: "Diluted blood. May indicate low estrogen or light flow." },
+    { color: "#1C0202", label: "Black",          note: "Very old blood. Usually normal but worth noting." },
+    { color: "#C4A882", label: "Orange-tinged",  note: "Could indicate infection if paired with unusual odor. See your provider." },
+  ];
+
+  const CRAVINGS = [
+    { craving: "🍫 Chocolate",       why: "Chocolate cravings may be linked to comfort, mood, blood sugar shifts, or a desire for magnesium-rich foods. Your body is communicating something — it is worth listening to without judgment." },
+    { craving: "🧂 Salty / Crunchy", why: "Salt cravings may show up when you feel depleted, stressed, or when your body is asking for minerals and grounding. They often come with dehydration too." },
+    { craving: "🍬 Sugar / Sweets",  why: "Sweet cravings may be connected to energy needs, mood shifts, comfort seeking, or blood sugar fluctuations. They are especially common in the luteal phase." },
+    { craving: "🍞 Carbs / Bread",   why: "Carb cravings are often your body asking for energy, warmth, or comfort. Rising progesterone in the luteal phase may increase your appetite and energy needs." },
+    { craving: "🥩 Red Meat",        why: "Cravings for red meat may reflect your body's awareness of iron and zinc needs, especially around menstruation. These are real nutritional needs worth honouring." },
+    { craving: "🥑 Fatty Foods",     why: "Cravings for fatty or rich foods may be your body asking for sustained energy, warmth, or comfort. Healthy fats support hormones, mood, and satiety." },
+    { craving: "😶 No Appetite",     why: "Lower appetite is common around ovulation for some people. If you are not hungry, gentle nourishment is still supportive — small meals, easy foods, and hydration." },
+  ];
+
+  const FASTING_INFO = mode === "fast" ? [
+    { phase: "16:8 Fasting",  tip: "Fast for 16 hours, eat within an 8 hour window. Most popular and sustainable method. Best for beginners and intermediate fasters." },
+    { phase: "18:6 Fasting",  tip: "Fast for 18 hours, eat within a 6 hour window. Increases autophagy and fat burning. Best for experienced fasters." },
+    { phase: "20:4 Fasting",  tip: "Fast for 20 hours, eat within a 4 hour window. Significant metabolic benefits. Requires strong discipline." },
+    { phase: "OMAD",          tip: "One meal a day. Maximum autophagy and simplicity. Only recommended for experienced fasters." },
+    { phase: "Peak Window",   tip: "Your testosterone peaks in the morning. Breaking your fast with protein within 30-60 minutes of waking optimises muscle synthesis." },
+    { phase: "Sleep Fasting",  tip: "Your longest natural fast happens during sleep. Going to bed slightly hungry extends your fast and boosts overnight growth hormone." },
+  ] : [
+    { phase: "Menstrual 🌑",  tip: "12–14h if comfortable, or skip fasting if your body needs food. During bleeding your body may need more regular nourishment — honour that." },
+    { phase: "Follicular 🌒", tip: "14–16h if it feels supportive. Energy often rises in this phase and gentle fasting may feel more natural." },
+    { phase: "Ovulation 🌕",  tip: "14–16h, or up to 18h only if it feels good. Stay well hydrated. Never push through dizziness, shakiness, or weakness." },
+    { phase: "Luteal 🌗",     tip: "12–14h, especially in late luteal. Break your fast early if you feel shaky, irritable, weak, or overly hungry. Your body may genuinely need more food in this phase." },
+  ];
+
+  const WORKOUT_INFO = mode === "fast" ? [
+    { phase: "Fasted Training", tip: "Training in a fasted state increases fat oxidation and growth hormone release. Best for low to moderate intensity sessions." },
+    { phase: "Fed Training",    tip: "Break your fast 1-2 hours before heavy lifting. Carbs and protein fuel peak performance on compound lifts." },
+    { phase: "Morning Peak",    tip: "Testosterone peaks 30-60 minutes after waking. Morning workouts in this window maximise muscle building response." },
+    { phase: "Recovery",        tip: "Sleep is when growth hormone peaks naturally. Prioritise 7-9 hours. Poor sleep reduces testosterone by up to 15%." },
+  ] : [
+    { phase: "Menstrual 🌑",  tip: "Rest, gentle stretching, slow walks, or restorative movement. Full rest is always valid. Listen to your body above anything else." },
+    { phase: "Follicular 🌒", tip: "Light strength, cardio, Pilates, walking, or trying something new. Energy may be building — follow what feels good." },
+    { phase: "Ovulation 🌕",  tip: "Strength, cardio, dance, circuits, or higher-energy movement if it feels good. Some people feel strongest here — enjoy it if you do." },
+    { phase: "Luteal 🌗",     tip: "Walking, Pilates, mobility, stretching, or lower intensity movement. Late luteal especially — slow down, reduce intensity, and rest when needed." },
+  ];
+
+  const NUTRITION_INFO = mode === "fast" ? [
+    { phase: "Break Fast Meal", tip: "Break your fast with protein first — eggs, meat, fish, or Greek yogurt. This triggers muscle protein synthesis and stabilises blood sugar." },
+    { phase: "Electrolytes",    tip: "During extended fasts replenish sodium, potassium and magnesium. Add a pinch of sea salt to water or drink bone broth." },
+    { phase: "Eating Window",   tip: "Prioritise whole foods — lean proteins, complex carbs, healthy fats and vegetables. Avoid ultra-processed foods that spike insulin." },
+    { phase: "Pre-Sleep",       tip: "A small protein-rich snack 2-3 hours before bed supports overnight muscle recovery without disrupting your fasting window." },
+  ] : [
+    { phase: "Menstrual 🌑",  tip: "Iron-rich foods, warming soups, anti-inflammatory choices." },
+    { phase: "Follicular 🌒", tip: "Leafy greens, lean proteins, and fermented foods for estrogen support." },
+    { phase: "Ovulation 🌕",  tip: "Cruciferous vegetables to help estrogen clearance." },
+    { phase: "Luteal 🌗",     tip: "Magnesium, complex carbs, and B6 to ease PMS." },
+  ];
+
+  return (
+    <div style={{ padding: "0 0 90px", background: getSeasonalBg(mode, getPhase(Math.max(1, getCycleDay((() => { try { return JSON.parse(localStorage.getItem("lf_settings"))?.lastPeriod || ""; } catch(e) { return ""; } })()) - 1))), minHeight: "100vh" }}>
+      <div style={{ padding: "16px 16px 12px" }}>
+        <h3 style={{ ...s.title, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E" }}>Learn & Optimise</h3>
+        <p style={{ ...s.label, marginBottom: 12 }}>Knowledge for your body, your cycle, and your rhythm.</p>
+        <div style={{ background: mode === "fast" ? "rgba(201,168,76,0.08)" : "rgba(155,123,201,0.08)", borderRadius: 14, padding: "12px 14px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : "0.5px solid rgba(155,123,201,0.2)" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", margin: 0, lineHeight: 1.7 }}>📚 Educational only — not medical advice. If you have a diagnosed condition, are pregnant, breastfeeding, underweight, recovering from disordered eating, or managing thyroid or blood sugar concerns, speak with a healthcare provider before fasting or making changes to your routine.</p>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", overflowX: "auto", gap: 8, padding: "0 16px 14px", scrollbarWidth: "none" }}>
+        {tabs.map(t => (
+          <button key={t} onClick={() => setTab(t)} style={{
+            flexShrink: 0, padding: "7px 16px", borderRadius: 100, border: "none",
+            background: tab === t ? (mode === "fast" ? "#7A9E7E" : learnPhase === "Menstrual" ? "#7BA8C9" : learnPhase === "Follicular" ? "#f472b6" : learnPhase === "Ovulation" ? "#0891b2" : "#ea580c") : "rgba(255,255,255,0.5)",
+            color: tab === t ? "#fff" : "#6b7b6b",
+            fontFamily: "sans-serif", fontSize: 13, fontWeight: tab === t ? 700 : 400, cursor: "pointer",
+          }}>{t}</button>
         ))}
       </div>
-      {tab==="overview" && (
-        <>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:13, marginBottom:22 }}>
+
+      <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 12 }}>
+        {tab === "Cycle Phases" && Object.entries(PHASE_INFO).map(([name, info]) => (
+          <div key={name} style={{ ...s.card, background: info.bg, border: `1px solid ${info.color}22`, textAlign: "left" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+              <span style={{ fontSize: 24 }}>{info.emoji}</span>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: info.color, margin: 0 }}>{name}</p>
+            </div>
+            <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: "0 0 4px" }}>💧 <b>Fast:</b> {info.fast}</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: "0 0 4px" }}>🏋️ <b>Move:</b> {info.move}</p>
+          </div>
+        ))}
+
+        {tab === "Movement Map" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 16, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.15)" : "0.5px solid rgba(200,170,180,0.3)" }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 6px" }}>🗺️ Move Map</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#6b7b6b", margin: 0, lineHeight: 1.7 }}>Select a muscle group to see exercises matched to your cycle phase, energy level, and fasting window.</p>
+            </div>
+            {MOVE_MAP.map((item, idx) => <MoveMapCard key={idx} item={item} mode={mode} />)}
+          </div>
+        )}
+
+        {tab === "Lumen Mirror" && <LumenMirror mode={mode} lastPeriod={lastPeriod} />}
+
+        {tab === "Lumen Life" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg, #F5F0FF, #FFF0F5)", borderRadius: 18, padding: "18px 16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : "0.5px solid rgba(180,140,200,0.3)" }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 20, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 6px" }}>🌿 Lumen Life</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: 0, lineHeight: 1.7 }}>Use your cycle to plan, protect your energy, and move through life with more self-trust.</p>
+            </div>
             {[
-              { label:"New Followers",    value:`+${totalFollowers}`, color:"#5a8a6a", icon:"users" },
-              { label:"App Store Clicks", value:totalAppClicks,       color:"#9a6ab8", icon:"phone" },
-              { label:"Link in Bio Clicks",value:"992",               color:"#d4a574", icon:"link"  },
-              { label:"Pending Approvals",value:packages.filter(p=>p.status==="Needs Review").length, color:"#c4726a", icon:"approve", action:()=>setPage("approvals") },
-              { label:"Topics in Library",value:topics.length,        color:"#8fb5a0", icon:"lib"   },
-            ].map((s,i)=>(
-              <div key={i} className="ch" onClick={s.action} style={{ background:"#faf7f2", borderRadius:14, padding:18, border:"1px solid #e8e0d0", cursor:s.action?"pointer":"default" }}>
-                <div style={{ display:"flex", justifyContent:"space-between" }}>
-                  <div>
-                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:30, fontWeight:600, color:s.color, lineHeight:1 }}>{s.value}</div>
-                    <div style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#7a8a7a", marginTop:4 }}>{s.label}</div>
+              {
+                title: "📅 Plan With Your Cycle", color: "#7BA8C9", bg: "#EAF2F9",
+                content: [
+                  { phase: "🌑 Menstrual", text: "Review, rest, and reflect. This is a time to look back, release what is not working, and restore your energy. Say no to big decisions." },
+                  { phase: "🌒 Follicular", text: "Start, plan, and learn. Your energy is rising. This is a good time to set intentions, begin new projects, and absorb new information." },
+                  { phase: "🌕 Ovulation", text: "Speak, connect, and launch. Your communication and confidence may feel strongest here. Share ideas, have important conversations, show up." },
+                  { phase: "🌗 Luteal", text: "Finish, organize, and simplify. Wrap up what you started. Clear your space. Say no to new commitments and protect your energy." },
+                ]
+              },
+              {
+                title: "⚡ Energy Budget", color: "#C9A87B", bg: "#FDF6EA",
+                content: [
+                  { phase: "💚 High energy", text: "One body task: move or stretch. One home task: tackle something you have been putting off. One work task: create or lead. One emotional task: connect with someone you love." },
+                  { phase: "🌿 Medium energy", text: "One body task: gentle walk or short workout. One home task: tidy one area. One work task: respond and organise. One emotional task: check in with yourself." },
+                  { phase: "🌙 Low energy", text: "One body task: rest or breathe. One home task: dishes only. One work task: one small thing. One emotional task: be gentle with yourself." },
+                  { phase: "🌸 Sensitive energy", text: "One body task: warmth and comfort. One home task: soft lighting, clean space. One work task: only what is essential. One emotional task: protect your peace." },
+                  { phase: "😴 Rest day", text: "Permission to do nothing. Your only task is to rest. Everything else can wait." },
+                ]
+              },
+              {
+                title: "🛡️ Boundary Check", color: "#C97B7B", bg: "#FDEAEA",
+                content: [
+                  { phase: "Prompt 1", text: "Where did I say yes when I meant no?" },
+                  { phase: "Prompt 2", text: "What drained me today?" },
+                  { phase: "Prompt 3", text: "What do I need less of right now?" },
+                  { phase: "Prompt 4", text: "What conversation am I avoiding?" },
+                  { phase: "Prompt 5", text: "What boundary would protect my peace?" },
+                ]
+              },
+              {
+                title: "💬 Speak Your Truth", color: "#9B7BC9", bg: "#F5F0FF",
+                content: [
+                  { phase: "Prompt 1", text: "What truth am I avoiding right now?" },
+                  { phase: "Prompt 2", text: "What do I want to say clearly?" },
+                  { phase: "Prompt 3", text: "Where can I stop shrinking?" },
+                  { phase: "Prompt 4", text: "What would I choose if I trusted myself?" },
+                  { phase: "Prompt 5", text: "What do I need to stop explaining?" },
+                ]
+              },
+              {
+                title: "🏠 Home Flow", color: "#7A9E7E", bg: "#F0F6F0",
+                content: [
+                  { phase: "🌑 Menstrual", text: "Dishes, laundry, soft lighting, rest. Keep your home warm and gentle. Do the minimum and honour your need for stillness." },
+                  { phase: "🌒 Follicular", text: "Declutter, rearrange, start projects. Your energy for new things is rising — use it to refresh your space." },
+                  { phase: "🌕 Ovulation", text: "Decorate, host, beautify. This may feel like a good time to have people over, freshen up your home, and enjoy your space." },
+                  { phase: "🌗 Luteal", text: "Deep clean, organise, meal prep, simplify. Clear the clutter, prepare for the week ahead, and create calm." },
+                ]
+              },
+              {
+                title: "💸 Money Mood", color: "#C9A87B", bg: "#FDF6EA",
+                content: [
+                  { phase: "Prompt 1", text: "Did I spend to soothe today?" },
+                  { phase: "Prompt 2", text: "Did I avoid checking my money today?" },
+                  { phase: "Prompt 3", text: "What purchase actually supported me?" },
+                  { phase: "Prompt 4", text: "What purchase can wait?" },
+                  { phase: "Prompt 5", text: "What one small money action would make me feel safer?" },
+                ]
+              },
+              {
+                title: "🎨 Create With Your Cycle", color: "#9B7BC9", bg: "#F5F0FF",
+                content: [
+                  { phase: "🌑 Menstrual", text: "Review, rest, reflect, analyse. Look at what you have made. Notice what is working and what is not. Let ideas come without forcing them." },
+                  { phase: "🌒 Follicular", text: "Brainstorm, outline, start. Your creativity and curiosity are building. Begin the thing you have been putting off." },
+                  { phase: "🌕 Ovulation", text: "Post, film, pitch, interview, present. Share your work. Your confidence and communication may feel strongest here." },
+                  { phase: "🌗 Luteal", text: "Edit, schedule, organise, finish. Refine what you have made. Prepare and complete rather than start something new." },
+                ]
+              },
+              {
+                title: "🛁 Care Rituals", color: "#C97B7B", bg: "#FDEAEA",
+                content: [
+                  { phase: "For your body", text: "Hair wash day · scalp massage · skincare reset · bath or shower ritual · body oil · gentle stretching" },
+                  { phase: "For your space", text: "Clean sheets · soft lighting · cozy clothes · a nourishing meal · tidy one corner" },
+                  { phase: "For your rest", text: "Early bedtime · no screens one hour before sleep · warm drink · quiet music · breathe slowly" },
+                  { phase: "For your energy", text: "One thing that fills you up. Not productive. Not useful. Just for you." },
+                ]
+              },
+              {
+                title: "💞 Relationship Reflection", color: "#C97B7B", bg: "#FDEAEA",
+                content: [
+                  { phase: "Prompt 1", text: "Did I feel heard today?" },
+                  { phase: "Prompt 2", text: "Did I over-explain myself?" },
+                  { phase: "Prompt 3", text: "Did I ignore a feeling that was trying to tell me something?" },
+                  { phase: "Prompt 4", text: "Did I ask clearly for what I needed?" },
+                  { phase: "Prompt 5", text: "Did I feel safe being myself around this person?" },
+                  { phase: "Prompt 6", text: "What did my body feel around this person?" },
+                ]
+              },
+              {
+                title: "🌱 Soft Reset", color: "#7A9E7E", bg: "#F0F6F0",
+                content: [
+                  { phase: "Step 1", text: "Breathe. In for 4, hold for 4, out for 4. Just once is enough." },
+                  { phase: "Step 2", text: "Drink a glass of water slowly." },
+                  { phase: "Step 3", text: "Unclench your jaw. Drop your shoulders. Exhale." },
+                  { phase: "Step 4", text: "Write one sentence about how you feel right now." },
+                  { phase: "Step 5", text: "Choose one small next step — not a whole plan, just one thing." },
+                  { phase: "Step 6", text: "Do that one small thing. That is enough." },
+                ]
+              },
+            ].map((section, idx) => (
+              <LumenLifeCard key={idx} section={section} mode={mode} />
+            ))}
+            {(() => {
+              const now = new Date();
+              const month = now.getMonth();
+              const season = month >= 2 && month <= 4 ? "Spring" : month >= 5 && month <= 7 ? "Summer" : month >= 8 && month <= 10 ? "Autumn" : "Winter";
+              const almanac = {
+                Spring: { emoji: "🌸", desc: "Nature is awakening. Seeds are pushing through soil. The light is returning and everything feels possible again.", foods: ["Asparagus", "Peas", "Spinach", "Radishes", "Strawberries", "Rhubarb", "Spring onions", "Artichokes"], wisdom: "Spring asks you to begin. Not perfectly — just begin. Plant something, start something, say yes to something new.", energy: "Rising, fresh, hopeful", ritual: "Write one intention for this season. Plant something — even a herb on a windowsill." },
+                Summer: { emoji: "☀️", desc: "Everything is in full bloom. The sun is generous and the days are long. This is the season of abundance and expression.", foods: ["Tomatoes", "Courgette", "Cucumber", "Berries", "Peaches", "Corn", "Peppers", "Watermelon"], wisdom: "Summer asks you to show up fully. To be seen, to connect, to share what you have been growing inside.", energy: "Peak, vibrant, expressive", ritual: "Spend time outside in the sun. Connect with someone you love. Share something you have been working on." },
+                Autumn: { emoji: "🍂", desc: "The harvest is here. The trees are letting go of what they no longer need. The earth is preparing for rest.", foods: ["Pumpkin", "Butternut squash", "Apples", "Pears", "Root vegetables", "Mushrooms", "Kale", "Brussels sprouts"], wisdom: "Autumn asks you to harvest and release. To gather what has grown and let go of what has not served you.", energy: "Grounding, reflective, completing", ritual: "Write a list of what you are grateful for this season. Let go of one thing that is weighing on you." },
+                Winter: { emoji: "❄️", desc: "The earth is resting beneath the surface. What looks like stillness is actually deep restoration and quiet preparation.", foods: ["Root vegetables", "Citrus fruits", "Pomegranate", "Leeks", "Cabbage", "Sweet potato", "Warming spices", "Dark leafy greens"], wisdom: "Winter asks you to rest without guilt. To turn inward, to restore, to trust that spring will come again.", energy: "Still, restorative, introspective", ritual: "Light a candle. Wrap yourself in warmth. Rest fully — without justifying it." },
+              };
+              const a = almanac[season];
+              return (
+                <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg, #1a1a2e, #16213e)", borderRadius: 18, padding: "18px 16px", border: "0.5px solid rgba(155,123,201,0.3)", marginBottom: 12 }}>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 10, letterSpacing: "2px", color: "#9B7BC9", margin: "0 0 6px", textTransform: "uppercase" }}>🌿 Almanac — {season} {a.emoji}</p>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#fff", margin: "0 0 8px" }}>{a.desc}</p>
+                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 14px", marginBottom: 10 }}>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#9B7BC9", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>⚡ Energy of this season</p>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "rgba(255,255,255,0.8)", margin: 0 }}>{a.energy}</p>
                   </div>
-                  <div style={{ width:32, height:32, borderRadius:"50%", background:`${s.color}18`, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <I n={s.icon} s={14} c={s.color}/>
+                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 14px", marginBottom: 10 }}>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#9B7BC9", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>🍎 Foods in season</p>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "rgba(255,255,255,0.8)", margin: 0, lineHeight: 1.7 }}>{a.foods.join(" · ")}</p>
+                  </div>
+                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 14px", marginBottom: 10 }}>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#9B7BC9", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>✨ Ancient wisdom</p>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "rgba(255,255,255,0.8)", margin: 0, lineHeight: 1.7 }}>{a.wisdom}</p>
+                  </div>
+                  <div style={{ background: "rgba(155,123,201,0.15)", borderRadius: 12, padding: "12px 14px" }}>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#9B7BC9", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>🕯️ Seasonal ritual</p>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "rgba(255,255,255,0.8)", margin: 0, lineHeight: 1.7 }}>{a.ritual}</p>
+                  </div>
+                </div>
+              );
+            })()}
+
+            <div style={{ background: "linear-gradient(135deg, #F5F0FF, #FFF0F5)", borderRadius: 18, padding: "18px 16px", border: "0.5px solid rgba(180,140,200,0.3)", marginTop: 4 }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 4px" }}>✨ More coming to Lumen Life</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#9B7BC9", margin: "0 0 16px", lineHeight: 1.6 }}>Moon reflections, emotional patterns, rituals, and deeper wellness tools are being built.</p>
+              {[
+                { title: "🪞 Lumen Mirror", desc: "Emotional pattern tracking and private reflection — journal, year in pixels, moon journal, cycle-matched prompts.", tag: "Plus · Coming Soon" },
+                { title: "🕯️ Lumen Ritual", desc: "Moon, cycle, and spiritual reflection tools — moon phase display, release rituals, womb-space reflection, astrology.", tag: "Plus · Coming Soon" },
+                { title: "⚡ Lumen Drive", desc: "Men's rhythm and partner wellness — testosterone window, morning report, drive check-in, performance patterns.", tag: "Coming Soon" },
+                { title: "🛍️ Lumen Market", desc: "Period cups, discs, underwear, wellness and fasting-friendly products.", tag: "Coming Soon" },
+              ].map((card, i) => (
+                <div key={i} style={{ background: "rgba(255,255,255,0.7)", borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: "0.5px solid rgba(180,140,200,0.2)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                    <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: 0 }}>{card.title}</p>
+                    <span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#9B7BC9", background: "rgba(155,123,201,0.1)", borderRadius: 50, padding: "2px 8px", whiteSpace: "nowrap", marginLeft: 8 }}>{card.tag}</span>
+                  </div>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{card.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab === "Fasting Basics" && FASTING_INFO.map((f, i) => (
+          <div key={i} style={{ ...s.card, textAlign: "left" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 6px" }}>{f.phase}</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{f.tip}</p>
+          </div>
+        ))}
+
+        {tab === "Cycle Workouts" && WORKOUT_INFO.map((w, i) => (
+          <div key={i} style={{ ...s.card, textAlign: "left" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 6px" }}>{w.phase}</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{w.tip}</p>
+          </div>
+        ))}
+
+        {tab === "Cycle Nutrition" && NUTRITION_INFO.map((n, i) => (
+          <div key={i} style={{ ...s.card, textAlign: "left" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 6px" }}>{n.phase}</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{n.tip}</p>
+          </div>
+        ))}
+
+        {tab === "Period Blood Guide" && (
+          <>
+            <div style={{ ...s.card, background: "#EAF2EA", textAlign: "left" }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 6px" }}>What does blood color tell you?</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>Most variations are completely normal. Here's what each color may indicate.</p>
+            </div>
+            {BLOOD_COLORS.map((bc, i) => (
+              <div key={i} style={{ ...s.card, textAlign: "left" }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                  <div style={{ width: 28, height: 28, borderRadius: "50%", background: bc.color, flexShrink: 0, marginTop: 2, boxShadow: `0 2px 8px ${bc.color}55` }} />
+                  <div>
+                    <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 4px" }}>{bc.label}</p>
+                    <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{bc.note}</p>
                   </div>
                 </div>
               </div>
             ))}
+          </>
+        )}
+
+        {tab === "Health Conditions" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {[
+              { dot: "#4A90D9", title: "PCOS", body: "Polycystic ovary syndrome is a hormonal condition that affects many people differently. Some people with PCOS experience insulin resistance, irregular cycles, or androgen-related symptoms.\n\nGentle note: Some people may find that consistent sleep, nourishing food, and gentle movement support their energy and cycle awareness. If you are considering fasting with PCOS, speak with a healthcare provider first — care should be personalised to you." },
+              { dot: "#C97B7B", title: "Endometriosis", body: "An inflammatory condition where tissue similar to the uterine lining grows in other areas of the body. Symptoms vary widely and can include pain, fatigue, and digestive changes.\n\nGentle note: During flares or high-symptom days, prioritise rest, warmth, regular nourishment, and hydration. Avoid aggressive fasting when pain, fatigue, or nausea are high. Always work with a specialist for endometriosis care." },
+              { dot: "#E0904A", title: "Perimenopause", body: "The transition before menopause, often beginning in the 40s, when hormones shift and cycles become irregular. Symptoms may include sleep changes, mood shifts, and energy fluctuations.\n\nGentle note: Gentle overnight fasting may feel supportive for some people during this time. Prioritise protein, strength, and rest. Listen to your body — it is changing and deserves extra care." },
+              { dot: "#C9A030", title: "Menopause", body: "After 12 months without a period. Hormonal shifts affect energy, sleep, body composition, and mood in different ways for different people.\n\nGentle note: Regular nourishment, strength movement, and quality sleep are all supportive. Some people find gentle fasting helpful — speak with a healthcare provider about what may work for your body." },
+              { dot: "#5C9E6E", title: "Thyroid condition", body: "Thyroid conditions affect metabolism, energy, temperature regulation, and mood. There are many different types and they are managed differently.\n\nImportant: Fasting may affect thyroid hormone levels. Always speak with your doctor before fasting if you have a thyroid condition. This is not an area to self-manage without professional guidance." },
+              { dot: "#9B7BC9", title: "Fibroids", body: "Fibroids are non-cancerous growths in or around the uterus. They affect people differently — some have no symptoms, others experience heavy bleeding, pain, or pressure.\n\nGentle note: Anti-inflammatory foods, regular movement, and stress support may all be helpful. Speak with a healthcare provider for guidance specific to your situation." },
+            ].map((item, i) => (
+              <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 16, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.15)" : "0.5px solid rgba(200,170,180,0.3)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: item.dot, flexShrink: 0 }} />
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: 0 }}>{item.title}</p>
+                </div>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0, lineHeight: 1.8, whiteSpace: "pre-line" }}>{item.body}</p>
+              </div>
+            ))}
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
-            <Card style={{ padding:20 }}>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:17, fontWeight:600, color:"#2d4a3a", marginBottom:14, display:"flex", alignItems:"center", gap:7 }}><I n="growth" s={14} c="#5a8a6a"/> Platform Performance</div>
-              {PLATFORM_GROWTH.map(p=>(
-                <div key={p.platform} style={{ marginBottom:12 }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
-                    <span style={{ fontFamily:"'Jost',sans-serif", fontSize:12, fontWeight:600, color:"#2d4a3a" }}>{p.platform}</span>
-                    <div style={{ display:"flex", gap:10 }}>
-                      <span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#5a8a6a", fontWeight:600 }}>{p.followers}</span>
-                      <span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#9a6ab8" }}>{p.appClicks} app</span>
+        )}
+
+        {tab === "Partner Wellness" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <PremiumLock tier="partner" mode={mode} />
+            {[
+              { title: "🧬 Testosterone + fasting", body: "Short-term fasting increases testosterone by reducing insulin, which suppresses sex hormone binding globulin (SHBG). Lower SHBG means more free testosterone available to your cells.\n\nPractical tip: 16h fasts 3–4 times a week can meaningfully improve free testosterone levels over time." },
+              { title: "📈 Growth hormone spike", body: "Growth hormone can increase up to 5x baseline after extended fasting. Even 16–18h fasts produce a significant spike.\n\nWhy it matters for muscle: GH stimulates muscle protein synthesis and accelerates fat burning. It is your body's natural anabolic hormone — fasting amplifies it." },
+              { title: "💪 Fasting + muscle growth", body: "Will fasting eat my muscle? The research says no — if you do it right.\n\nKey rules: Hit your daily protein target (1.6–2.2g per kg bodyweight). Break your fast with a protein-rich meal post-workout. Keep fasting windows at 16–18h. Resistance train 3–4x per week." },
+              { title: "🏋️ Fasting + lifting performance", body: "Fasted training: Higher fat oxidation, good for lower intensity sessions. Performance may dip slightly on heavy compound lifts.\n\nFed training: Better peak performance for max lifts. Train 1–2h after breaking your fast with carbs and protein." },
+              { title: "⚖️ Insulin sensitivity + body composition", body: "Fasting dramatically improves insulin sensitivity. This means less fat storage, better energy use and a leaner body composition over time.\n\nThe result: Lower visceral fat, improved metabolic health markers, and a better muscle-to-fat ratio without crash dieting." },
+              { title: "😴 Sleep, recovery + fasting", body: "Finishing your last meal 3–4h before sleep reduces insulin spikes that disrupt deep sleep stages.\n\nWhy this matters for gains: Deep sleep is when GH peaks naturally. Better sleep means more GH which means better muscle recovery." },
+              { title: "🧠 Mental clarity + focus", body: "Ketones produced during fasting are a more efficient brain fuel than glucose. Many men report their sharpest thinking 14–18h into a fast.\n\nFasting increases BDNF which supports neuroplasticity, learning and mood regulation." },
+              { title: "🔄 Autophagy + cellular repair", body: "Autophagy is your body's cellular clean-up process — damaged proteins get recycled and rebuilt. Kicks in around 16–18h of fasting.\n\nSupports joint health, reduces inflammation from heavy training, and is associated with slower cellular ageing." },
+            ].map((item, i) => (
+              <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 16, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.15)" : "0.5px solid rgba(200,170,180,0.3)" }}>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 6px" }}>{item.title}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#6b7b6b", margin: 0, lineHeight: 1.8, whiteSpace: "pre-line" }}>{item.body}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "Body Glossary" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {[
+              { title: "Insulin", body: "A hormone that lets cells absorb glucose for energy. High insulin blocks fat burning — fasting lowers it and resets your metabolic baseline." },
+              { title: "Cortisol", body: "Your stress hormone. Rises naturally in the morning. Extended fasting can spike it — which is why being gentle matters." },
+              { title: "Estrogen", body: "The primary hormone in the first half of the cycle. Boosts energy, mood and metabolic flexibility. Present in all bodies." },
+              { title: "Progesterone", body: "Rises in the second half of the cycle. Increases metabolism slightly and can affect mood and blood sugar stability." },
+              { title: "Testosterone", body: "Key hormone for muscle, energy and drive. Present in all bodies. Fasting, strength training and quality sleep all support healthy levels." },
+              { title: "Growth Hormone", body: "Spikes during fasting and deep sleep. Supports muscle repair, fat burning and anti-ageing processes." },
+              { title: "Ketosis", body: "When your body exhausts glucose stores and switches to burning fat, producing ketones as a byproduct. Activated around 16–18h of fasting." },
+              { title: "Autophagy", body: "Your body's cellular recycling system. Damaged cells get broken down and rebuilt. Activated around 16–18h of fasting. Linked to longevity and reduced inflammation." },
+              { title: "BDNF", body: "Brain-derived neurotrophic factor. Supports brain cell growth, learning and mood. Fasting increases BDNF — which is why mental clarity often improves during a fast." },
+            ].map((item, i) => (
+              <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 16, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.15)" : "0.5px solid rgba(200,170,180,0.3)" }}>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 6px" }}>{item.title}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#6b7b6b", margin: 0, lineHeight: 1.8 }}>{item.body}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "Craving Wisdom" && (
+          <>
+            <div style={{ ...s.card, background: "#EAF2EA", textAlign: "left" }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 6px" }}>Why you crave what you crave</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>Cravings aren't weakness – they're your body communicating a real need.</p>
+            </div>
+            {CRAVINGS.map((cr, i) => (
+              <div key={i} style={{ ...s.card, textAlign: "left" }}>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 6px" }}>{cr.craving}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{cr.why}</p>
+              </div>
+            ))}
+          </>
+        )}
+
+        {tab === "Cycle Guide" && (
+          <>
+            <div style={{ ...s.card, background: "#F0F6F0", textAlign: "left" }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 8px" }}>🌿 How to calculate your cycle length</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.7 }}>Count from the first day of one period to the day before your next period starts. That total number of days is your cycle length.</p>
+            </div>
+            <div style={{ ...s.card, textAlign: "left" }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 10px" }}>📅 Example</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: "0 0 6px", lineHeight: 1.7 }}>Period started: May 1</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: "0 0 6px", lineHeight: 1.7 }}>Next period started: May 29</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#7A9E7E", margin: 0, fontWeight: 600 }}>Cycle length = 28 days ✓</p>
+            </div>
+            {[
+              { length: "21–24 days", label: "Short cycle", color: "#7BA8C9", bg: "#EAF2F9", tip: "Completely normal for some women. Your phases are shorter — especially the follicular phase. Ovulation comes earlier in the month." },
+              { length: "25–30 days", label: "Average cycle", color: "#7A9E7E", bg: "#F0F6F0", tip: "The most common cycle length range. A 28-day cycle is the average but anywhere in this range is perfectly healthy." },
+              { length: "31–35 days", label: "Longer cycle", color: "#9B7BC9", bg: "#F5F0FF", tip: "Completely normal for many women. Your follicular phase tends to be longer. Ovulation happens later in the month." },
+              { length: "36+ days", label: "Extended cycle", color: "#C9A87B", bg: "#FDF6EA", tip: "Can be normal for some women, especially during perimenopause or with conditions like PCOS. Worth tracking patterns over several months." },
+              { length: "Irregular", label: "Irregular cycle", color: "#C97B7B", bg: "#FDEAEA", tip: "Cycles that vary by more than 7-9 days each month. Common causes include stress, thyroid issues, PCOS, perimenopause, and significant weight changes. Track your symptoms and speak to a healthcare provider if concerned." },
+            ].map((item, i) => (
+              <div key={i} style={{ ...s.card, background: item.bg, border: `0.5px solid ${item.color}33`, textAlign: "left" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: item.color, margin: 0 }}>{item.label}</p>
+                  <span style={{ fontFamily: "sans-serif", fontSize: 11, color: item.color, background: "#fff", borderRadius: 50, padding: "3px 10px" }}>{item.length}</span>
+                </div>
+                <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#4a5a4b", margin: 0, lineHeight: 1.6 }}>{item.tip}</p>
+              </div>
+            ))}
+            <div style={{ ...s.card, background: "#F8FAF8", textAlign: "left" }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 8px" }}>💡 Tips for tracking</p>
+              {["Track for at least 3 months to see your personal pattern", "Your cycle may change with age, stress, and life seasons", "Perimenopause can cause cycles to become shorter then longer then irregular", "Lumen Flow learns your pattern the more you log"].map((tip, i) => (
+                <p key={i} style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: "0 0 6px", lineHeight: 1.6 }}>🌿 {tip}</p>
+              ))}
+            </div>
+          </>
+        )}
+
+        {tab === "Gut + Cycle Health" && mode !== "fast" && (
+          <>
+            {[
+              { icon: "🦠", title: "Your gut and your cycle", tip: "Hormones directly affect gut motility. Many women experience bloating, constipation, or diarrhea at specific points in their cycle. Progesterone in the luteal phase slows digestion — this is why bloating often peaks before your period." },
+              { icon: "🌑", title: "Menstrual phase gut tips", tip: "Prostaglandins that trigger menstruation also affect the bowel — diarrhea and cramping are common. Warm foods, ginger tea, and magnesium can help ease symptoms." },
+              { icon: "🌒", title: "Follicular phase gut tips", tip: "Rising estrogen supports a healthier gut environment. This is the best time to introduce new foods and support your microbiome with fermented foods and fibre." },
+              { icon: "🌕", title: "Ovulation gut tips", tip: "Some women notice mid-cycle bloating around ovulation due to estrogen peaks. Stay hydrated and eat light anti-inflammatory foods." },
+              { icon: "🌗", title: "Luteal phase gut tips", tip: "Progesterone slows gut motility — constipation and bloating are very common. Increase fibre, water, and magnesium. Reduce processed foods and excess salt." },
+              { icon: "🥦", title: "Best foods for gut health", tip: "Fermented foods — yogurt, kefir, kimchi, sauerkraut. High fibre foods — oats, legumes, vegetables. Prebiotic foods — garlic, onions, bananas, asparagus. Anti-inflammatory foods — ginger, turmeric, leafy greens." },
+              { icon: "🚫", title: "Foods that disrupt gut health", tip: "Ultra-processed foods, excess sugar, artificial sweeteners, alcohol, and low-fibre diets all negatively affect the gut microbiome and can worsen cycle symptoms." },
+            ].map((item, i) => (
+              <div key={i} style={{ ...s.card, textAlign: "left" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 22 }}>{item.icon}</span>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: 0 }}>{item.title}</p>
+                </div>
+                <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{item.tip}</p>
+              </div>
+            ))}
+          </>
+        )}
+
+        {tab === "Grooming" && (
+          <>
+            {[
+              { icon: "🧴", title: "Skincare basics", tip: "Cleanse morning and night. Use SPF daily — UV damage is the number one cause of premature aging. Moisturiser is not optional. Start simple: cleanser, moisturiser, SPF." },
+              { icon: "💧", title: "Hydration and skin", tip: "Fasting can dehydrate skin. Drink 2-3 litres of water daily. Your skin reflects your hydration — dull skin often means dehydration not ageing." },
+              { icon: "😴", title: "Sleep and recovery", tip: "Growth hormone peaks during deep sleep. 7-9 hours is not optional for men who fast and train. Poor sleep raises cortisol, reduces testosterone, and shows on your face." },
+              { icon: "🧖", title: "Cold and heat therapy", tip: "Cold showers after training reduce inflammation and boost alertness. Sauna use 2-3 times weekly has been linked to improved cardiovascular health and testosterone levels." },
+              { icon: "✂️", title: "Grooming routine", tip: "A consistent grooming routine takes 5 minutes. Trim, moisturise, and stay clean. How you present yourself affects how you feel — and how you perform." },
+              { icon: "🦷", title: "Oral health", tip: "Fasting can cause dry mouth and bad breath. Brush twice daily, floss, and use mouthwash. Oral health is directly linked to heart health and testosterone levels." },
+              { icon: "🧠", title: "Mental grooming", tip: "Journaling, meditation, and breathwork are not soft — they are performance tools. Stress management directly protects testosterone and supports fasting results." },
+            ].map((item, i) => (
+              <div key={i} style={{ ...s.card, textAlign: "left" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 22 }}>{item.icon}</span>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: 0 }}>{item.title}</p>
+                </div>
+                <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{item.tip}</p>
+              </div>
+            ))}
+          </>
+        )}
+
+        {tab === "Gut + Cycle Health" && mode === "fast" && (
+          <>
+            {[
+              { icon: "🦠", title: "The gut-hormone connection", tip: "Your gut microbiome directly influences testosterone and estrogen levels. A healthy gut produces neurotransmitters that affect mood, energy, and hormonal balance." },
+              { icon: "⏰", title: "Fasting and gut health", tip: "Intermittent fasting gives your gut time to rest and repair. The fasting window allows the migrating motor complex to clean the intestinal tract — reducing bloating and improving nutrient absorption." },
+              { icon: "🥦", title: "Foods that support gut health", tip: "Fermented foods like yogurt, kimchi, and sauerkraut feed good bacteria. Fibre from vegetables, legumes, and whole grains feeds the microbiome. Diversity matters — eat a variety of plants." },
+              { icon: "💧", title: "Hydration and digestion", tip: "Water is essential for digestion. Dehydration slows the gut, causes constipation, and increases inflammation. Drink water consistently throughout your eating window." },
+              { icon: "🚫", title: "What disrupts gut health", tip: "Ultra-processed foods, excessive alcohol, antibiotics without probiotics, chronic stress, and poor sleep all damage the gut microbiome. Consistency in diet and sleep matters more than any supplement." },
+              { icon: "😤", title: "Stress and the gut", tip: "The gut-brain axis means stress directly affects digestion. Chronic stress increases gut permeability — known as leaky gut — which triggers inflammation and hormonal disruption." },
+              { icon: "💊", title: "Supplements worth considering", tip: "Probiotics, prebiotics, and digestive enzymes can support gut health. Magnesium glycinate supports both gut motility and sleep. Always consult a healthcare provider before starting supplements." },
+            ].map((item, i) => (
+              <div key={i} style={{ ...s.card, textAlign: "left" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 22 }}>{item.icon}</span>
+                  <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: 0 }}>{item.title}</p>
+                </div>
+                <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{item.tip}</p>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  SETTINGS SCREEN
+// ─────────────────────────────────────────────
+function SettingsScreen({ settings, onSave, onShowPaywall }) {
+  const [subScreen,    setSubScreen]    = useState(null);
+  const [name,         setName]         = useState(settings.name || "");
+  const [saved,        setSaved]        = useState(false);
+  const [notifPerms,   setNotifPerms]   = useState(() => localStorage.getItem("lf_notif_perms") || "default");
+  const [notifPrefs,   setNotifPrefs]   = useState(() => { try { return JSON.parse(localStorage.getItem("lf_notif_prefs")) || {}; } catch(e) { return {}; } });
+  const requestNotifications = async () => { if ("Notification" in window) { const r = await Notification.requestPermission(); setNotifPerms(r); localStorage.setItem("lf_notif_perms", r); } };
+  const toggleNotif = (key) => { const u = { ...notifPrefs, [key]: !notifPrefs[key] }; setNotifPrefs(u); localStorage.setItem("lf_notif_prefs", JSON.stringify(u)); };
+
+  if (subScreen === "privacy") return <PrivacyScreen onBack={() => setSubScreen(null)} />;
+  if (subScreen === "terms")   return <TermsScreen   onBack={() => setSubScreen(null)} />;
+
+  const handleSave = () => {
+    onSave({ ...settings, name });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <div style={{ padding: "16px 16px 90px", background: getSeasonalBg(settings?.mode || "cycle", getPhase(Math.max(1, getCycleDay(settings?.lastPeriod || "") - 1))), minHeight: "100vh" }}>
+      <h3 style={s.title}>Settings</h3>
+
+      <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 14px" }}>Profile</p>
+        <label style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b" }}>Your name</label>
+        <input value={name} onChange={e => setName(e.target.value)} style={{ ...s.input, marginTop: 6, marginBottom: 0 }} />
+      </div>
+
+      <button onClick={handleSave} style={{ ...s.btn, marginBottom: 16 }}>
+        {saved ? "✓ Saved!" : "Save Changes"}
+      </button>
+
+      {/* Social Links */}
+      <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 12px" }}>Follow us</p>
+        <button onClick={() => window.open("https://www.tiktok.com/@lumenfuxapp", "_blank")} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EAF2EA", border: "none", borderRadius: 12, padding: "12px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#2D3B2E", cursor: "pointer", marginBottom: 8 }}>
+          <span>📱 TikTok <span style={{ fontSize: 12, color: "#8FA090" }}>@lumenfuxapp</span></span>
+          <span style={{ color: "#C5D9C5", fontSize: 18 }}>›</span>
+        </button>
+        <button onClick={() => window.open("https://www.instagram.com/lumenflowapp", "_blank")} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EAF2EA", border: "none", borderRadius: 12, padding: "12px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#2D3B2E", cursor: "pointer", marginBottom: 8 }}>
+          <span>📸 Instagram <span style={{ fontSize: 12, color: "#8FA090" }}>@lumenflowapp</span></span>
+          <span style={{ color: "#C5D9C5", fontSize: 18 }}>›</span>
+        </button>
+        <button onClick={() => window.open("https://pin.it/103O2xFfi", "_blank")} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EAF2EA", border: "none", borderRadius: 12, padding: "12px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#2D3B2E", cursor: "pointer", marginBottom: 8 }}>
+          <span>📌 Pinterest <span style={{ fontSize: 12, color: "#8FA090" }}>Lumen Flow</span></span>
+          <span style={{ color: "#C5D9C5", fontSize: 18 }}>›</span>
+        </button>
+      </div>
+
+      {/* Partner Mode */}
+      <div style={{ ...s.card, textAlign: "left", marginBottom: 12, background: "#F5F0FF", border: "0.5px solid #D4C5E9" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#9B7BC9", margin: "0 0 4px" }}>🤝 Partner mode</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Fast together and understand each other's rhythm</p>
+        <PremiumLock tier="partner" mode={settings.mode || "cycle"} />
+        {false && <>
+        {(() => {
+          const code = settings.partnerCode || (() => {
+            const newCode = Math.random().toString(36).substring(2,8).toUpperCase();
+            setTimeout(() => onSave({...settings, partnerCode: newCode}), 100);
+            return newCode;
+          })();
+          return (
+            <div>
+              <div style={{ background: "#fff", borderRadius: 12, padding: "14px", textAlign: "center", marginBottom: 12, border: "0.5px solid #D4C5E9" }}>
+                <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#9B7BC9", letterSpacing: "2px", margin: "0 0 6px", textTransform: "uppercase" }}>Your partner code</p>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 32, fontWeight: 700, letterSpacing: "8px", color: "#2D3B2E", margin: "0 0 6px" }}>{code}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", margin: 0 }}>Share this code with your partner</p>
+              </div>
+              {!settings.partnerConnected ? (
+                <div>
+                  <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Enter your partner's code to connect:</p>
+                  <input placeholder="Enter 6-digit code" maxLength={6} style={{ ...s.input, marginBottom: 8, textTransform: "uppercase", letterSpacing: "4px", textAlign: "center", fontSize: 18 }}
+                    onChange={e => { if (e.target.value.length === 6) onSave({...settings, partnerConnected: e.target.value.toUpperCase()}); }} />
+                </div>
+              ) : (
+                <div>
+                  <div style={{ background: "#F0F6F0", borderRadius: 10, padding: "10px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 18 }}>✅</span>
+                      <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#5C7F60", margin: 0 }}>Partner connected — {settings.partnerConnected}</p>
                     </div>
                   </div>
-                  <ScoreBar score={p.score} color={p.score>85?"#5a8a6a":p.score>65?"#d4a574":"#c4726a"}/>
+                  <button onClick={() => onSave({...settings, partnerConnected: null})} style={{ width: "100%", padding: "10px", borderRadius: 10, border: "0.5px solid #C97B7B", background: "#fff", color: "#C97B7B", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>
+                    Disconnect partner
+                  </button>
                 </div>
-              ))}
-            </Card>
-            <Card style={{ padding:20 }}>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:17, fontWeight:600, color:"#2d4a3a", marginBottom:14, display:"flex", alignItems:"center", gap:7 }}><I n="star" s={14} c="#d4a574"/> Top Posts</div>
-              {TOP_POSTS.map((p,i)=>(
-                <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 0", borderBottom:i<2?"1px solid #f0e8d8":"none" }}>
-                  <div style={{ width:26, height:26, borderRadius:"50%", background:`${PHASE_COLORS[p.phase]}33`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontFamily:"'Jost',sans-serif", fontSize:11, fontWeight:700, color:PHASE_COLORS[p.phase] }}>{i+1}</div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:13, fontWeight:600, color:"#2d4a3a", lineHeight:1.3 }}>{p.title}</div>
-                    <div style={{ display:"flex", gap:5, marginTop:2 }}><GrowthTagBadge tag={p.growthTag}/><span style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a" }}>{p.saves} saves</span></div>
-                  </div>
-                  <div style={{ textAlign:"right" }}>
-                    <div style={{ fontFamily:"'Jost',sans-serif", fontSize:12, fontWeight:700, color:"#9a6ab8" }}>+{p.followersGained}</div>
-                    <div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#8a9a8a" }}>followers</div>
-                  </div>
-                </div>
-              ))}
-            </Card>
-          </div>
-          <Card style={{ padding:20 }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:17, fontWeight:600, color:"#2d4a3a", marginBottom:12, display:"flex", alignItems:"center", gap:7 }}>
-              <I n="moon" s={14} c="#8fb5a0"/> This Week's Phase Rotation
-              {!hasMens && <Tag label="⚠ No men's content" color="#c4726a"/>}
+              )}
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:8 }}>
-              {Object.entries(WEEKLY_SCHEDULE).map(([day,posts])=>(
-                <div key={day} style={{ background:"#f5f0e8", borderRadius:10, padding:"9px 7px", border:"1px solid #e8e0d0" }}>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, fontWeight:700, color:"#5a6a5a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:3 }}>{day.split(" ")[0]}</div>
-                  {posts.length===0 ? <div style={{ fontFamily:"'Jost',sans-serif", fontSize:9.5, color:"#c0c8c0", fontStyle:"italic" }}>Empty</div>
-                    : posts.map((p,i)=>(
-                      <div key={i} style={{ marginBottom:4 }}>
-                        <div style={{ display:"flex", alignItems:"center", gap:4, marginBottom:2 }}><PhaseDot phase={p.phase} size={7}/><span style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#5a6a5a" }}>{p.platform}</span></div>
-                        <GrowthTagBadge tag={p.growthTag}/>
-                      </div>
-                    ))}
-                </div>
-              ))}
-            </div>
-          </Card>
-        </>
-      )}
-      {tab==="growth-view" && <GrowthViewTab packages={packages} setPage={setPage}/>}
-      {tab==="recommendations" && <RecsTab setPage={setPage}/>}
+          );
+        })()}
+        </>}
+      </div>
+
+      <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 12px" }}>Legal</p>
+        <button onClick={() => setSubScreen("privacy")} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EAF2EA", border: "none", borderRadius: 12, padding: "12px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#2D3B2E", cursor: "pointer", marginBottom: 8 }}>
+          <span>🔒 Privacy Policy</span><span style={{ color: "#C5D9C5", fontSize: 18 }}>›</span>
+        </button>
+        <button onClick={() => setSubScreen("terms")} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EAF2EA", border: "none", borderRadius: 12, padding: "12px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#2D3B2E", cursor: "pointer" }}>
+          <span>📄 Terms of Service</span><span style={{ color: "#C5D9C5", fontSize: 18 }}>›</span>
+        </button>
+      </div>
+
+      <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+        <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>🔔 Notifications</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 14px", lineHeight: 1.6 }}>Get gentle reminders about your cycle, fasting window, and moon phases.</p>
+          {notifPerms === "default" && <button onClick={requestNotifications} style={{ width: "100%", padding: "10px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #9B7BC9, #7B5BA9)", color: "#fff", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>🔔 Enable notifications</button>}
+          {notifPerms === "granted" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#7A9E7E", margin: 0 }}>✅ Notifications enabled — toggle below</p>}
+          {notifPerms === "denied" && <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#C97B7B", margin: 0 }}>🔕 Blocked — allow in browser settings</p>}
+        </div>
+
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>💾 Auto-save check-in</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 14px" }}>When on, your check-in saves automatically as you log. Resets at midnight each day.</p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E" }}>{settings.autoSave ? "✅ Auto-save is on" : "⭕ Auto-save is off"}</span>
+          <button onClick={() => onSave({ ...settings, autoSave: !settings.autoSave })} style={{ padding: "8px 18px", borderRadius: 50, border: "none", background: settings.autoSave ? "#7A9E7E" : "#EAF2EA", color: settings.autoSave ? "#fff" : "#5C7F60", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>
+            {settings.autoSave ? "Turn off" : "Turn on"}
+          </button>
+        </div>
+      </div>
+
+      <div style={{ ...s.card, textAlign: "center" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>⚡ Switch experience</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 12px" }}>Currently using: {settings.mode === "fast" ? "Fasting focus" : "Cycle tracking"}</p>
+        <button onClick={() => { if (window.confirm(`Switch to ${settings.mode === "fast" ? "Cycle tracking" : "Fasting focus"}? Your data is saved and you can switch back anytime.`)) { const newMode = settings.mode === "fast" ? "cycle" : "fast"; onSave({...settings, mode: newMode}); }}} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "0.5px solid #dce8dc", background: "#F8FAF8", color: "#4a5a4b", fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>
+          Switch to {settings.mode === "fast" ? "🌸 Cycle tracking" : "⚡ Fasting focus"}
+        </button>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#C97B7B", margin: "0 0 4px", textAlign: "center" }}>⚠️ This changes the whole app experience.</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: "0 0 16px", textAlign: "center" }}>Your data is saved — you can switch back anytime</p>
+        <button onClick={() => onShowPaywall && onShowPaywall()} style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #9B7BC9, #7B5BA9)", color: "#fff", fontFamily: "Georgia, serif", fontSize: 16, cursor: "pointer", marginBottom: 12 }}>✦ Unlock Lumen Flow Premium</button>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>🌿 Lumen Flow</p>
+        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: 0 }}>Version 1.0.0 · Made with care</p>
+      </div>
     </div>
   );
 }
 
-function GrowthViewTab({ packages, setPage }) {
-  const posted = packages.filter(p=>p.analytics);
-  const byFollowers = [...posted].sort((a,b)=>(b.analytics.followersGained||0)-(a.analytics.followersGained||0));
-  const bySaves = [...posted].sort((a,b)=>(b.analytics.saves||0)-(a.analytics.saves||0));
-  const byApp = [...posted].sort((a,b)=>(b.analytics.appStoreClicks||0)-(a.analytics.appStoreClicks||0));
-  const GL = ({ items, metric, color }) => (
-    <div>{items.slice(0,2).map((p,i)=>(
-      <div key={p.id} style={{ display:"flex", alignItems:"center", gap:9, padding:"8px 0", borderBottom:i<1?"1px solid #f0e8d8":"none" }}>
-        <div style={{ width:22, height:22, borderRadius:"50%", background:`${color}22`, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Jost',sans-serif", fontSize:10, fontWeight:700, color, flexShrink:0 }}>{i+1}</div>
-        <div style={{ flex:1 }}>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:13, fontWeight:600, color:"#2d4a3a" }}>{p.title}</div>
-          <div style={{ display:"flex", gap:5, marginTop:2 }}><PhaseDot phase={p.phase}/><span style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a" }}>{p.phase} · {p.platforms?.[0]}</span></div>
-        </div>
-        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:600, color }}>{metric(p)}</div>
-      </div>
-    ))}</div>
-  );
+// ─────────────────────────────────────────────
+//  RECIPES SCREEN
+// ─────────────────────────────────────────────
+const RECIPES = [
+  { id: 1,  name: "Zucchini Noodle Bowl",      diet: "Low Carb",     time: 20, phases: ["Follicular","Ovulation"], tip: "Supports estrogen metabolism.",                    ingredients: ["2 zucchinis, spiralized","200g grilled chicken","2 tbsp pesto","Cherry tomatoes","Parmesan"],                          steps: ["Spiralize zucchinis into noodles.","Grill chicken until cooked through, slice.","Toss zucchini noodles with pesto.","Top with chicken, tomatoes, and parmesan.","Serve immediately."] },
+  { id: 2,  name: "Egg & Avocado Salad",        diet: "Low Carb",     time: 15, phases: ["Menstrual","Luteal"],     tip: "Healthy fats support progesterone.",               ingredients: ["3 boiled eggs","1 avocado","Dijon mustard","Lemon juice","Mixed greens"],                                           steps: ["Halve and cube avocado.","Slice boiled eggs.","Mix mustard and lemon for dressing.","Toss greens, eggs, and avocado.","Drizzle with dressing."] },
+  { id: 3,  name: "Sweet Potato Tacos",         diet: "High Carb",    time: 30, phases: ["Follicular","Ovulation"], tip: "Complex carbs fuel your peak phase.",              ingredients: ["2 sweet potatoes, cubed","1 can black beans","Corn tortillas","Avocado","Lime","Cilantro"],                        steps: ["Roast sweet potatoes at 200°C for 20 min.","Warm black beans with cumin.","Warm tortillas in a dry pan.","Layer beans and potato in tortillas.","Top with avocado, lime, and cilantro."] },
+  { id: 4,  name: "Brown Rice Power Bowl",      diet: "High Carb",    time: 40, phases: ["Luteal"],                 tip: "Complex carbs stabilise blood sugar.",             ingredients: ["1 cup brown rice","1 can chickpeas","Roasted broccoli","Tahini","Lemon","Sesame seeds"],                          steps: ["Cook brown rice per package.","Roast broccoli and chickpeas at 200°C for 20 min.","Whisk tahini, lemon, and water for dressing.","Assemble bowl with rice as base.","Top with vegetables and drizzle dressing."] },
+  { id: 5,  name: "Bacon & Brie Omelette",      diet: "Keto",         time: 15, phases: ["Follicular","Ovulation"], tip: "High fat supports energy in your active phase.",   ingredients: ["3 eggs","2 bacon rashers","30g brie","Chives","Butter"],                                                        steps: ["Cook bacon until crispy.","Whisk eggs with salt and pepper.","Melt butter in pan, pour in eggs.","Cook until edges set.","Add brie and bacon, fold and serve."] },
+  { id: 6,  name: "Keto Cauliflower Rice",      diet: "Keto",         time: 25, phases: ["Luteal","Menstrual"],     tip: "Cauliflower provides vitamin C to ease bloating.", ingredients: ["1 head cauliflower, riced","2 eggs","Tamari","Sesame oil","Spring onions","Ginger"],                            steps: ["Pulse cauliflower until rice-sized.","Sauté garlic and ginger in sesame oil.","Add cauliflower rice, cook 5 min.","Push aside, scramble eggs in pan.","Combine and add tamari and spring onions."] },
+  { id: 7,  name: "Ribeye & Bone Marrow",       diet: "Carnivore",    time: 20, phases: ["Follicular","Ovulation"], tip: "High iron and zinc fuel your peak phase.",         ingredients: ["1 ribeye steak","Bone marrow","Butter","Sea salt","Black pepper","Fresh thyme"],                               steps: ["Season steak with salt and pepper.","Roast bone marrow at 220°C for 15 min.","Sear steak 3-4 min per side.","Rest steak for 5 minutes.","Top with scooped bone marrow and butter."] },
+  { id: 8,  name: "Lamb Liver with Bacon",      diet: "Carnivore",    time: 15, phases: ["Menstrual"],              tip: "Liver is one of the richest sources of iron.",     ingredients: ["300g lamb liver, sliced","4 bacon rashers","Butter","Sea salt","Black pepper"],                                steps: ["Cook bacon until crispy, remove.","Season liver with salt and pepper.","Cook liver in bacon fat 2 min per side.","Slight pink centre is ideal.","Serve liver topped with bacon."] },
+  { id: 9,  name: "Lentil & Spinach Dal",       diet: "Vegan",        time: 35, phases: ["Menstrual","Follicular"], tip: "Lentils provide plant-based iron.",                ingredients: ["1 cup red lentils","1 can coconut milk","2 cups spinach","Curry powder","Turmeric","Ginger","Tomatoes"],      steps: ["Sauté garlic and ginger.","Add curry powder and turmeric.","Add lentils, tomatoes, and coconut milk.","Simmer 20 min until soft.","Stir in spinach until wilted."] },
+  { id: 10, name: "Roasted Beet Salad",         diet: "Vegan",        time: 40, phases: ["Follicular","Ovulation"], tip: "Beets support detox pathways.",                    ingredients: ["3 beets, cubed","Walnuts","Mixed greens","Balsamic glaze","Olive oil","Orange zest"],                        steps: ["Toss beets in olive oil, roast 200°C 30 min.","Toast walnuts in a dry pan.","Arrange greens on a plate.","Top with warm beets and walnuts.","Drizzle with balsamic and orange zest."] },
+  { id: 11, name: "Shakshuka",                  diet: "Vegetarian",   time: 25, phases: ["Follicular","Ovulation"], tip: "Eggs provide choline for liver health.",           ingredients: ["4 eggs","1 can crushed tomatoes","1 bell pepper","Onion","Cumin, paprika","Feta","Parsley"],                  steps: ["Sauté onion and pepper.","Add spices and tomatoes, simmer 10 min.","Make wells in sauce, crack in eggs.","Cover and cook until eggs just set.","Top with feta and parsley."] },
+  { id: 12, name: "Butternut Squash Soup",      diet: "Vegetarian",   time: 40, phases: ["Luteal","Menstrual"],     tip: "Beta-carotene supports progesterone.",             ingredients: ["1 butternut squash","1 onion","Vegetable stock","Coconut milk","Nutmeg","Ginger"],                            steps: ["Roast squash at 200°C for 30 min.","Scoop flesh and blend with stock.","Sauté onion and ginger, add to blender.","Blend until smooth, add coconut milk.","Season with nutmeg and serve."] },
+  { id: 13, name: "Greek Baked Fish",           diet: "Mediterranean",time: 30, phases: ["Follicular","Ovulation"], tip: "Omega-3s and olive oil support estrogen balance.", ingredients: ["2 white fish fillets","Cherry tomatoes","Kalamata olives","Capers","Olive oil","Lemon","Feta"],               steps: ["Place fish in baking dish.","Scatter tomatoes, olives, and capers.","Drizzle with olive oil.","Add lemon slices.","Bake at 190°C for 20 min, top with feta."] },
+  { id: 14, name: "Lemon Herb Chicken Orzo",    diet: "Mediterranean",time: 35, phases: ["Luteal"],                 tip: "B6 in chicken supports serotonin.",                ingredients: ["2 chicken thighs","1 cup orzo","Chicken stock","Lemon","Spinach","Garlic","Fresh dill"],                    steps: ["Sear chicken thighs until golden.","Add garlic, orzo, stock, and lemon.","Simmer 12 min until orzo is cooked.","Stir in spinach until wilted.","Finish with fresh dill."] },
+  { id: 15, name: "Paleo Bison Burgers",        diet: "Paleo",        time: 25, phases: ["Follicular","Ovulation"], tip: "Bison is lean and packed with iron.",              ingredients: ["400g ground bison","Garlic powder","Onion powder","Lettuce wraps","Avocado","Tomato"],                      steps: ["Mix bison with garlic and onion powder.","Form into patties.","Grill 4-5 min per side.","Rest patties 3 minutes.","Serve in lettuce wraps with avocado."] },
+  { id: 16, name: "Sweet Potato Hash",          diet: "Paleo",        time: 30, phases: ["Menstrual","Luteal"],     tip: "Vitamin B6 is a natural mood supporter.",         ingredients: ["2 sweet potatoes, diced","1 onion","Bell pepper","2 eggs","Paprika","Olive oil"],                            steps: ["Pan-fry sweet potato covered for 15 min.","Add onion and pepper, cook until soft.","Season with paprika.","Make wells, crack in eggs.","Cover and cook until eggs are set."] },
+  { id: 17, name: "Quinoa Stuffed Tomatoes",    diet: "Gluten-Free",  time: 35, phases: ["Follicular","Ovulation"], tip: "Quinoa is a complete protein.",                    ingredients: ["4 large tomatoes","1 cup quinoa","Feta","Olives","Cucumber","Mint","Lemon"],                                steps: ["Cook quinoa per package.","Hollow out tomatoes.","Mix quinoa with feta, olives, cucumber, mint.","Fill tomatoes with mixture.","Bake at 180°C for 15 min."] },
+  { id: 18, name: "Mango Chia Pudding",         diet: "Gluten-Free",  time: 10, phases: ["Follicular","Ovulation"], tip: "Omega-3s in chia support anti-inflammation.",      ingredients: ["4 tbsp chia seeds","1.5 cups coconut milk","1 mango, diced","Lime zest","Honey","Mint"],                    steps: ["Mix chia seeds with coconut milk.","Stir well and refrigerate 4+ hours.","Stir again before serving.","Top with fresh mango.","Add lime zest, honey, and mint."] },
+  { id: 19, name: "Turmeric Golden Soup",       diet: "Vegan",        time: 30, phases: ["Menstrual","Luteal"],     tip: "Curcumin in turmeric eases period pain.",         ingredients: ["1 head cauliflower","1 can coconut milk","Vegetable stock","2 tsp turmeric","Ginger","Garlic","Black pepper"],steps: ["Roast cauliflower at 200°C for 25 min.","Blend with stock, coconut milk, and spices.","Heat in pot with garlic and ginger.","Simmer 10 min.","Finish with lemon juice and black pepper."] },
+  { id: 20, name: "Walnut & Date Energy Bites", diet: "Vegan", time: 15, phases: ["Luteal"], tip: "Magnesium in walnuts eases PMS.", ingredients: ["1 cup walnuts","1 cup medjool dates, pitted","3 tbsp cacao powder","Pinch of sea salt","Desiccated coconut"], steps: ["Blend walnuts in food processor.","Add dates, cacao, and salt.","Blend until mixture sticks together.","Roll into small balls.","Coat in coconut. Refrigerate 30 min."] },
+  { id: 21, name: "Pesto Chicken Bake", diet: "High Protein", time: 30, phases: ["Follicular","Ovulation"], tip: "Protein and healthy fats support peak phase energy.", ingredients: ["2 chicken breasts","4 tbsp basil pesto","2 large tomatoes, sliced","150g fresh mozzarella, sliced","Olive oil","Salt and pepper","Fresh basil to serve"], steps: ["Preheat oven to 200C.","Season chicken breasts with salt and pepper.","Place in a baking dish and bake for 15 minutes.","Remove and spread pesto generously over each breast.","Layer tomato slices and mozzarella on top.","Return to oven for 10-12 minutes until cheese is melted and bubbly.","Finish with fresh basil and a drizzle of olive oil."] },
+  { id: 22, name: "Jar Butter Chicken", diet: "High Protein", time: 25, phases: ["Luteal","Menstrual"], tip: "Warming spices support comfort and reduce inflammation.", ingredients: ["500g chicken breast or thighs, cubed","1 jar butter chicken sauce","2 tbsp butter or ghee","1 onion, diced","Salt to taste","Basmati rice to serve","Fresh coriander to serve"], steps: ["Heat butter in a large pan over medium heat.","Saute onion until soft and golden, about 5 minutes.","Add chicken pieces and cook until sealed on all sides.","Pour the entire jar of butter chicken sauce over the chicken.","Stir well, reduce heat and simmer for 15 minutes until cooked through.","Taste and season with salt.","Serve over basmati rice topped with fresh coriander."] },
+  { id: 23, name: "Honey Garlic Chicken Wings", diet: "High Protein", time: 45, phases: ["Follicular","Ovulation"], tip: "High protein fuel for your peak performance phase.", ingredients: ["1kg chicken wings","4 tbsp honey","4 cloves garlic, minced","3 tbsp soy sauce","1 tbsp butter","1 tsp sesame oil","Salt and pepper","Sesame seeds and spring onions to serve"], steps: ["Preheat oven to 220C.","Season wings with salt and pepper.","Bake on a rack for 25 minutes, flipping halfway.","Melt butter in a pan, add garlic and cook 1 minute.","Add honey, soy sauce and sesame oil, stir and simmer 3 minutes.","Toss baked wings in the sauce until fully coated.","Return to oven for 8-10 minutes until sticky and caramelised.","Top with sesame seeds and spring onions."] },
+  { id: 24, name: "Hot Chicken Wings", diet: "High Protein", time: 45, phases: ["Follicular","Ovulation"], tip: "Capsaicin in hot sauce boosts metabolism naturally.", ingredients: ["1kg chicken wings","4 tbsp hot sauce","2 tbsp butter, melted","1 tsp garlic powder","1 tsp paprika","Salt and pepper","Blue cheese or ranch dip to serve","Celery sticks to serve"], steps: ["Preheat oven to 220C.","Pat wings dry for crispy skin.","Season with garlic powder, paprika, salt and pepper.","Bake on a rack for 30 minutes, flipping halfway.","Mix hot sauce with melted butter.","Toss wings in hot sauce mixture until coated.","Return to oven for 10 minutes until crispy and glazed.","Serve with blue cheese dip and celery."] },
+  { id: 25, name: "Parmesan Garlic Wings", diet: "High Protein", time: 40, phases: ["Follicular","Ovulation"], tip: "Calcium and protein make this a muscle-supporting meal.", ingredients: ["1kg chicken wings","4 tbsp butter, melted","4 cloves garlic, minced","100g parmesan, freshly grated","1 tsp Italian seasoning","Salt and pepper","Fresh parsley to serve"], steps: ["Preheat oven to 220C.","Season wings with salt, pepper and Italian seasoning.","Bake on a rack for 30 minutes, flipping halfway.","Mix melted butter with minced garlic.","Toss hot wings in garlic butter until coated.","Immediately toss in grated parmesan.","Return to oven for 5 minutes to set the coating.","Serve topped with fresh parsley and extra parmesan."] },
+  { id: 26, name: "Italian Herb Baked Chicken", diet: "High Protein", time: 35, phases: ["Follicular","Ovulation"], tip: "Lean protein supports muscle and sustained energy.", ingredients: ["4 chicken breasts","2 tsp Italian seasoning","1 tsp garlic powder","1 tsp onion powder","1 tsp paprika","2 tbsp olive oil","Salt and pepper","Lemon wedges to serve"], steps: ["Preheat oven to 200C.","Mix Italian seasoning, garlic powder, onion powder, paprika, salt and pepper.","Coat chicken in olive oil then rub seasoning all over.","Place in a baking dish.","Bake for 22-25 minutes until cooked through.","Rest for 5 minutes before slicing.","Serve with lemon wedges and fresh herbs."] },
+  { id: 27, name: "Jamaican Rice & Red Beans", diet: "Caribbean", time: 40, phases: ["Luteal","Menstrual"], tip: "Complex carbs and plant protein stabilise blood sugar.", ingredients: ["2 cups long grain white rice","1 can red kidney beans, drained","1 can coconut milk","2 cups water","3 cloves garlic, minced","2 spring onions","1 sprig fresh thyme","1 whole scotch bonnet pepper","Salt to taste"], steps: ["Combine coconut milk and water in a large pot and bring to a simmer.","Add garlic, spring onions, thyme and whole scotch bonnet - do not pierce it.","Add kidney beans and stir.","Add rice and season generously with salt.","Stir once, bring to a boil then reduce to lowest heat.","Cover tightly and cook for 20-25 minutes until rice is fluffy.","Remove scotch bonnet, thyme and spring onions before serving.","Fluff with a fork and serve."] },
+  { id: 28, name: "Jamaican Oxtail Stew", diet: "Caribbean", time: 180, phases: ["Menstrual","Luteal"], tip: "Iron-rich oxtail replenishes what is lost during your period.", ingredients: ["1.5kg oxtail pieces","1 can butter beans","2 onions, diced","4 cloves garlic, minced","2 tbsp browning sauce","2 tbsp soy sauce","1 tbsp allspice","1 scotch bonnet pepper","2 sprigs thyme","2 spring onions","Salt and pepper","2 tbsp oil"], steps: ["Season oxtail with browning sauce, soy sauce, allspice, salt, pepper and half the garlic. Marinate 1 hour or overnight.","Heat oil and brown oxtail pieces in batches.","Remove oxtail. Saute onions and remaining garlic until soft.","Return oxtail to pot. Cover with water and bring to a boil.","Add thyme, spring onions and whole scotch bonnet.","Reduce heat, cover and simmer for 2-2.5 hours until tender.","Add butter beans in the last 20 minutes.","Serve with white rice."] },
+  { id: 29, name: "Jamaican Curry Chicken", diet: "Caribbean", time: 60, phases: ["Follicular","Luteal"], tip: "Turmeric in curry powder is powerfully anti-inflammatory.", ingredients: ["1kg chicken pieces, bone-in","3 tbsp Jamaican curry powder","1 onion, diced","4 cloves garlic, minced","1 tsp fresh ginger, grated","2 potatoes, cubed","1 scotch bonnet pepper","2 sprigs thyme","2 tbsp oil","Salt to taste","White rice to serve"], steps: ["Season chicken with curry powder, salt and half the garlic. Marinate 30 minutes.","Heat oil in a pot. Add remaining garlic, onion and ginger. Cook 3 minutes.","Add chicken and brown on all sides.","Add enough water to cover halfway. Add thyme and whole scotch bonnet.","Cover and simmer 30 minutes.","Add potatoes and cook 15-20 minutes until tender.","Taste and adjust seasoning.","Serve over white rice."] },
+  { id: 30, name: "Caribbean Stew Chicken", diet: "Caribbean", time: 60, phases: ["Follicular","Ovulation"], tip: "Bone-in chicken provides collagen for joint health.", ingredients: ["1kg chicken pieces, bone-in","2 tbsp browning sauce","1 tbsp soy sauce","1 onion, diced","4 cloves garlic, minced","1 bell pepper, diced","2 tomatoes, diced","2 sprigs thyme","1 scotch bonnet pepper","2 tbsp oil","Salt and pepper"], steps: ["Season chicken with browning sauce, soy sauce, garlic, salt and pepper. Marinate 30 minutes.","Heat oil and brown chicken pieces well on all sides.","Remove chicken. Saute onion, bell pepper and garlic 3 minutes.","Add tomatoes and cook until soft.","Return chicken to pot. Add thyme and whole scotch bonnet.","Add a splash of water, cover and simmer on low for 35-40 minutes.","Taste and adjust seasoning.","Serve with white rice or rice and peas."] },
+  { id: 31, name: "Fried Sweet Plantain", diet: "Caribbean", time: 15, phases: ["Luteal","Menstrual"], tip: "Natural sugars in ripe plantain give gentle energy during your period.", ingredients: ["2 very ripe plantains, skin mostly black","Oil for frying","Pinch of salt"], steps: ["Peel plantains and cut on a diagonal into 1cm slices.","Heat about 1cm of oil in a pan over medium heat.","Fry plantain slices for 2-3 minutes per side until golden and caramelised.","They should be soft inside and slightly crispy outside.","Remove and drain on paper towel.","Season with a pinch of salt.","Serve immediately as a side or snack."] },
+  { id: 32, name: "Crispy Roasted Potatoes", diet: "Vegan", time: 45, phases: ["Luteal","Follicular"], tip: "Complex carbs from potatoes provide sustained energy.", ingredients: ["800g potatoes, cubed","3 tbsp olive oil","1 tsp garlic powder","1 tsp paprika","1 tsp dried rosemary","Salt and pepper"], steps: ["Preheat oven to 220C.","Cube potatoes into even pieces and pat dry.","Toss with olive oil, garlic powder, paprika, rosemary, salt and pepper.","Spread in a single layer on a baking tray - do not crowd them.","Roast for 35-40 minutes, turning halfway, until golden and crispy.","Season with extra salt immediately out of the oven."] },
+];
+
+const DIET_TYPES    = ["All","High Protein","Low Carb","High Carb","Keto","Carnivore","Vegan","Vegetarian","Mediterranean","Paleo","Gluten-Free","Caribbean"];
+const PHASE_FILTERS = ["All","Menstrual","Follicular","Ovulation","Luteal"];
+
+function RecipesScreen({ phase, onNavigate, mode, digestionPreset, onClearDigestionPreset }) {
+  const [cravingType, setCravingType] = useState([]);
+  const [nourishTab, setNourishTab] = useState("cravings");
+  const DIETARY_MODES = [
+    { id: "none", label: "No preference", emoji: "🍽️" },
+    { id: "carnivore", label: "Carnivore", emoji: "🥩" },
+    { id: "vegan", label: "Vegan", emoji: "🌱" },
+    { id: "vegetarian", label: "Vegetarian", emoji: "🥗" },
+    { id: "pescatarian", label: "Pescatarian", emoji: "🐟" },
+    { id: "glutenfree", label: "Gluten free", emoji: "🌾" },
+  ];
+  const ALLERGY_OPTIONS = [
+    { id: "fruit", label: "Fresh fruit", emoji: "🍓" },
+    { id: "peanuts", label: "Peanuts", emoji: "🥜" },
+    { id: "dairy", label: "Dairy", emoji: "🥛" },
+    { id: "gluten", label: "Gluten/wheat", emoji: "🌾" },
+    { id: "eggs", label: "Eggs", emoji: "🥚" },
+    { id: "treenuts", label: "Tree nuts", emoji: "🌰" },
+    { id: "shellfish", label: "Shellfish", emoji: "🦐" },
+  ];
+  const [nourishSupportFilter, setNourishSupportFilter] = useState(digestionPreset ? "digestion" : null);
+  const [cravingOverride, setCravingOverride] = useState(false);
+  const [dietaryMode, setDietaryMode] = useState(() => { try { return JSON.parse(localStorage.getItem("lf_dietary"))?.mode || "none"; } catch(e) { return "none"; } });
+  const [allergies, setAllergies] = useState(() => { try { return JSON.parse(localStorage.getItem("lf_dietary"))?.allergies || []; } catch(e) { return []; } });
+
+  const saveDietary = (mode, algs) => {
+    localStorage.setItem("lf_dietary", JSON.stringify({ mode, allergies: algs }));
+  };
+
+  useEffect(() => {
+    if (digestionPreset) {
+      setNourishSupportFilter("digestion");
+      onClearDigestionPreset && onClearDigestionPreset();
+    }
+  }, [digestionPreset]);
+
+const CRAVINGS = {
+    "Sweet": {
+      emoji: "🍰",
+      insight: "You may be needing energy, comfort, or a gentle reward. Sweet cravings often show up when you feel emotionally drained, tired, or simply in need of something soft.",
+      nourish: ["Greek yogurt with berries, honey, and granola", "Chia pudding with mango or mixed fruit", "Smoothie bowl with banana, nut butter, and seeds", "Cottage cheese with fruit and cinnamon", "Coconut yogurt with mango and toasted coconut", "Banana with peanut or almond butter", "Dates stuffed with almond butter", "Dark chocolate with walnuts or almonds", "A warm chai or golden milk if you want something cozy"],
+      pause: ["Drink a glass of water first and wait 5 minutes", "Take 3 slow deep breaths and place your hand on your heart", "Name 3 things you are grateful for right now"],
+      romanticize: ["Serve your snack in a pretty bowl with toppings arranged beautifully", "Light a candle and sit somewhere soft and cozy", "Put on music that feels like a warm hug"]
+    },
+    "Salty": {
+      emoji: "🧂",
+      insight: "Salty cravings often show up when you feel depleted, stressed, or in need of something grounding and replenishing.",
+      nourish: ["Crispy Caesar salad with chicken and parmesan", "Cobb salad with eggs, avocado, chicken, turkey bacon, and greens", "Crackers with tuna, cottage cheese, or avocado", "Roasted chickpeas with sea salt and paprika", "Popcorn with olive oil and sea salt", "Cucumber or carrot sticks with hummus", "Kale chips with sea salt", "Chips plated in a bowl — pair with a protein side so it feels intentional", "Warm soup or bone broth with sea salt"],
+      pause: ["Drink a glass of water — salt cravings often come with dehydration", "Place both feet flat on the floor and breathe slowly", "Relax your shoulders and unclench your jaw"],
+      romanticize: ["Make soup in your favourite bowl and sit somewhere warm", "Plate your snack like a little spread — make it feel special", "Sit outside if you can, even for 5 minutes"]
+    },
+    "Crunchy": {
+      emoji: "🥨",
+      insight: "Crunchy cravings may sometimes be linked to stress or the need to release tension. Your body might be looking for something satisfying and grounding.",
+      nourish: ["Crispy chicken breast strips with a dipping sauce", "Kale chips with sea salt", "Roasted chickpeas or edamame", "Apple slices with almond butter", "Carrot, celery, or cucumber with hummus", "Rice cakes with avocado or cottage cheese", "Whole grain crackers with smoked salmon or tuna", "A handful of mixed nuts and seeds", "Chips plated in a bowl — enjoy slowly, pair with protein if needed"],
+      pause: ["Shake out your hands and roll your shoulders back", "Take 5 deep breaths through your nose", "Clench your fists tight then release — repeat 3 times"],
+      romanticize: ["Arrange your snack on a small board like a little charcuterie moment", "Eat near a window or outside if you can", "Put on a podcast or playlist you love and make it a proper break"]
+    },
+    "Creamy": {
+      emoji: "🍦",
+      insight: "Creamy cravings often show up when you need comfort, nourishment, or something deeply satisfying and soothing.",
+      nourish: ["Greek yogurt with granola, honey, and berries", "Avocado on sourdough toast with lemon and sea salt", "Smoothie with banana, nut butter, oat milk, and seeds", "Cottage cheese with fruit and a drizzle of honey", "Hummus with warm pita and vegetables", "Warm oatmeal with cream, cinnamon, and berries", "Coconut yogurt with mango and lime zest", "Crispy chicken Caesar salad with creamy yogurt dressing"],
+      pause: ["Drink a glass of warm water or herbal tea before eating", "Sit down, breathe slowly, and check in — are you hungry or emotionally reaching?", "Roll your neck gently side to side and drop your shoulders"],
+      romanticize: ["Make a beautiful smoothie bowl and take a moment to arrange it", "Eat from a pretty glass or bowl that feels special", "Put on ambient café music and let it feel like a real pause"]
+    },
+    "Carbs / Pastry": {
+      emoji: "🥐",
+      insight: "Carb cravings often mean your body needs energy or your heart needs comfort. Both are valid.",
+      nourish: ["Sourdough toast with eggs and avocado", "Oatmeal with protein, nuts, and berries", "Sweet potato bowl with eggs or chicken", "Rice bowl with salmon, tofu, or chicken and roasted veg", "Whole grain wrap with turkey, chicken, and greens", "Lentil soup with crusty toast", "Banana protein pancakes", "A warm croissant or pastry — enjoy it slowly and without guilt"],
+      pause: ["Ask yourself — am I hungry or am I tired? Both are okay", "Drink a glass of water first and sit quietly for 2 minutes", "Breathe in for 4 counts, hold for 4, out for 4"],
+      romanticize: ["Go to a café and enjoy a pastry slowly — no phone, just the moment", "Make toast at home and eat it by a window with a warm drink", "Let it be a real break — intentional and unhurried"]
+    },
+    "Chocolate": {
+      emoji: "🍫",
+      insight: "Chocolate cravings are often linked to a need for magnesium, pleasure, or emotional comfort. Your body and mood may both be asking for a gentle lift.",
+      nourish: ["A square or two of dark chocolate 70% or higher", "Dark chocolate with almonds or walnuts", "A warm mug of hot cacao or dark hot chocolate", "Cacao energy balls with dates and oats", "Greek yogurt with cacao nibs, honey, and berries", "Chocolate smoothie with banana, cacao powder, and nut butter", "A small chocolate and nut butter snack — plated, enjoyed slowly"],
+      pause: ["Savour one piece slowly before reaching for more", "Drink a glass of water alongside it", "Give yourself full permission — eating with guilt adds stress, not joy"],
+      romanticize: ["Make a beautiful cup of hot chocolate and sit somewhere cozy", "Pair your chocolate with a book or journal", "Light a candle and make it a proper moment just for you"]
+    },
+    "Coffee / Café": {
+      emoji: "☕",
+      insight: "You may be craving atmosphere, ritual, a pause, or simply connection with yourself. This craving is often more about the feeling than the food.",
+      nourish: ["Coffee or matcha after eating — not on an empty stomach if you feel sensitive", "Latte with Greek yogurt and berries on the side", "Avocado toast with a poached egg and your favourite drink", "Boiled eggs with fruit and coffee", "Protein smoothie with a matcha latte", "Cottage cheese with fruit and a warm drink", "If you feel shaky, start with food before coffee"],
+      pause: ["Ask — do I need energy or do I need a break? Both are valid", "Sit somewhere away from your screen for 10 minutes", "Breathe slowly and let the warmth of the cup ground you"],
+      romanticize: ["Go to your favourite café and sit without your phone", "Make a beautiful coffee at home in your best cup", "Journal or read something you love while you drink it"]
+    },
+    "Full meal": {
+      emoji: "🍽️",
+      insight: "Your body may genuinely be hungry and asking to be properly nourished. A full meal craving is worth honouring.",
+      nourish: ["Rice or grain bowl with salmon, chicken, or tofu and roasted vegetables", "Crispy chicken breast with sweet potato and greens", "Eggs any style with sourdough toast and avocado", "Warm soup with bread and a side salad", "Pasta with olive oil, garlic, and a protein", "Stir fry with vegetables, protein, and rice or noodles", "A plate built with protein, complex carb, and something green"],
+      pause: ["Sit down properly before eating — no standing or rushing", "Take 3 slow breaths before your first bite", "Put your phone away and eat without distraction for even 5 minutes"],
+      romanticize: ["Set your table even if eating alone — it changes the energy", "Light a candle for your meal", "Cook something you love and let the process be part of the nourishment"]
+    },
+    "Something else": {
+      emoji: "💭",
+      insight: "Sometimes what we reach for is not really about food at all. You might be craving connection, rest, stimulation, comfort, or simply a change of scenery.",
+      nourish: ["Drink a glass of water first and check in honestly", "Have a small balanced snack if you have not eaten recently", "Try herbal tea and see if the craving shifts", "A small protein snack — boiled egg, nuts, or cottage cheese", "Something warm if you feel emotionally tender"],
+      pause: ["Sit quietly and ask — what do I actually need right now?", "Take 5 slow deep breaths and name the feeling", "Go outside for 5 minutes if you can"],
+      romanticize: ["Journal for 5 minutes about how you are feeling", "Call or message someone you love", "Do one small thing that brings you genuine joy"]
+    },
+    "Not sure": {
+      emoji: "❓",
+      insight: "Not knowing what you want is completely okay. Sometimes your body and mind are just asking you to slow down and check in gently.",
+      nourish: ["Start with a glass of water and wait a few minutes", "Have a small snack with protein and something you enjoy", "Try a piece of fruit or something light and see how you feel", "Make a warm drink and see if the craving becomes clearer", "A simple plate — crackers, cheese, fruit — low effort, nourishing"],
+      pause: ["Sit somewhere quiet for 5 minutes with no phone", "Take 3 slow breaths and check in with your body", "Stretch gently or shake out your body — sometimes it just needs movement"],
+      romanticize: ["Make yourself a warm drink and just sit — no agenda", "Write one sentence about how you feel right now", "Give yourself permission to not know — that is always okay"]
+    }
+  };
+
+  const craving = cravingType ? CRAVINGS[cravingType] : null;
+  const cravingKeys = Object.keys(CRAVINGS);
+
   return (
-    <div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
-        <Card style={{ padding:18 }}><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:10, display:"flex", gap:6 }}><I n="users" s={14} c="#5a8a6a"/> Best Follower Growth</div><GL items={byFollowers} metric={p=>p.analytics.followersGained} color="#5a8a6a"/></Card>
-        <Card style={{ padding:18 }}><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:10, display:"flex", gap:6 }}><I n="save" s={14} c="#d4a574"/> Best Save-Worthy</div><GL items={bySaves} metric={p=>p.analytics.saves.toLocaleString()} color="#d4a574"/></Card>
-        <Card style={{ padding:18 }}><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:10, display:"flex", gap:6 }}><I n="phone" s={14} c="#9a6ab8"/> Best App Traffic</div><GL items={byApp} metric={p=>p.analytics.appStoreClicks} color="#9a6ab8"/></Card>
-        <Card style={{ padding:18, background:"#f5f0f8", border:"1px solid #c8b8e0" }}>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#4a2a6a", marginBottom:10, display:"flex", gap:6 }}><I n="crown" s={14} c="#9a6ab8"/> Conversion Opportunities</div>
-          {["Seed Cycling for Follicular Phase","Why Fasting Feels Harder Before Your Period"].map((t,i)=>(
-            <div key={i} style={{ padding:"7px 0", borderBottom:i===0?"1px solid #e0d0f0":"none" }}>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:13, fontWeight:600, color:"#4a2a6a" }}>{t}</div>
-              <div style={{ display:"flex", gap:5, marginTop:3 }}><GrowthTagBadge tag="Premium Teaser"/><span style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a" }}>High trust — add Premium CTA</span></div>
+    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: getSeasonalBg(mode, getPhase(Math.max(1, getCycleDay((() => { try { return JSON.parse(localStorage.getItem("lf_settings"))?.lastPeriod || ""; } catch(e) { return ""; } })()) - 1))), minHeight: "100vh" }}>
+      <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 4px" }}>Nourish ✨</h2>
+      <p style={{ fontSize: 13, color: mode === "fast" ? "#3a5a3a" : "#8FA090", margin: "0 0 16px" }}>Food craving or soul craving?</p>
+
+      {/* Two tappable sections */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+        <button onClick={() => setNourishTab("cravings")} style={{
+          flex: 1, padding: "12px 8px", borderRadius: 14, border: "none", cursor: "pointer",
+          background: nourishTab === "cravings" ? (mode === "fast" ? "#7A9E7E" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c") : "rgba(255,255,255,0.5)",
+          color: nourishTab === "cravings" ? "#fff" : "#4a5a4b",
+          fontFamily: "Georgia, serif", fontSize: 13, fontWeight: 600,
+        }}>🌿 Craving Decoder</button>
+        <button onClick={() => setNourishTab("fasting")} style={{
+          flex: 1, padding: "12px 8px", borderRadius: 14, border: "none", cursor: "pointer",
+          background: nourishTab === "fasting" ? (mode === "fast" ? "#7A9E7E" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c") : "rgba(255,255,255,0.5)",
+          color: nourishTab === "fasting" ? "#fff" : "#4a5a4b",
+          fontFamily: "Georgia, serif", fontSize: 13, fontWeight: 600,
+        }}>💧 Fasting Support</button>
+        <button onClick={() => setNourishTab("preferences")} style={{
+          flex: 1, padding: "12px 8px", borderRadius: 14, border: "none", cursor: "pointer",
+          background: nourishTab === "preferences" ? (mode === "fast" ? "#7A9E7E" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c") : "rgba(255,255,255,0.5)",
+          color: nourishTab === "preferences" ? "#fff" : "#4a5a4b",
+          fontFamily: "Georgia, serif", fontSize: 13, fontWeight: 600,
+        }}>🌿 My Preferences</button>
+      </div>
+      {nourishTab === "cravings" && <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.75)", borderRadius: 18, padding: "16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : "0.5px solid rgba(180,160,200,0.3)", marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: "#2D3B2E", fontWeight: 600, margin: "0 0 12px" }}>What are you craving right now?</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {cravingKeys.map(key => (
+            <button key={key} onClick={() => { setCravingType(prev => Array.isArray(prev) ? (prev.includes(key) ? prev.filter(x => x !== key) : [...prev, key]) : [key]); setNourishSupportFilter(null); }} style={{
+              padding: "8px 14px", borderRadius: 50, border: "0.5px solid #dce8dc",
+              background: (Array.isArray(cravingType) ? cravingType.includes(key) : cravingType === key) ? (mode === "fast" ? "#7A9E7E" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c") : "rgba(255,255,255,0.7)",
+              color: (Array.isArray(cravingType) ? cravingType.includes(key) : cravingType === key) ? "#fff" : "#4a5a4b",
+              fontSize: 12, cursor: "pointer", fontFamily: "sans-serif",
+              display: "flex", alignItems: "center", gap: 6
+            }}>
+              <span>{CRAVINGS[key].emoji}</span> {key}
+            </button>
+          ))}
+        </div>
+      </div>}
+      {nourishTab === "cravings" && Array.isArray(cravingType) && cravingType.length > 0 && (() => {
+        const selected = cravingType.map(k => CRAVINGS[k]).filter(Boolean);
+        if (!selected.length) return null;
+        const allNourish = [...new Set(selected.flatMap(c => c.nourish))].slice(0, 8);
+        const allPause = selected[0].pause;
+        const allRomanticize = selected[0].romanticize;
+        const emojis = selected.map(c => c.emoji).join(" ");
+        const insight = selected.length === 1
+          ? selected[0].insight
+          : `You are craving ${cravingType.join(" + ").toLowerCase()} — your body may be asking for something layered. ${selected[0].insight}`;
+        return (
+          <div>
+            <div style={{ background: "#F0F6F0", borderRadius: 18, padding: "16px", border: "0.5px solid #C5D9C5", marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <span style={{ fontSize: 22 }}>{emojis}</span>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: 0 }}>Insight</p>
+              </div>
+              <p style={{ fontSize: 13, color: "#4a5a4b", margin: 0, lineHeight: 1.7 }}>{insight}</p>
+            </div>
+            <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 12 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#5C7F60", margin: "0 0 10px" }}>🍵 Nourish — feed the body</p>
+              {allNourish.map((item, i) => (
+                <p key={i} style={{ fontSize: 13, color: "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {item}</p>
+              ))}
+            </div>
+            <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 12 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#7BA8C9", margin: "0 0 10px" }}>💧 Pause — ground yourself</p>
+              {allPause.map((item, i) => (
+                <p key={i} style={{ fontSize: 13, color: "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {item}</p>
+              ))}
+            </div>
+            <div style={{ background: "#fff", borderRadius: 18, padding: "16px", border: "0.5px solid #dce8dc", marginBottom: 16 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#9B7BC9", margin: "0 0 10px" }}>📖 Romanticize — feed the soul</p>
+              {allRomanticize.map((item, i) => (
+                <p key={i} style={{ fontSize: 13, color: "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {item}</p>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+      {nourishTab === "preferences" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.75)", borderRadius: 18, padding: "16px", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.2)" : "0.5px solid rgba(180,160,200,0.3)" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 4px" }}>🍽️ Dietary preference</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 12px", lineHeight: 1.6 }}>Lumen Suggests will personalise food ideas based on your preference.</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {DIETARY_MODES.map(d => (
+                <button key={d.id} onClick={() => { setDietaryMode(d.id); saveDietary(d.id, allergies); }} style={{ padding: "8px 14px", borderRadius: 50, border: "none", background: dietaryMode === d.id ? (mode === "fast" ? "#7A9E7E" : "#9B7BC9") : (mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.7)"), color: dietaryMode === d.id ? "#fff" : (mode === "fast" ? "#a8c4a8" : "#4a3a5a"), fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>
+                  {d.emoji} {d.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.75)", borderRadius: 18, padding: "16px", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.2)" : "0.5px solid rgba(180,160,200,0.3)" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 4px" }}>🚫 Allergies & avoid</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 12px", lineHeight: 1.6 }}>Select anything you cannot eat or want to avoid. Suggestions will be filtered automatically.</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {ALLERGY_OPTIONS.map(a => (
+                <button key={a.id} onClick={() => {
+                  const updated = allergies.includes(a.id) ? allergies.filter(x => x !== a.id) : [...allergies, a.id];
+                  setAllergies(updated);
+                  saveDietary(dietaryMode, updated);
+                }} style={{ padding: "8px 14px", borderRadius: 50, border: "none", background: allergies.includes(a.id) ? "#C97B7B" : (mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.7)"), color: allergies.includes(a.id) ? "#fff" : (mode === "fast" ? "#a8c4a8" : "#4a3a5a"), fontFamily: "sans-serif", fontSize: 13, cursor: "pointer" }}>
+                  {a.emoji} {a.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          {(dietaryMode !== "none" || allergies.length > 0) && (
+            <div style={{ background: mode === "fast" ? "rgba(122,158,126,0.08)" : "rgba(155,123,201,0.08)", borderRadius: 14, padding: "12px 14px", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.2)" : "0.5px solid rgba(155,123,201,0.2)" }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: 0, lineHeight: 1.6 }}>
+                ✅ Preferences saved — Lumen Suggests will use these when making food recommendations.
+                {allergies.length > 0 && ` Avoiding: ${ALLERGY_OPTIONS.filter(a => allergies.includes(a.id)).map(a => a.label).join(", ")}.`}
+              </p>
+            </div>
+          )}
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", textAlign: "center", margin: 0, lineHeight: 1.6 }}>🌿 These preferences are saved on your device only.</p>
+        </div>
+      )}
+
+      {nourishTab === "fasting" && (
+        <div>
+          {[
+            { icon: "💧", title: "What to drink while fasting", color: "#7BA8C9", bg: "#EAF2F9", tips: ["Water — drink at least 2-3 litres daily", "Black coffee — no milk, no sugar, does not break a fast", "Plain green or herbal tea — no sweeteners", "Sparkling water — fine during fasting", "Bone broth — breaks a fast but great for electrolytes"] },
+            { icon: "🧂", title: "Electrolytes during fasting", color: "#C9A87B", bg: "#FDF6EA", tips: ["Add a pinch of sea salt to your water", "Magnesium — helps with energy and sleep", "Potassium — found in coconut water (breaks fast) or supplement", "Sodium — especially important for longer fasts", "Signs you need electrolytes: headache, fatigue, dizziness"] },
+            { icon: "🍽️", title: "How to break your fast", color: "#7A9E7E", bg: "#F0F6F0", tips: ["Start with something light — bone broth, eggs, or yogurt", "Avoid heavy carbs as your first meal", "Protein first helps blood sugar stability", "Chew slowly — your digestion needs to wake up gently", "Wait 20 minutes before eating more"] },
+            { icon: "⏰", title: "Best fasting windows", color: "#9B7BC9", bg: "#F5F0FF", tips: ["12:12 — great for beginners, fast overnight", "16:8 — most popular, eat between 12pm and 8pm", "18:6 — more fat burning, eat between 2pm and 8pm", "20:4 — advanced, one main meal plus a small window", "Listen to your body — consistency beats perfection"] },
+            { icon: "🚫", title: "What breaks a fast", color: "#C97B7B", bg: "#FDEAEA", tips: ["Milk, cream, or sugar in coffee or tea", "Any food — even small amounts trigger insulin", "Juice, smoothies, or flavoured drinks", "Chewing gum with sugar", "BCAA supplements with calories"] },
+          ].map((section, i) => (
+            <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : section.bg, borderRadius: 18, padding: "16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : `0.5px solid ${section.color}33`, marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                <span style={{ fontSize: 22 }}>{section.icon}</span>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: mode === "fast" ? "#C9A84C" : section.color, margin: 0 }}>{section.title}</p>
+              </div>
+              {section.tips.map((tip, j) => (
+                <p key={j} style={{ fontSize: 13, color: mode === "fast" ? "#a8c4a8" : "#4a5a4b", margin: "0 0 6px", lineHeight: 1.6 }}>• {tip}</p>
+              ))}
             </div>
           ))}
-        </Card>
+        </div>
+      )}
+
+      {/* Hunger checker - fasting mode */}
+      {nourishTab === "fasting" && mode === "fast" && (
+        <div style={{ marginTop: 16 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>🧠 Hunger checker</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: "0 0 12px" }}>Is this real hunger or fasting hunger?</p>
+          {[
+            { q: "When did you last eat?", type: "info", tip: "If it has been less than 3 hours your body is likely adjusting not truly hungry." },
+            { q: "Drink a full glass of water and wait 10 minutes.", type: "action", tip: "Thirst and hunger feel the same. Most fasting hunger disappears after water." },
+            { q: "Where do you feel it?", type: "info", tip: "Real hunger is felt in the stomach. Head hunger or cravings are felt in the mind — you are thinking about food not feeling physical hunger." },
+            { q: "Is it getting stronger or staying the same?", type: "info", tip: "Fasting hunger comes in waves and passes. Real hunger builds steadily over time." },
+            { q: "Rate your hunger 1-10", type: "info", tip: "Below 4 — likely fasting adjustment. Above 7 — your body may genuinely need fuel. Listen to it." },
+          ].map((item, i) => (
+            <div key={i} style={{ background: item.type === "action" ? "#F0F6F0" : "#fff", borderRadius: 16, padding: "14px 16px", border: `0.5px solid ${item.type === "action" ? "#C5D9C5" : "#dce8dc"}`, marginBottom: 10 }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: "0 0 6px" }}>{item.type === "action" ? "💧 " : "❓ "}{item.q}</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{item.tip}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <LumenSuggests mode={mode} selectedCravings={cravingType} supportFilter={nourishSupportFilter} setSupportFilter={setNourishSupportFilter} activeTab={nourishTab} />
+
+      {nourishTab === "cravings" && mode !== "fast" && (
+      <div onClick={() => onNavigate && onNavigate("calendar")} style={{ background: "#F8F0FF", borderRadius: 18, padding: "16px", border: "0.5px solid #D4C5E9", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 24 }}>🌙</span>
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#2D3B2E", margin: "0 0 4px" }}>Cycle reflection</p>
+            <p style={{ fontSize: 12, color: "#6b7b6b", margin: 0 }}>What stage of your cycle are you in?</p>
+            <p style={{ fontSize: 12, color: "#6b7b6b", margin: 0 }}>Are you tired, stressed, or needing comfort?</p>
+          </div>
+        </div>
+        <span style={{ fontSize: 20, color: "#9B7BC9" }}>›</span>
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12 }}>
-        <Card style={{ padding:18, background:"#f5faf7", border:"1px solid #c8e0d0" }}>
-          <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, fontWeight:700, color:"#3a6a4a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:8 }}>🔁 Topics to Repeat</div>
-          {["Luteal phase fasting (3 more)","TikTok hook: Nobody told me…","Men's energy content","Cycle education save-worthy"].map((t,i)=><div key={i} style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#2d4a3a", padding:"4px 0", borderBottom:i<3?"1px dashed #d0e8d8":"none" }}>✦ {t}</div>)}
-        </Card>
-        <Card style={{ padding:18, background:"#fdf8f0", border:"1px solid #e8d8b8" }}>
-          <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, fontWeight:700, color:"#8a5a2a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:8 }}>⚠ Content Gaps</div>
-          {["Premium teasers (0 this month)","App features (need 3/week)","YouTube Shorts (low output)","Men's content (need 2/week)"].map((t,i)=><div key={i} style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#5a4a2a", padding:"4px 0", borderBottom:i<3?"1px dashed #e0d0b8":"none" }}>· {t}</div>)}
-        </Card>
-        <Card style={{ padding:18, background:"#fdf4f4", border:"1px solid #e0c0c0" }}>
-          <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, fontWeight:700, color:"#8a3a3a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:8 }}>📉 Consider Retiring</div>
-          {["General lifestyle posts (0 saves)","Single image posts — carousels win","Long captions without hooks"].map((t,i)=><div key={i} style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#5a3a3a", padding:"4px 0", borderBottom:i<2?"1px dashed #e0c8c8":"none" }}>· {t}</div>)}
-        </Card>
-      </div>
+      )}
     </div>
   );
 }
 
-function RecsTab({ setPage }) {
+
+      function LumenSuggests({ mode, selectedCravings, supportFilter, setSupportFilter, activeTab }) {
+        const dietary = (() => { try { return JSON.parse(localStorage.getItem("lf_dietary")) || { mode: "none", allergies: [] }; } catch(e) { return { mode: "none", allergies: [] }; } })();
+        const dietMode = dietary.mode;
+        const algs = dietary.allergies || [];
+
+        const filterItems = (items) => {
+          return items.filter(item => {
+            const text = item.toLowerCase();
+            if (algs.includes("fruit") && (text.includes("fruit") || text.includes("mango") || text.includes("berry") || text.includes("berries") || text.includes("apple") || text.includes("banana") || text.includes("orange") || text.includes("pear") || text.includes("kiwi") || text.includes("watermelon"))) return false;
+            if (algs.includes("dairy") && (text.includes("milk") || text.includes("cream") || text.includes("cheese") || text.includes("yogurt") || text.includes("butter") || text.includes("dairy"))) return false;
+            if (algs.includes("gluten") && (text.includes("bread") || text.includes("toast") || text.includes("pasta") || text.includes("wheat") || text.includes("crackers") || text.includes("sourdough") || text.includes("oat"))) return false;
+            if (algs.includes("eggs") && text.includes("egg")) return false;
+            if (algs.includes("peanuts") && text.includes("peanut")) return false;
+            if (algs.includes("treenuts") && (text.includes("almond") || text.includes("cashew") || text.includes("walnut") || text.includes("pecan") || text.includes("nut butter"))) return false;
+            if (algs.includes("shellfish") && (text.includes("shrimp") || text.includes("prawn") || text.includes("crab") || text.includes("lobster") || text.includes("shellfish"))) return false;
+            if (dietMode === "carnivore" && (text.includes("oat") || text.includes("rice") || text.includes("bread") || text.includes("pasta") || text.includes("bean") || text.includes("lentil") || text.includes("chickpea") || text.includes("tofu") || text.includes("tempeh") || text.includes("veggie") || text.includes("vegetable soup") || text.includes("salad") && !text.includes("caesar") && !text.includes("cobb"))) return false;
+            if (dietMode === "vegan" && (text.includes("chicken") || text.includes("beef") || text.includes("pork") || text.includes("fish") || text.includes("salmon") || text.includes("tuna") || text.includes("egg") || text.includes("dairy") || text.includes("cheese") || text.includes("yogurt") || text.includes("milk") || text.includes("butter") || text.includes("honey"))) return false;
+            if (dietMode === "vegetarian" && (text.includes("chicken") || text.includes("beef") || text.includes("pork") || text.includes("fish") || text.includes("salmon") || text.includes("tuna") || text.includes("turkey") || text.includes("meat"))) return false;
+            if (dietMode === "pescatarian" && (text.includes("chicken") || text.includes("beef") || text.includes("pork") || text.includes("turkey") || text.includes("lamb"))) return false;
+            return true;
+          });
+        };
+  const supportOptions = [
+    { id: "alkaline",   label: "Alkaline-Inspired", icon: "🌿" },
+    { id: "juice",      label: "Juice Ideas",        icon: "🍹" },
+    { id: "protein",    label: "Protein First",      icon: "🥚" },
+    { id: "breakfast",  label: "Break-Fast Meal",    icon: "🍽️" },
+    { id: "fasting",    label: "Still Fasting",      icon: "💧" },
+    { id: "digestion",  label: "Digestion Support",  icon: "🌱" },
+  ];
+
+  const getContext = () => {
+    const today = new Date().toISOString().split("T")[0];
+    try { return JSON.parse(localStorage.getItem(`lf_checkin_${today}`)) || {}; } catch (e) { return {}; }
+  };
+
+  const getFasting = () => {
+    const fs = localStorage.getItem("lf_fast_start");
+    if (!fs) return null;
+    return ((Date.now() - Number(fs)) / 3600000).toFixed(1);
+  };
+
+  const getSuggestion = () => {
+    const ctx = getContext();
+    const hours = getFasting();
+    const cravings = selectedCravings || [];
+    const filter = supportFilter;
+    const has = (...keys) => keys.some(k => cravings.map(c => c.toLowerCase()).some(c => c.includes(k)));
+
+    if (dietMode === "carnivore" && cravings.length === 0 && !filter) return {
+      label: "🥩 Carnivore — what to eat",
+      why: "Based on your carnivore preference — animal-based, nourishing, and satisfying.",
+      items: filterItems([
+        "Ribeye or sirloin steak cooked in butter",
+        "Eggs any style — scrambled, fried, or boiled",
+        "Ground beef patties with sea salt",
+        "Chicken thighs or drumsticks — skin on",
+        "Bacon — pasture raised if possible",
+        "Salmon fillet with butter and sea salt",
+        "Lamb chops cooked in tallow or butter",
+        "Bone broth — warm and nourishing",
+        "Beef liver — nutrient dense and grounding",
+        "Hard boiled eggs as a snack",
+        "Pork belly or pork ribs",
+        "Sardines or mackerel straight from the tin",
+      ]),
+    };
+
+    if (filter === "fasting") return {
+      label: "💧 Still Fasting",
+      why: "You are fasting — your body is doing great work. Stay supported without breaking your window.",
+      items: filterItems(["Water — drink consistently throughout your fast", "Plain herbal tea or green tea — no sweeteners", "Black coffee if tolerated", "Sparkling water if you need something different", "A pinch of sea salt in water for electrolytes", "Rest, breathe, and ground yourself", "If you feel weak, shaky, dizzy, or unwell — break your fast and eat first"]),
+    };
+
+    if (filter === "digestion") {
+      const bowel = ctx.bowelCheck;
+      const entries = bowel?.entries || [];
+      const didPoop = bowel?.didPoopToday || entries.length > 0;
+      const noPoop = !didPoop && bowel !== undefined;
+      const textures = entries.map(e => e.texture || "").join(" ");
+      const hard = textures.includes("Rocky") || textures.includes("pellets") || textures.includes("Straining") || textures.includes("Painful");
+      const loose = textures.includes("Semi-liquid") || textures.includes("Liquid");
+      const why = noPoop || hard
+        ? "Your check-in suggests things may be moving slowly today. These options may gently support your digestion."
+        : loose
+        ? "Your check-in suggests your digestion may need something settling and nourishing today."
+        : "These gentle options may support your digestion today.";
+      const items = noPoop || hard ? [
+        "Warm water with lemon first thing — may help get things moving",
+        "Oatmeal with chia seeds and berries",
+        "Prunes or prune juice — a small amount goes a long way",
+        "Pear, apple, or kiwi — high in gut-supportive fibre",
+        "Greek yogurt with berries and a sprinkle of flaxseed",
+        "Lentil or bean-based soup or meal",
+        "Sweet potato with leafy greens",
+        "A gentle 10–15 minute walk after eating may help",
+        "Stay well hydrated — warm water works especially well",
+      ] : loose ? [
+        "Plain rice or plain toast — gentle and settling",
+        "Banana — easy on the gut",
+        "Boiled or scrambled eggs",
+        "Plain Greek yogurt with no added fruit",
+        "Warm broth or plain soup",
+        "Avoid raw vegetables, spicy food, and caffeine today",
+        "Stay hydrated with water and plain herbal tea",
+        "Rest if your body is asking for it",
+      ] : [
+        "Warm water with lemon first thing",
+        "Oatmeal with chia seeds and berries",
+        "Prunes, pear, apple, or kiwi",
+        "Greek yogurt with berries and flaxseed",
+        "Lentil soup or bean-based meal",
+        "Sweet potato with leafy greens",
+        "A gentle walk after eating",
+        "Stay well hydrated throughout the day",
+      ];
+      return {
+        label: "🌱 Digestion Support",
+        why,
+        items: filterItems(items),
+        note: "Wellness support only — not medical advice. If symptoms are severe, persistent, include blood, fever, or vomiting, please contact a healthcare provider.",
+      };
+    }
+
+    if (filter === "juice") return {
+      label: "🍹 Juice Ideas",
+      why: "Juices are best enjoyed when breaking your fast or during your eating window — not while fasting.",
+      items: ["Green juice with cucumber, celery, spinach, lemon, and ginger", "Watermelon and mint juice — hydrating and light", "Carrot, apple, and ginger juice", "Beet, orange, and lemon juice", "Coconut water with lime — gentle electrolyte boost", "Smoothie with banana, berries, Greek yogurt, and chia seeds"],
+    };
+
+    if (filter === "breakfast") return {
+      label: "🍽️ Break-Fast Meal",
+      why: "Breaking your fast gently helps your digestion wake up. Start light and protein-forward.",
+      items: ["2-3 eggs any style with avocado and sourdough toast", "Greek yogurt with berries, granola, and honey", "Bone broth first, then a small protein meal", "Oatmeal with nuts, seeds, and fruit", "Cottage cheese with fruit and a drizzle of honey", "Banana with almond butter and a warm drink"],
+    };
+
+    if (filter === "alkaline") return {
+      label: "🌿 Alkaline-Inspired",
+      why: "Plant-rich and mineral-dense options to nourish your body.",
+      items: ["Big leafy green salad with cucumber, avocado, lemon dressing", "Smoothie with spinach, banana, almond milk, and chia", "Steamed broccoli, sweet potato, and quinoa bowl", "Celery and cucumber sticks with hummus", "Warm lemon water to start", "Watermelon, berries, or melon as a snack", "Vegetable soup with leafy greens and legumes"],
+    };
+
+    if (filter === "protein") {
+      if (has("salty","crunchy","creamy")) return {
+        label: "🥚 Protein First — Salty + Crunchy + Creamy",
+        why: "You chose salty, crunchy, and creamy — these options give texture, comfort, and steady protein.",
+        items: ["Crispy Caesar salad with chicken and creamy yogurt dressing", "Cobb salad with eggs, avocado, chicken, cucumber, and greens", "Crispy chicken breast strips with creamy dip", "Kale chips with Greek yogurt dip", "Crackers with tuna, cottage cheese, or avocado", "Chips plated in a bowl with a protein side"],
+      };
+      return {
+        label: "🥚 Protein First",
+        why: "Leading with protein supports steady energy and satiety.",
+        items: ["Eggs any style — scrambled, boiled, poached", "Grilled or baked chicken breast with vegetables", "Greek yogurt with granola and berries", "Cottage cheese with fruit", "Tuna or salmon with crackers or salad", "Lentil or bean soup with a protein side"],
+      };
+    }
+
+    if (cravings.length === 0 && dietMode !== "carnivore") return null;
+    if (cravings.length === 0 && dietMode === "carnivore") return {
+      label: "🥩 Carnivore",
+      why: "Based on your carnivore preference — animal-based, nourishing, and satisfying.",
+      items: filterItems(["Ribeye or sirloin steak cooked in butter", "Eggs any style", "Ground beef patties with sea salt", "Chicken thighs or drumsticks", "Bacon", "Salmon fillet with butter", "Lamb chops", "Bone broth", "Hard boiled eggs", "Pork belly or ribs", "Sardines or mackerel"]),
+    };
+
+    // Combined craving logic
+    const items = [];
+    if (has("salty") && has("crunchy") && has("creamy")) {
+      items.push("Crispy Caesar salad with creamy yogurt dressing", "Cobb salad with avocado, eggs, chicken, and creamy dressing", "Crunchy chicken wrap with yogurt ranch", "Kale chips with Greek yogurt dip", "Crackers with cottage cheese, tuna, or avocado", "Chips plated in a bowl with a protein side");
+    } else if (has("salty") && has("crunchy")) {
+      items.push("Crispy Caesar salad with chicken and parmesan", "Kale chips with sea salt", "Roasted chickpeas with paprika", "Popcorn with olive oil and sea salt", "Crackers with tuna or avocado", "Chips plated and paired with protein");
+    } else if (has("sweet") && has("creamy")) {
+      items.push("Greek yogurt with berries, honey, and granola", "Chia pudding with mango or mixed fruit", "Smoothie bowl with banana and nut butter", "Cottage cheese with fruit and cinnamon", "Banana with peanut butter", "Dark chocolate with almonds");
+    } else if (has("carbs","pastry") && has("full meal","full")) {
+      items.push("Sourdough toast with eggs and avocado", "Sweet potato bowl with eggs or chicken", "Rice bowl with salmon, tofu, or chicken", "Whole grain wrap with turkey and greens", "Lentil soup with crusty toast", "Oatmeal with protein, nuts, and berries");
+    } else if (has("chocolate")) {
+      items.push("A square or two of dark chocolate 70% or higher", "Hot cacao or dark hot chocolate", "Greek yogurt with cacao nibs and berries", "Chocolate smoothie with banana and nut butter", "Cacao energy balls with dates and oats");
+    } else if (has("coffee","café","cafe")) {
+      items.push("Coffee or matcha after eating — not on an empty stomach", "Latte with Greek yogurt and berries on the side", "Avocado toast with a poached egg and your drink", "Protein smoothie with a matcha latte");
+    } else if (has("sweet")) {
+      items.push("Greek yogurt with berries and honey", "Chia pudding with fruit", "Banana with almond butter", "Dates with nut butter", "Dark chocolate with nuts", "Warm chai or golden milk");
+    } else if (has("salty")) {
+      items.push("Warm soup or bone broth", "Crackers with hummus or cottage cheese", "Roasted chickpeas", "Popcorn with sea salt", "Cucumber with hummus");
+    } else if (has("crunchy")) {
+      items.push("Apple slices with almond butter", "Carrot and celery with hummus", "Rice cakes with avocado", "Roasted chickpeas or edamame", "Mixed nuts and seeds");
+    } else if (has("creamy")) {
+      items.push("Greek yogurt with granola", "Avocado toast", "Smoothie with banana and nut butter", "Hummus with warm pita", "Warm oatmeal with cream and berries");
+    } else if (has("full meal","full")) {
+      items.push("Rice bowl with salmon or chicken and roasted veg", "Eggs with sourdough toast and avocado", "Warm soup with bread", "Stir fry with vegetables and protein", "A plate with protein, complex carb, and something green");
+    } else {
+      items.push("A glass of water first and check in — are you truly hungry?", "Something small and protein-rich — egg, nuts, or yogurt", "Warm herbal tea if you need a moment", "A simple plate — crackers, fruit, and something you enjoy");
+    }
+
+    const cravingLabel = cravings.join(" + ");
+    return {
+      label: cravingLabel,
+      why: `You chose ${cravingLabel.toLowerCase()} — here are options that match what your body is asking for right now.`,
+      items: filterItems(items),
+    };
+  };
+
+  const suggestion = getSuggestion();
+  const accentColor = mode === "fast" ? "#C9A84C" : "#9B7BC9";
+  const subColor    = mode === "fast" ? "#7A9E7E" : "#9B7BC9";
+  const cardBg      = mode === "fast" ? "linear-gradient(135deg, #1a3a2a, #0f2a1a)" : "linear-gradient(135deg, #F5F0FF, #FFF0F5)";
+  const cardBorder  = mode === "fast" ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(180,140,200,0.3)";
+  const bodyColor   = mode === "fast" ? "#a8c4a8" : "#4a3a5a";
+  const resultBg    = mode === "fast" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.75)";
+  const textColor   = mode === "fast" ? "#e8e0ce" : "#2D3B2E";
+
   return (
-    <div style={{ display:"grid", gap:9 }}>
-      {GROWTH_RECS.map((r,i)=>(
-        <div key={i} style={{ background:"#faf7f2", borderRadius:13, border:"1px solid #e8e0d0", padding:"16px 20px", display:"flex", gap:12, alignItems:"flex-start" }}>
-          <div style={{ fontSize:20, flexShrink:0, marginTop:2 }}>{r.icon}</div>
-          <div style={{ flex:1 }}><GrowthTagBadge tag={r.tag}/><p style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#2d4a3a", lineHeight:1.65, margin:"6px 0" }}>{r.msg}</p></div>
-          <Btn variant="sm" onClick={()=>setPage(r.type==="sound"?"sound":"generator")} style={{ flexShrink:0 }}>{r.action}</Btn>
+    <div style={{ background: cardBg, borderRadius: 18, padding: "18px", border: cardBorder, marginBottom: 16, marginTop: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <span style={{ fontSize: 22 }}>✨</span>
+        <div>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: textColor, margin: 0 }}>Lumen Suggests</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: subColor, margin: 0 }}>Craving-aware · fasting-aware · phase-synced</p>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+        {supportOptions.map(opt => (
+          <button key={opt.id} onClick={() => setSupportFilter(supportFilter === opt.id ? null : opt.id)} style={{ padding: "6px 11px", borderRadius: 50, border: `0.5px solid ${supportFilter === opt.id ? accentColor : "rgba(150,150,150,0.25)"}`, background: supportFilter === opt.id ? (mode === "fast" ? "rgba(201,168,76,0.15)" : "rgba(155,123,201,0.12)") : "rgba(255,255,255,0.05)", color: supportFilter === opt.id ? accentColor : subColor, fontFamily: "sans-serif", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
+            >
+            <span>{opt.icon}</span>{opt.label}
+          </button>
+        ))}
+      </div>
+      {suggestion && (
+        <div id="lumen-suggests-result" style={{ background: resultBg, borderRadius: 14, padding: "14px 16px", borderLeft: `3px solid ${accentColor}` }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: accentColor, margin: "0 0 6px", fontWeight: 600 }}>{suggestion.label}</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: bodyColor, margin: "0 0 10px", lineHeight: 1.6, fontStyle: "italic" }}>{suggestion.why}</p>
+          {suggestion.items.map((item, i) => (
+            <p key={i} style={{ fontFamily: "sans-serif", fontSize: 13, color: bodyColor, margin: "0 0 5px", lineHeight: 1.6 }}>• {item}</p>
+          ))}
+          {suggestion.note && <p style={{ fontFamily: "sans-serif", fontSize: 11, color: subColor, margin: "10px 0 0", lineHeight: 1.6 }}>⚠️ {suggestion.note}</p>}
+        </div>
+      )}
+      {!suggestion && (
+        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: subColor, textAlign: "center", padding: "8px 0" }}>Select a craving or filter above and Lumen will suggest something for you.</p>
+      )}
+    </div>
+  );
+}
+
+function AiNourishCard({ mode, selectedCravings, activeTab }) {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [supportOption, setSupportOption] = useState(null);
+
+  const supportOptions = [
+    { id: "alkaline",  label: "Alkaline-Inspired", icon: "🌿" },
+    { id: "juice",     label: "Juice Ideas",        icon: "🍹" },
+    { id: "protein",   label: "Protein First",      icon: "🥚" },
+    { id: "breakfast", label: "Break-Fast Meal",    icon: "🍽️" },
+    { id: "fasting",   label: "Still Fasting",      icon: "💧" },
+  ];
+
+  const getCheckInContext = () => {
+    const today = new Date().toISOString().split("T")[0];
+    try {
+      const data = JSON.parse(localStorage.getItem(`lf_checkin_${today}`));
+      if (!data) return "";
+      const parts = [];
+      if (data.energy) parts.push(`energy: ${["very low","low","neutral","good","great"][data.energy-1]}`);
+      if (data.sleep)  parts.push(`sleep: ${["poor","light","fair","good","great"][data.sleep-1]}`);
+      if (data.namedMood) parts.push(`mood: ${data.namedMood}`);
+      if (data.symptoms?.length) parts.push(`symptoms: ${data.symptoms.slice(0,3).join(", ")}`);
+      if (data.gut?.length) parts.push(`gut: ${data.gut.filter(g => g !== "good").slice(0,2).join(", ")}`);
+      if (data.water) parts.push(`water: ${data.water} glasses`);
+      return parts.length ? `Today's check-in — ${parts.join("; ")}.` : "";
+    } catch (e) { return ""; }
+  };
+
+  const getFastingContext = () => {
+    const fastStart = localStorage.getItem("lf_fast_start");
+    if (!fastStart) return "Not currently fasting.";
+    const hours = ((Date.now() - Number(fastStart)) / 3600000).toFixed(1);
+    return `Currently ${hours} hours into a fast.`;
+  };
+
+  const getCycleContext = () => {
+    try {
+      const settings = JSON.parse(localStorage.getItem("lf_settings"));
+      if (!settings?.lastPeriod || mode === "fast") return "";
+      const diff = Math.floor((new Date() - new Date(settings.lastPeriod)) / 86400000);
+      const day = (diff % 28) + 1;
+      const phase = day <= 7 ? "Menstrual" : day <= 15 ? "Follicular" : day <= 17 ? "Ovulation" : "Luteal";
+      return `Cycle phase: ${phase} (day ${day}).`;
+    } catch (e) { return ""; }
+  };
+
+  const buildPrompt = () => {
+    const hour = new Date().getHours();
+    const timeOfDay = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+    const checkIn = getCheckInContext();
+    const fasting = getFastingContext();
+    const cycle = getCycleContext();
+    const cravings = selectedCravings?.length ? selectedCravings.join(", ") : "";
+    const supportLabel = supportOption ? supportOptions.find(o => o.id === supportOption)?.label : "";
+    return `You are Lumen, a warm wellness assistant. It is ${timeOfDay}. ${fasting} ${cycle} ${checkIn}
+${cravings ? `Selected cravings: ${cravings}.` : "No craving selected."}
+${supportLabel ? `Focus: ${supportLabel}.` : ""}
+
+Respond in exactly 4 sections with these exact headers on their own lines:
+Insight
+Nourish — feed the body
+Pause — ground yourself
+Romanticize — feed the soul
+
+Rules: Never shame cravings. No medical claims. If Still Fasting: water/tea/electrolytes only, no food. Under 180 words total. ${mode === "fast" ? "Tone: direct, practical." : "Tone: warm, nurturing."}`;
+  };
+
+  const ask = async () => {
+    setLoading(true);
+    setResult(null);
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "anthropic-dangerous-direct-browser-access": "true" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: buildPrompt() }],
+        }),
+      });
+      const data = await response.json();
+      const text = data.content?.find(b => b.type === "text")?.text || "";
+      setResult(text || "Choose a craving or support option so Lumen can suggest something more specific for you.");
+    } catch (e) {
+      setResult("Choose a craving or support option so Lumen can suggest something more specific for you.");
+    }
+    setLoading(false);
+  };
+
+  const accentColor = mode === "fast" ? "#C9A84C" : "#9B7BC9";
+  const accentBg    = mode === "fast" ? "rgba(201,168,76,0.1)" : "rgba(155,123,201,0.1)";
+  const textColor   = mode === "fast" ? "#e8e0ce" : "#2D3B2E";
+  const subColor    = mode === "fast" ? "#7A9E7E" : "#9B7BC9";
+  const bodyColor   = mode === "fast" ? "#a8c4a8" : "#4a3a5a";
+  const cardBg      = mode === "fast" ? "linear-gradient(135deg, #1a3a2a, #0f2a1a)" : "linear-gradient(135deg, #F5F0FF, #FFF0F5)";
+  const cardBorder  = mode === "fast" ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(180,140,200,0.3)";
+  const resultBg    = mode === "fast" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.7)";
+
+  const sectionColors = { "Insight": mode === "fast" ? "#C9A84C" : "#9B7BC9", "Nourish": mode === "fast" ? "#7A9E7E" : "#5C7F60", "Pause": "#7BA8C9", "Romanticize": mode === "fast" ? "#C9A84C" : "#C97B7B" };
+  const parseSections = (text) => {
+    if (!text) return [];
+    const headers = ["Insight","Nourish","Pause","Romanticize"];
+    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+    const sections = [];
+    let current = null;
+    for (const line of lines) {
+      const clean = line.replace(/\*\*/g, "").replace(/^#+\s*/,"");
+      const matched = headers.find(h => clean.toLowerCase().includes(h.toLowerCase()) && clean.length < 60);
+      if (matched) { if (current) sections.push(current); current = { header: clean, color: sectionColors[matched] || accentColor, lines: [] }; }
+      else if (current) current.lines.push(clean);
+    }
+    if (current) sections.push(current);
+    return sections;
+  };
+  const sections = result ? parseSections(result) : [];
+
+  return (
+    <div style={{ background: cardBg, borderRadius: 18, padding: "18px", border: cardBorder, marginBottom: 16, marginTop: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <span style={{ fontSize: 22 }}>✨</span>
+        <div>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: textColor, margin: 0 }}>What should I eat right now?</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: subColor, margin: 0 }}>AI-powered · craving-aware · phase-synced</p>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+        {supportOptions.map(opt => (
+          <button key={opt.id} onClick={() => setSupportOption(supportOption === opt.id ? null : opt.id)} style={{ padding: "6px 11px", borderRadius: 50, border: `0.5px solid ${supportOption === opt.id ? accentColor : "rgba(150,150,150,0.25)"}`, background: supportOption === opt.id ? accentBg : "rgba(255,255,255,0.05)", color: supportOption === opt.id ? accentColor : subColor, fontFamily: "sans-serif", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+            <span>{opt.icon}</span>{opt.label}
+          </button>
+        ))}
+      </div>
+      {(selectedCravings?.length > 0 || supportOption) && (
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: subColor, margin: "0 0 10px", lineHeight: 1.5 }}>
+          {selectedCravings?.length > 0 && `Craving: ${selectedCravings.join(", ")}. `}
+          {supportOption && `Focus: ${supportOptions.find(o => o.id === supportOption)?.label}.`}
+        </p>
+      )}
+      {!loading && (
+        <button onClick={ask} style={{ width: "100%", padding: "11px", borderRadius: 12, border: `0.5px solid ${accentColor}`, background: accentBg, color: accentColor, fontFamily: "sans-serif", fontSize: 13, cursor: "pointer", fontWeight: 600, marginBottom: result ? 12 : 0 }}>
+          {result ? "↺ Ask again" : "Ask Lumen ✦"}
+        </button>
+      )}
+      {loading && <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: subColor, margin: "8px 0", textAlign: "center" }}>✨ Lumen is thinking...</p>}
+      {!loading && sections.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+          {sections.map((sec, i) => (
+            <div key={i} style={{ background: resultBg, borderRadius: 12, padding: "12px 14px", borderLeft: `3px solid ${sec.color}` }}>
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 12, color: sec.color, margin: "0 0 6px", fontWeight: 600 }}>{sec.header}</p>
+              {sec.lines.map((line, j) => <p key={j} style={{ fontFamily: "sans-serif", fontSize: 13, color: bodyColor, margin: "0 0 4px", lineHeight: 1.65 }}>{line}</p>)}
+            </div>
+          ))}
+        </div>
+      )}
+      {!loading && result && sections.length === 0 && (
+        <div style={{ background: resultBg, borderRadius: 12, padding: "12px 14px" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 13, color: bodyColor, margin: 0, lineHeight: 1.7 }}>{result}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+// ─────────────────────────────────────────────
+//  LEGAL SCREENS
+// ─────────────────────────────────────────────
+function PrivacyScreen({ onBack }) {
+  return (
+    <div style={{ padding: "16px 16px 90px" }}>
+      <button onClick={onBack} style={{ background: "#EAF2EA", border: "none", borderRadius: 10, padding: "8px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#5C7F60", cursor: "pointer", marginBottom: 16 }}>← Back</button>
+      <h3 style={s.title}>Privacy Policy</h3>
+      <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", marginBottom: 16 }}>Last updated: April 2026</p>
+      {[
+        { title: "1. Information We Collect",  body: "Lumen Flow does not collect, transmit, or store any personal data on external servers. All information you enter – including your name, last period date, fasting history, and daily check-ins – is stored locally on your device only." },
+        { title: "2. How Your Data Is Used",   body: "Your data is used solely to provide app functionality such as cycle phase calculations, fasting timer tracking, and personalised recommendations. This data never leaves your device." },
+        { title: "3. Third Party Services",    body: "Lumen Flow does not share your data with any third parties. We do not use advertising networks, analytics services, or any external data processors." },
+        { title: "4. Data Security",           body: "Since all data is stored locally on your device, your information is protected by your device's own security measures. We recommend keeping your device secure with a passcode or biometric lock." },
+        { title: "5. Children's Privacy",      body: "Lumen Flow is intended for users aged 13 and over. We do not knowingly collect data from children under 13." },
+        { title: "6. Changes to This Policy",  body: "We may update this Privacy Policy from time to time. Any changes will be reflected in the app with an updated date." },
+        { title: "7. Contact Us",              body: "If you have any questions about this Privacy Policy, please contact us at: lumenfuxbiz@gmail.com" },
+      ].map((item, i) => (
+        <div key={i} style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 6px" }}>{item.title}</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.7 }}>{item.body}</p>
         </div>
       ))}
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GROWTH INTELLIGENCE
-// ─────────────────────────────────────────────────────────────────────────────
-function GrowthPage({ packages, topics, setPage }) {
-  const [sec, setSec] = useState("funnel");
+function TermsScreen({ onBack }) {
   return (
-    <div className="fade">
-      <SectionHead title="Growth Intelligence" sub="Understand what drives followers, trust, traffic, and revenue"/>
-      <div style={{ display:"flex", gap:5, marginBottom:22, background:"#f0ebe0", padding:4, borderRadius:14, width:"fit-content" }}>
-        {[["funnel","Growth Funnel"],["content","Content by Goal"],["platform","Platform ROI"],["premium","Premium Path"]].map(([t,l])=>(
-          <button key={t} className="tab-pill" onClick={()=>setSec(t)} style={{ background:sec===t?"#faf7f2":"transparent", color:sec===t?"#2d4a3a":"#7a8a7a", boxShadow:sec===t?"0 1px 4px rgba(0,0,0,0.08)":"none", fontWeight:sec===t?600:400 }}>{l}</button>
-        ))}
-      </div>
-      {sec==="funnel" && (
-        <div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
-            {[["Awareness","94.2K","Total Reach","eye","#7ab5d4","How many people see your content"],["Engagement","14.3K","Likes + Comments","users","#8fb5a0","How many interact"],["Trust","10.4K","Saves","save","#d4a574","Saves = highest trust signal"],["Traffic","992","Bio Clicks","link","#b08fbe","Who clicks to the app"],["Conversion","365","App Store Clicks","phone","#9a6ab8","Who taps to download"]].map(([stage,val,sub,ic,c,desc])=>(
-              <Card key={stage} style={{ padding:18, textAlign:"center", border:`1px solid ${c}44` }}>
-                <div style={{ width:34, height:34, borderRadius:"50%", background:`${c}22`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 8px" }}><I n={ic} s={15} c={c}/></div>
-                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:24, fontWeight:600, color:c }}>{val}</div>
-                <div style={{ fontFamily:"'Jost',sans-serif", fontSize:11, fontWeight:600, color:"#2d4a3a", marginTop:2 }}>{stage}</div>
-                <div style={{ fontFamily:"'Jost',sans-serif", fontSize:9.5, color:"#8a9a8a", marginTop:2 }}>{sub}</div>
-                <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a", marginTop:6, lineHeight:1.5 }}>{desc}</div>
-              </Card>
-            ))}
-          </div>
-          <Card style={{ padding:22 }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:17, fontWeight:600, color:"#2d4a3a", marginBottom:14 }}>Conversion Rates</div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12 }}>
-              {[["Reach → Engagement","15.2%","Strong","#5a8a6a"],["Engagement → Saves","72.7%","Excellent","#5a8a6a"],["Saves → Bio Clicks","9.5%","Improve","#d4a574"],["Bio Clicks → App","36.8%","Good","#8fb5a0"]].map(([from,rate,verdict,c])=>(
-                <div key={from} style={{ background:`${c}12`, border:`1px solid ${c}33`, borderRadius:11, padding:14 }}>
-                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:600, color:c }}>{rate}</div>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#3a5a4a", fontWeight:600, marginTop:3 }}>{verdict}</div>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a", marginTop:2, lineHeight:1.5 }}>{from}</div>
-                </div>
-              ))}
-            </div>
-          </Card>
+    <div style={{ padding: "16px 16px 90px" }}>
+      <button onClick={onBack} style={{ background: "#EAF2EA", border: "none", borderRadius: 10, padding: "8px 14px", fontFamily: "sans-serif", fontSize: 14, color: "#5C7F60", cursor: "pointer", marginBottom: 16 }}>← Back</button>
+      <h3 style={s.title}>Terms of Service</h3>
+      <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", marginBottom: 16 }}>Last updated: April 2026</p>
+      {[
+        { title: "1. Acceptance of Terms",            body: "By using Lumen Flow, you agree to these Terms of Service. If you do not agree, please do not use the app." },
+        { title: "2. Medical Disclaimer",             body: "Lumen Flow is a wellness tool for informational and educational purposes only. It is NOT a medical device and does NOT provide medical advice. Always consult a qualified healthcare provider before making decisions about your health, diet, or fasting practices." },
+        { title: "3. Not a Substitute for Medical Care", body: "The content in Lumen Flow – including cycle phase information, fasting recommendations, and nutritional guidance – is general in nature and not tailored to your individual medical needs. Never disregard professional medical advice because of something you read in this app." },
+        { title: "4. User Responsibilities",          body: "You are responsible for how you use the information provided in Lumen Flow. Listen to your body, and always prioritise your health and wellbeing over any app recommendation." },
+        { title: "5. Intellectual Property",          body: "© 2026 Lumen Flow. All content, design, and code within this app is the intellectual property of Lumen Flow. Unauthorised reproduction or distribution is prohibited." },
+        { title: "6. Limitation of Liability",        body: "Lumen Flow and its creators shall not be liable for any health outcomes, injuries, or damages arising from use of the app or reliance on its content." },
+        { title: "7. Changes to Terms",               body: "We reserve the right to modify these Terms at any time. Continued use of the app after changes constitutes acceptance of the new Terms." },
+        { title: "8. Contact Us",                     body: "For questions about these Terms, contact us at: lumenfuxbiz@gmail.com" },
+      ].map((item, i) => (
+        <div key={i} style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 6px" }}>{item.title}</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0, lineHeight: 1.7 }}>{item.body}</p>
         </div>
-      )}
-      {sec==="content" && (
-        <div style={{ display:"grid", gap:12 }}>
-          {GROWTH_TAGS.map(tag=>{
-            const matching = topics.filter(t=>t.growthTags?.includes(tag));
-            const postedM = packages.filter(p=>p.growthTags?.includes(tag)&&p.analytics);
-            const avgF = postedM.length ? Math.round(postedM.reduce((a,p)=>a+(p.analytics.followersGained||0),0)/postedM.length) : 0;
-            const avgS = postedM.length ? Math.round(postedM.reduce((a,p)=>a+(p.analytics.saves||0),0)/postedM.length) : 0;
-            const c = GROWTH_TAG_COLORS[tag];
-            return (
-              <div key={tag} style={{ background:"#faf7f2", borderRadius:13, border:`1px solid ${c}33`, padding:"16px 20px", display:"grid", gridTemplateColumns:"1fr auto auto auto", gap:18, alignItems:"center" }}>
-                <div><GrowthTagBadge tag={tag}/><div style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#5a6a5a", marginTop:5 }}>{matching.length} topics · {postedM.length} posted</div></div>
-                <div style={{ textAlign:"center" }}><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:600, color:"#5a8a6a" }}>+{avgF}</div><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#7a8a7a", textTransform:"uppercase" }}>avg followers</div></div>
-                <div style={{ textAlign:"center" }}><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:600, color:"#d4a574" }}>{avgS.toLocaleString()}</div><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#7a8a7a", textTransform:"uppercase" }}>avg saves</div></div>
-                <Btn variant="sm">View Topics</Btn>
-              </div>
-            );
-          })}
-        </div>
-      )}
-      {sec==="platform" && (
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-          {PLATFORM_GROWTH.map(p=>(
-            <Card key={p.platform} style={{ padding:20 }}>
-              <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
-                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:600, color:"#2d4a3a" }}>{p.platform}</div>
-                <span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:p.score>80?"#5a8a6a":"#d4a574", fontWeight:700 }}>Score {p.score}/100</span>
-              </div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:9, marginBottom:12 }}>
-                {[["Followers",p.followers,"#5a8a6a"],["Reach",p.reach,"#7ab5d4"],["Saves",p.saves,"#d4a574"],["App Clicks",p.appClicks,"#9a6ab8"]].map(([l,v,c])=>(
-                  <div key={l} style={{ background:`${c}12`, borderRadius:9, padding:11 }}>
-                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:600, color:c }}>{v}</div>
-                    <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a" }}>{l}</div>
-                  </div>
-                ))}
-              </div>
-              <ScoreBar score={p.score} color={p.score>80?"#5a8a6a":"#d4a574"} height={7}/>
-            </Card>
-          ))}
-        </div>
-      )}
-      {sec==="premium" && (
-        <div>
-          <Card style={{ padding:22, marginBottom:14, background:"linear-gradient(135deg,#f5f0f8,#ede8f5)", border:"1px solid #c8b8e0" }}>
-            <div style={{ display:"flex", gap:9, alignItems:"center", marginBottom:14 }}><I n="crown" s={18} c="#9a6ab8"/><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:600, color:"#4a2a6a" }}>The Premium Conversion Path</div></div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:9 }}>
-              {[["1","Awareness Post","Free education, broad reach","Awareness","#7ab5d4"],["2","Trust Building","Relatable, saves-worthy content","Trust Building","#8fb5a0"],["3","Education Deep Dive","They trust you now","Education","#b8c9a3"],["4","Premium Teaser","Show what unlocks softly","Premium Teaser","#b08fbe"],["5","Conversion CTA","Link in bio → Download","Conversion Focused","#9a6ab8"]].map(([step,label,desc,tag,c])=>(
-                <div key={step} style={{ background:"white", borderRadius:11, padding:13, border:`1px solid ${c}44`, textAlign:"center" }}>
-                  <div style={{ width:24, height:24, borderRadius:"50%", background:`${c}33`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 7px", fontFamily:"'Jost',sans-serif", fontSize:11, fontWeight:700, color:c }}>{step}</div>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:11, fontWeight:600, color:"#2d4a3a", marginBottom:4 }}>{label}</div>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a", marginBottom:6, lineHeight:1.4 }}>{desc}</div>
-                  <GrowthTagBadge tag={tag}/>
-                </div>
-              ))}
-            </div>
-          </Card>
-          <div style={{ background:"#f0f8f4", borderRadius:13, padding:18, border:"1px solid #b8d8c8" }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:10 }}>💚 Conversion Strategy Notes</div>
-            {["Never lead with Premium. Build trust first through free education.","Luteal phase fasting content earns the most trust — follow with a Premium teaser within 48 hours.","Always include 'link in bio' in Conversion posts — never assume they'll search.","Pinterest drives the highest click-through rate. Use it for Premium CTAs.","Men's content is an underused conversion path — men convert faster when they trust the brand."].map((note,i)=>(
-              <div key={i} style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#2d5a4a", padding:"6px 0", borderBottom:i<4?"1px dashed #c8e8d0":"none", lineHeight:1.55 }}>💚 {note}</div>
-            ))}
-          </div>
-        </div>
-      )}
+      ))}
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TOPIC LIBRARY
-// ─────────────────────────────────────────────────────────────────────────────
-function TopicsPage({ topics, setTopics, fPhase, setFPhase, fPillar, setFPillar, searchQ, setSearchQ, selTopic, setSelTopic, showAdd, setShowAdd }) {
-  const [newT, setNewT] = useState({ title:"", pillar:"Cycle Education", audience:"Women", phase:"Follicular", platforms:[], status:"Idea", priority:"Medium", notes:"", source:"", growthTags:[] });
-  const filtered = topics.filter(t=>(fPhase==="All"||t.phase===fPhase)&&(fPillar==="All"||t.pillar===fPillar)&&(!searchQ||t.title.toLowerCase().includes(searchQ.toLowerCase())));
-  const handleAdd = () => { if(!newT.title)return; setTopics(p=>[...p,{...newT,id:Date.now(),created:new Date().toISOString().split("T")[0],platforms:newT.platforms.length?newT.platforms:["Instagram"]}]); setNewT({title:"",pillar:"Cycle Education",audience:"Women",phase:"Follicular",platforms:[],status:"Idea",priority:"Medium",notes:"",source:"",growthTags:[]}); setShowAdd(false); };
+// ─────────────────────────────────────────────
+//  BOTTOM NAV
+// ─────────────────────────────────────────────
+function BottomNav({ current, onChange, mode, phase }) {
+  const activeColor = mode === "fast" ? "#7A9E7E" : phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c";
+  const items = [
+    { id: "home",     icon: "🏠", label: "Home" },
+    { id: "calendar", icon: "📅", label: "Calendar" },
+    { id: "checkin",  icon: "✅", label: "Check-In" },
+    { id: "recipes",  icon: "🌿", label: "Nourish" },
+    { id: "learn",    icon: "📖", label: "Learn" },
+    { id: "settings", icon: "⚙️", label: "Settings" },
+  ];
   return (
-    <div className="fade">
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
-        <SectionHead title="Topic Library" sub={`${topics.length} topics · ${filtered.length} shown`}/>
-        <Btn onClick={()=>setShowAdd(true)}><I n="plus" s={14} c="white"/> Add Topic</Btn>
-      </div>
-      <div style={{ display:"flex", gap:9, marginBottom:12, flexWrap:"wrap" }}>
-        <div style={{ position:"relative", flex:1, minWidth:200 }}>
-          <input value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Search topics…" className="inp" style={{ paddingLeft:32 }}/>
-          <div style={{ position:"absolute", left:9, top:"50%", transform:"translateY(-50%)", color:"#8a9a8a" }}><I n="search" s={13}/></div>
+    <div style={s.nav}>
+      {items.map(item => (
+        <div key={item.id} onClick={() => onChange(item.id)} style={{
+          ...s.navItem,
+          color: current === item.id ? activeColor : "#8FA090",
+          fontWeight: current === item.id ? 700 : 400,
+        }}>
+          <div style={{ fontSize: 20 }}>{item.icon}</div>
+          <div style={{ fontSize: 10, marginTop: 2 }}>{item.label}</div>
+          {current === item.id && <div style={{ width: 4, height: 4, borderRadius: "50%", background: activeColor, marginTop: 3 }} />}
         </div>
-        <select value={fPhase} onChange={e=>setFPhase(e.target.value)} className="inp" style={{ width:145 }}><option value="All">All Phases</option>{PHASES.map(p=><option key={p}>{p}</option>)}</select>
-        <select value={fPillar} onChange={e=>setFPillar(e.target.value)} className="inp" style={{ width:170 }}><option value="All">All Pillars</option>{PILLARS.map(p=><option key={p}>{p}</option>)}</select>
-      </div>
-      <div style={{ display:"flex", gap:6, marginBottom:14, flexWrap:"wrap" }}>
-        {PHASES.map(p=><button key={p} onClick={()=>setFPhase(fPhase===p?"All":p)} style={{ background:fPhase===p?PHASE_COLORS[p]:`${PHASE_COLORS[p]}22`, color:fPhase===p?"white":PHASE_COLORS[p], border:`1px solid ${PHASE_COLORS[p]}55`, borderRadius:20, padding:"3px 12px", fontFamily:"'Jost',sans-serif", fontSize:10.5, fontWeight:500, cursor:"pointer", display:"flex", alignItems:"center", gap:5 }}><PhaseDot phase={p} size={7}/>{p}</button>)}
-      </div>
-      <Card>
-        <table style={{ width:"100%", borderCollapse:"collapse" }}>
-          <thead><tr style={{ background:"#f0ebe0" }}>{["Title","Pillar","Phase","Audience","Growth Tags","Platforms","Status",""].map(h=><th key={h} style={{ padding:"10px 13px", textAlign:"left", fontFamily:"'Jost',sans-serif", fontSize:9.5, fontWeight:700, color:"#5a6a5a", textTransform:"uppercase", letterSpacing:"0.09em", borderBottom:"1px solid #e8e0d0" }}>{h}</th>)}</tr></thead>
-          <tbody>
-            {filtered.map(t=>(
-              <tr key={t.id} className="tr" style={{ borderBottom:"1px solid #f0e8d8", cursor:"pointer" }} onClick={()=>setSelTopic(t)}>
-                <td style={{ padding:"12px 13px" }}><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:14, fontWeight:600, color:"#2d4a3a" }}>{t.title}</div>{t.notes&&<div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#8a9a8a", marginTop:2 }}>{t.notes.slice(0,44)}{t.notes.length>44?"…":""}</div>}</td>
-                <td style={{ padding:"12px 13px" }}><span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#5a6a5a" }}>{t.pillar}</span></td>
-                <td style={{ padding:"12px 13px" }}><div style={{ display:"flex", alignItems:"center", gap:5 }}><PhaseDot phase={t.phase}/><span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#5a6a5a" }}>{t.phase}</span></div></td>
-                <td style={{ padding:"12px 13px" }}><span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#5a6a5a" }}>{t.audience}</span></td>
-                <td style={{ padding:"12px 13px" }}><div style={{ display:"flex", gap:4, flexWrap:"wrap" }}>{(t.growthTags||[]).slice(0,2).map(g=><GrowthTagBadge key={g} tag={g}/>)}</div></td>
-                <td style={{ padding:"12px 13px" }}><div style={{ display:"flex", gap:3 }}>{t.platforms.map(p=><span key={p} style={{ padding:"1px 6px", borderRadius:9, fontSize:9, fontFamily:"'Jost',sans-serif", fontWeight:700, background:"#e8f0e8", color:"#3a5a4a" }}>{p.slice(0,2)}</span>)}</div></td>
-                <td style={{ padding:"12px 13px" }}><Tag label={t.status} color={STATUS_COLORS[t.status]||"#b8c9a3"}/></td>
-                <td style={{ padding:"12px 13px" }}><Btn variant="sm" onClick={e=>{e.stopPropagation();setSelTopic(t);}}><I n="edit" s={11}/></Btn></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
-      {showAdd && (
-        <div className="overlay" onClick={()=>setShowAdd(false)}>
-          <div className="modal" onClick={e=>e.stopPropagation()}>
-            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:20 }}><h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:24, fontWeight:600, color:"#2d4a3a" }}>Add New Topic 💚</h2><button onClick={()=>setShowAdd(false)} style={{ background:"transparent", border:"none", color:"#8a9a8a" }}><I n="x" s={18}/></button></div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-              <div style={{ gridColumn:"1/-1" }}><Label>Topic Title *</Label><Input value={newT.title} onChange={e=>setNewT(p=>({...p,title:e.target.value}))} placeholder="e.g. Seed Cycling for Follicular Phase Energy"/></div>
-              {[["Content Pillar","pillar",PILLARS],["Audience","audience",AUDIENCES],["Cycle Phase","phase",PHASES],["Status","status",STATUSES],["Priority","priority",["High","Medium","Low"]],["Source","source",["Research","Community Question","Brand Strategy","Content Plan","Trend Research","Other"]]].map(([l,k,opts])=><div key={k}><Label>{l}</Label><Select value={newT[k]} onChange={e=>setNewT(p=>({...p,[k]:e.target.value}))} options={opts}/></div>)}
-              <div style={{ gridColumn:"1/-1" }}>
-                <Label>Growth Tags</Label>
-                <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-                  {GROWTH_TAGS.map(g=><button key={g} onClick={()=>setNewT(p=>({...p,growthTags:p.growthTags.includes(g)?p.growthTags.filter(x=>x!==g):[...p.growthTags,g]}))} style={{ background:newT.growthTags.includes(g)?GROWTH_TAG_COLORS[g]:`${GROWTH_TAG_COLORS[g]}22`, color:newT.growthTags.includes(g)?"white":GROWTH_TAG_COLORS[g], border:`1px solid ${GROWTH_TAG_COLORS[g]}55`, borderRadius:20, padding:"4px 11px", fontSize:11, fontFamily:"'Jost',sans-serif", cursor:"pointer" }}>{g}</button>)}
-                </div>
-              </div>
-              <div style={{ gridColumn:"1/-1" }}>
-                <Label>Platforms</Label>
-                <div style={{ display:"flex", gap:6 }}>{PLATFORMS.map(p=><button key={p} onClick={()=>setNewT(prev=>({...prev,platforms:prev.platforms.includes(p)?prev.platforms.filter(x=>x!==p):[...prev.platforms,p]}))} style={{ background:newT.platforms.includes(p)?"#5a8a6a":"#f0ebe0", color:newT.platforms.includes(p)?"white":"#5a6a5a", border:"1px solid #d8cfc0", borderRadius:20, padding:"5px 13px", fontSize:12, fontFamily:"'Jost',sans-serif", cursor:"pointer" }}>{p}</button>)}</div>
-              </div>
-              <div style={{ gridColumn:"1/-1" }}><Label>Notes</Label><textarea value={newT.notes} onChange={e=>setNewT(p=>({...p,notes:e.target.value}))} className="inp" placeholder="Any notes…"/></div>
-            </div>
-            <div style={{ display:"flex", gap:9, marginTop:20 }}><Btn onClick={handleAdd} style={{ flex:1, justifyContent:"center" }}>Add Topic 💚</Btn><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn></div>
-          </div>
-        </div>
-      )}
-      {selTopic && (
-        <div className="overlay" onClick={()=>setSelTopic(null)}>
-          <div className="modal" onClick={e=>e.stopPropagation()}>
-            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:18 }}>
-              <div>
-                <div style={{ display:"flex", gap:6, marginBottom:7 }}><PhaseDot phase={selTopic.phase}/><Tag label={selTopic.status} color={STATUS_COLORS[selTopic.status]||"#b8c9a3"}/></div>
-                <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:600, color:"#2d4a3a" }}>{selTopic.title}</h2>
-              </div>
-              <button onClick={()=>setSelTopic(null)} style={{ background:"transparent", border:"none", color:"#8a9a8a" }}><I n="x" s={18}/></button>
-            </div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
-              {[["Pillar",selTopic.pillar],["Audience",selTopic.audience],["Phase",selTopic.phase],["Source",selTopic.source]].map(([l,v])=><div key={l} style={{ background:"#f5f0e8", borderRadius:9, padding:12 }}><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#8a9a8a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:3 }}>{l}</div><div style={{ fontFamily:"'Jost',sans-serif", fontSize:13, color:"#2d4a3a", fontWeight:500 }}>{v}</div></div>)}
-            </div>
-            <div style={{ background:"#f5f0e8", borderRadius:9, padding:12, marginBottom:10 }}><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#8a9a8a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:5 }}>Growth Tags</div><div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>{(selTopic.growthTags||[]).map(g=><GrowthTagBadge key={g} tag={g}/>)}</div></div>
-            {selTopic.notes&&<div style={{ background:"#f5f0e8", borderRadius:9, padding:12, marginBottom:10 }}><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#8a9a8a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:4 }}>Notes</div><p style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#3a5a4a", lineHeight:1.6 }}>{selTopic.notes}</p></div>}
-            <div style={{ display:"flex", gap:8, marginTop:16 }}><Btn style={{ flex:1, justifyContent:"center" }}><I n="ai" s={13} c="white"/> Generate Package</Btn><Btn variant="ghost"><I n="edit" s={13}/> Edit</Btn><Btn variant="ghost"><I n="repurpose" s={13}/> Duplicate</Btn></div>
-          </div>
-        </div>
-      )}
+      ))}
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CALENDAR
-// ─────────────────────────────────────────────────────────────────────────────
-function CalendarPage({ calView, setCalView, packages }) {
-  const hasMens = Object.values(WEEKLY_SCHEDULE).flat().some(p=>p.phase==="Men");
-  return (
-    <div className="fade">
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
-        <SectionHead title="Content Calendar" sub="Week of January 20–26, 2025"/>
-        <div style={{ display:"flex", gap:5 }}>{["week","month","day"].map(v=><button key={v} onClick={()=>setCalView(v)} style={{ background:calView===v?"#5a8a6a":"#f0ebe0", color:calView===v?"white":"#5a6a5a", borderRadius:7, padding:"6px 14px", fontFamily:"'Jost',sans-serif", fontSize:12, fontWeight:500, border:"none", textTransform:"capitalize" }}>{v}</button>)}</div>
-      </div>
-      {!hasMens&&<div style={{ background:"#fdf0e8", border:"1px solid #e8c8a0", borderRadius:10, padding:11, marginBottom:14, display:"flex", gap:8 }}><I n="warn" s={13} c="#c4726a"/><span style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#7a4a3a" }}>No men's content scheduled this week. Add one men focused post. 💚</span></div>}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:7, marginBottom:18 }}>
-        {Object.entries(WEEKLY_SCHEDULE).map(([day,posts])=>(
-          <div key={day} style={{ background:"#faf7f2", borderRadius:13, border:"1px solid #e8e0d0", overflow:"hidden", minHeight:185 }}>
-            <div style={{ background:"#f0ebe0", padding:"8px 9px", borderBottom:"1px solid #e8e0d0" }}>
-              <div style={{ fontFamily:"'Jost',sans-serif", fontSize:8.5, fontWeight:700, color:"#5a6a5a", textTransform:"uppercase", letterSpacing:"0.12em" }}>{day.split(" ")[0]}</div>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a" }}>{day.split(" ")[1]}</div>
-            </div>
-            <div style={{ padding:7 }}>
-              {posts.length===0?<div style={{ fontFamily:"'Jost',sans-serif", fontSize:9.5, color:"#c0c8c0", textAlign:"center", padding:"16px 0", fontStyle:"italic" }}><div style={{ fontSize:16, marginBottom:2 }}>+</div>Empty</div>
-                :posts.map((p,i)=>(
-                  <div key={i} style={{ background:`${PHASE_COLORS[p.phase]}22`, border:`1px solid ${PHASE_COLORS[p.phase]}44`, borderRadius:7, padding:"7px 8px", marginBottom:5 }}>
-                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}><span style={{ padding:"1px 5px", borderRadius:7, fontSize:8, fontFamily:"'Jost',sans-serif", fontWeight:700, background:"#e8f0e8", color:"#3a5a4a" }}>{p.platform.slice(0,2)}</span><PhaseDot phase={p.phase} size={7}/></div>
-                    <div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#2d4a3a", fontWeight:500, lineHeight:1.3, marginBottom:3 }}>{p.title.length>26?p.title.slice(0,26)+"…":p.title}</div>
-                    <GrowthTagBadge tag={p.growthTag}/>
-                  </div>
-                ))}
-              <button style={{ width:"100%", background:"transparent", border:"1px dashed #c8d8c8", borderRadius:7, padding:"4px 0", color:"#8ab0a0", fontSize:13, cursor:"pointer", marginTop:3 }}>+</button>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-        <Card style={{ padding:18 }}>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:11 }}>Phase Coverage</div>
-          <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-            {PHASES.map(phase=>{const cnt=Object.values(WEEKLY_SCHEDULE).flat().filter(p=>p.phase===phase).length;return(<div key={phase} style={{ display:"flex", alignItems:"center", gap:5, background:cnt>0?`${PHASE_COLORS[phase]}22`:"#f5f0e8", border:`1px solid ${cnt>0?PHASE_COLORS[phase]+"44":"#e8e0d0"}`, borderRadius:18, padding:"4px 12px" }}><PhaseDot phase={phase} size={7}/><span style={{ fontFamily:"'Jost',sans-serif", fontSize:10.5, color:cnt>0?"#2d4a3a":"#a0a8a0" }}>{phase}</span><span style={{ fontFamily:"'Jost',sans-serif", fontSize:10.5, fontWeight:700, color:cnt>0?PHASE_COLORS[phase]:"#c0c8c0" }}>{cnt}</span></div>);})}
-          </div>
-        </Card>
-        <Card style={{ padding:18 }}>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:11 }}>Growth Tag Coverage This Week</div>
-          <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
-            {["Awareness","Trust Building","Education"].map(tag=><div key={tag}><GrowthTagBadge tag={tag}/></div>)}
-            {["App Feature Promotion","Premium Teaser","Conversion Focused"].map(tag=><div key={tag} style={{ padding:"2px 9px", borderRadius:20, fontSize:10, fontFamily:"'Jost',sans-serif", fontWeight:600, background:"#f5f0e8", color:"#a0a8a0", border:"1px dashed #d0c8b8" }}>⚠ {tag}</div>)}
-          </div>
-        </Card>
-      </div>
-    </div>
-  );
+// ─────────────────────────────────────────────
+//  HELPER
+// ─────────────────────────────────────────────
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Morning";
+  if (h < 17) return "Afternoon";
+  return "Evening";
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONTENT PACKAGES
-// ─────────────────────────────────────────────────────────────────────────────
-function PackagesPage({ packages, setPackages, topics, selPkg, setSelPkg }) {
-  const upd = (id,s) => setPackages(p=>p.map(x=>x.id===id?{...x,status:s}:x));
-  return (
-    <div className="fade">
-      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:20 }}>
-        <SectionHead title="Content Packages" sub={`${packages.length} packages · ${packages.filter(p=>p.status==="Approved").length} approved`}/>
-        <Btn><I n="plus" s={14} c="white"/> New Package</Btn>
-      </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(340px,1fr))", gap:14 }}>
-        {packages.map(pkg=>(
-          <div key={pkg.id} className="ch" style={{ background:"#faf7f2", borderRadius:17, border:"1px solid #e8e0d0", overflow:"hidden" }}>
-            <div style={{ background:`linear-gradient(135deg,${PHASE_COLORS[pkg.phase]}2a,${PHASE_COLORS[pkg.phase]}10)`, padding:"16px 16px 12px", borderBottom:"1px solid #e8e0d0" }}>
-              <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}><div style={{ display:"flex", gap:5, flexWrap:"wrap" }}><Tag label={pkg.status} color={STATUS_COLORS[pkg.status]||"#b8c9a3"}/>{pkg.analytics&&<Tag label="Analytics" color="#5a8a6a"/>}</div><div style={{ display:"flex", gap:3 }}>{pkg.platforms.map(p=><span key={p} style={{ padding:"1px 6px", borderRadius:9, fontSize:8.5, fontFamily:"'Jost',sans-serif", fontWeight:700, background:"white", color:"#3a5a4a", border:"1px solid #d8e8d0" }}>{p.slice(0,2)}</span>)}</div></div>
-              <h3 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", lineHeight:1.3 }}>{pkg.title}</h3>
-              <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#5a6a5a", marginTop:3 }}>{pkg.pillar} · {pkg.phase} · {pkg.audience}</div>
-              {(pkg.growthTags||[]).length>0&&<div style={{ display:"flex", gap:4, marginTop:6, flexWrap:"wrap" }}>{pkg.growthTags.map(g=><GrowthTagBadge key={g} tag={g}/>)}</div>}
-            </div>
-            {pkg.analytics&&(
-              <div style={{ padding:"10px 14px", borderBottom:"1px solid #f0e8d8", display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:6 }}>
-                {[["Views",pkg.analytics.views.toLocaleString(),"#7ab5d4"],["Saves",pkg.analytics.saves.toLocaleString(),"#d4a574"],["App",pkg.analytics.appStoreClicks,"#9a6ab8"],["Followers",`+${pkg.analytics.followersGained}`,"#5a8a6a"]].map(([l,v,c])=>(
-                  <div key={l} style={{ textAlign:"center" }}><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:15, fontWeight:600, color:c }}>{v}</div><div style={{ fontFamily:"'Jost',sans-serif", fontSize:8.5, color:"#8a9a8a" }}>{l}</div></div>
-                ))}
-              </div>
-            )}
-            <div style={{ padding:"10px 13px 12px" }}>
-              <p style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#3a5a4a", lineHeight:1.6, marginBottom:9 }}>{pkg.caption.slice(0,95)}…</p>
-              <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-                {pkg.status==="Needs Review"&&<><Btn variant="primary" style={{ fontSize:10, padding:"5px 11px" }} onClick={()=>upd(pkg.id,"Approved")}><I n="check" s={11} c="white"/> Approve</Btn><Btn variant="danger" style={{ fontSize:10, padding:"5px 9px" }} onClick={()=>upd(pkg.id,"Draft")}><I n="x" s={11} c="#c4726a"/></Btn></>}
-                <Btn variant="sm" onClick={()=>setSelPkg(pkg)}><I n="eye" s={11}/> View</Btn>
-                <Btn variant="sm"><I n="repurpose" s={11}/> Repurpose</Btn>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      {selPkg&&(
-        <div className="overlay" onClick={()=>setSelPkg(null)}>
-          <div className="modal modal-wide" onClick={e=>e.stopPropagation()}>
-            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
-              <div><div style={{ display:"flex", gap:6, marginBottom:6, flexWrap:"wrap" }}><Tag label={selPkg.status} color={STATUS_COLORS[selPkg.status]||"#b8c9a3"}/>{(selPkg.growthTags||[]).map(g=><GrowthTagBadge key={g} tag={g}/>)}</div><h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:600, color:"#2d4a3a" }}>{selPkg.title}</h2></div>
-              <button onClick={()=>setSelPkg(null)} style={{ background:"transparent", border:"none", color:"#8a9a8a" }}><I n="x" s={18}/></button>
-            </div>
-            {selPkg.analytics&&<div style={{ background:"#f0f8f4", borderRadius:11, padding:14, marginBottom:13, display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:9, border:"1px solid #c0e0d0" }}>{[["Views",selPkg.analytics.views.toLocaleString(),"#7ab5d4"],["Saves",selPkg.analytics.saves.toLocaleString(),"#d4a574"],["Followers",`+${selPkg.analytics.followersGained}`,"#5a8a6a"],["App Clicks",selPkg.analytics.appStoreClicks,"#9a6ab8"],["Bio Clicks",selPkg.analytics.linkInBioClicks,"#b08fbe"]].map(([l,v,c])=><div key={l} style={{ textAlign:"center" }}><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:600, color:c }}>{v}</div><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9.5, color:"#5a8a6a", textTransform:"uppercase", letterSpacing:"0.08em" }}>{l}</div></div>)}</div>}
-            <div style={{ display:"grid", gap:9 }}>
-              {[["Caption 💚",selPkg.caption],["Hashtags",selPkg.hashtags],["CTA",selPkg.cta],["Scheduled",selPkg.scheduledDate||"Not scheduled"]].map(([l,v])=>(
-                <div key={l} style={{ background:"#f5f0e8", borderRadius:9, padding:12 }}><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#8a9a8a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:4 }}>{l}</div><p style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#2d4a3a", lineHeight:1.65 }}>{v}</p></div>
-              ))}
-            </div>
-            <div style={{ display:"flex", gap:8, marginTop:16 }}>
-              {selPkg.status==="Needs Review"&&<Btn onClick={()=>{upd(selPkg.id,"Approved");setSelPkg(null);}}>Approve 💚</Btn>}
-              <Btn variant="ghost"><I n="edit" s={13}/> Edit</Btn>
-              <Btn variant="ghost"><I n="repurpose" s={13}/> Repurpose</Btn>
-              <Btn variant="purple" style={{ marginLeft:"auto" }}><I n="crown" s={13} c="white"/> Premium Teaser</Btn>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+// ─────────────────────────────────────────────
+//  ROOT APP
+// ─────────────────────────────────────────────
+function useSwipeNavigation(screen, setScreen) {
+  const screens = ["home", "calendar", "checkin", "recipes", "learn", "settings"];
+  useEffect(() => {
+    let startX = 0;
+    let startY = 0;
+    const onTouchStart = (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    };
+    const onTouchEnd = (e) => {
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) < 50) return;
+      if (Math.abs(dx) < Math.abs(dy) * 2) return;
+      const idx = screens.indexOf(screen);
+      if (dx < 0 && idx < screens.length - 1) setScreen(screens[idx + 1]);
+      if (dx > 0 && idx > 0) setScreen(screens[idx - 1]);
+    };
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [screen]);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ASSET LIBRARY
-// ─────────────────────────────────────────────────────────────────────────────
-function AssetsPage() {
-  const [folder, setFolder] = useState("Food");
-  const folders = ["Food","Workouts","Fasting","Cycle Education","Men","App Features","Lifestyle","Moon & Rituals","General"];
-  const subs = { Food:["Menstrual","Follicular","Ovulation","Luteal","Men","General"], Workouts:["Menstrual","Follicular","Ovulation","Luteal","Men","General"], Fasting:["Menstrual","Follicular","Ovulation","Luteal","Men","General"], Men:["Men's Fasting","Men's Energy","Men's Workouts","Men's Nutrition","Men's Mindset","Men's App Features"] };
-  const assets = Array.from({length:12},(_,i)=>({ id:i+1, type:i%3===0?"video":"image", phase:PHASES[i%6], platform:PLATFORMS[i%4], posted:i%2===0, title:`${folder} Asset ${i+1}`, color:Object.values(PHASE_COLORS)[i%6], growthTag:GROWTH_TAGS[i%7] }));
-  return (
-    <div className="fade">
-      <SectionHead title="Asset Library" sub="Your private visual library — organized by category and growth goal"/>
-      <div style={{ display:"flex", gap:18 }}>
-        <div style={{ width:185, flexShrink:0 }}><Card style={{ overflow:"hidden" }}>{folders.map(f=><div key={f} onClick={()=>setFolder(f)} style={{ padding:"9px 14px", cursor:"pointer", background:folder===f?"#e8f0e8":"transparent", borderLeft:folder===f?"3px solid #5a8a6a":"3px solid transparent", borderBottom:"1px solid #f0e8d8", transition:"all 0.15s" }}><span style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:folder===f?"#2d4a3a":"#5a6a5a", fontWeight:folder===f?600:400 }}>{f}</span></div>)}</Card></div>
-        <div style={{ flex:1 }}>
-          {subs[folder]&&<div style={{ display:"flex", gap:5, marginBottom:12, flexWrap:"wrap" }}>{subs[folder].map(s=><button key={s} style={{ background:"#f0ebe0", color:"#5a6a5a", border:"1px solid #d8cfc0", borderRadius:18, padding:"3px 11px", fontFamily:"'Jost',sans-serif", fontSize:10.5, cursor:"pointer" }}>{s}</button>)}</div>}
-          <div style={{ display:"flex", gap:8, marginBottom:12 }}>
-            <div style={{ position:"relative", flex:1 }}><input placeholder="Search assets…" className="inp" style={{ paddingLeft:30 }}/><div style={{ position:"absolute", left:8, top:"50%", transform:"translateY(-50%)", color:"#8a9a8a" }}><I n="search" s={13}/></div></div>
-            <select className="inp" style={{ width:125 }}><option>All Platforms</option>{PLATFORMS.map(p=><option key={p}>{p}</option>)}</select>
-            <select className="inp" style={{ width:115 }}><option>All Status</option><option>Posted</option><option>Not Posted</option></select>
-          </div>
-          <div style={{ border:"2px dashed #b8d8c8", borderRadius:13, padding:16, textAlign:"center", marginBottom:13, cursor:"pointer", background:"#f5faf7" }}><I n="upload" s={19} c="#8fb5a0"/><div style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#5a8a6a", marginTop:5, fontWeight:500 }}>Drop files or click to upload</div></div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(148px,1fr))", gap:10 }}>
-            {assets.map(a=>(
-              <div key={a.id} className="ch" style={{ background:"#faf7f2", borderRadius:11, border:"1px solid #e8e0d0", overflow:"hidden" }}>
-                <div style={{ height:95, background:`${a.color}33`, display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
-                  <I n={a.type==="video"?"vid":"asset"} s={26} c={a.color}/>
-                  {a.posted&&<span style={{ position:"absolute", top:4, right:4, background:"#5a8a6a", color:"white", borderRadius:7, padding:"1px 6px", fontFamily:"'Jost',sans-serif", fontSize:8, fontWeight:700 }}>Posted</span>}
-                  <span style={{ position:"absolute", top:4, left:4, background:"white", borderRadius:7, padding:"1px 6px", fontFamily:"'Jost',sans-serif", fontSize:8, fontWeight:700, color:a.color }}>{a.platform.slice(0,2)}</span>
-                </div>
-                <div style={{ padding:"8px 9px 7px" }}>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#2d4a3a", fontWeight:500, marginBottom:4 }}>{a.title}</div>
-                  <GrowthTagBadge tag={a.growthTag}/>
-                  <div style={{ display:"flex", gap:4, marginTop:6 }}>
-                    <button style={{ flex:1, background:"#f0ebe0", color:"#5a6a5a", borderRadius:5, padding:"3px 0", fontSize:9.5, fontFamily:"'Jost',sans-serif", border:"none", cursor:"pointer" }}>Edit</button>
-                    <button style={{ flex:1, background:"#e8f5ee", color:"#3a7a5a", borderRadius:5, padding:"3px 0", fontSize:9.5, fontFamily:"'Jost',sans-serif", border:"none", cursor:"pointer" }}>Reuse</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+function getMoonPhase() {
+  const now = new Date();
+  const known = new Date(2000, 0, 6, 18, 14, 0);
+  const synodic = 29.53058867;
+  const diff = (now - known) / (1000 * 60 * 60 * 24);
+  const phase = ((diff % synodic) + synodic) % synodic;
+  const illum = Math.round(Math.abs(Math.cos(phase / synodic * 2 * Math.PI)) * 100);
+  if (phase < 1.85) return { name: "New Moon", emoji: "🌑", desc: "A time for new intentions and quiet beginnings.", next: "Full Moon", daysToNext: Math.round(synodic / 2 - phase), illum: 0, ritual: "Light a candle. Write one intention for this cycle. Let it be simple and honest.", journal: "What am I ready to begin? What do I want to call in this month?" };
+  if (phase < 7.38) return { name: "Waxing Crescent", emoji: "🌒", desc: "Energy is building. Plant seeds and take first steps.", next: "Full Moon", daysToNext: Math.round(14.77 - phase), illum, ritual: "Take one small action toward something you want. Even a tiny step counts.", journal: "What seed am I planting right now? What would it feel like to see it grow?" };
+  if (phase < 9.22) return { name: "First Quarter", emoji: "🌓", desc: "Take action. Push through resistance.", next: "Full Moon", daysToNext: Math.round(14.77 - phase), illum, ritual: "Do the thing you have been putting off. Movement builds momentum.", journal: "What is holding me back right now? What would I do if I wasn't afraid?" };
+  if (phase < 14.77) return { name: "Waxing Gibbous", emoji: "🌔", desc: "Refine and prepare. The full moon is close.", next: "Full Moon", daysToNext: Math.round(14.77 - phase), illum, ritual: "Review what you started. Adjust, refine, and trust the process.", journal: "What needs refining in my life right now? What am I almost ready for?" };
+  if (phase < 16.61) return { name: "Full Moon", emoji: "🌕", desc: "Peak energy. Release what no longer serves you.", next: "New Moon", daysToNext: Math.round(synodic - phase), illum: 100, ritual: "Write down what you are releasing. Burn it, tear it, or let it go with intention.", journal: "What am I ready to let go of? What has run its course in my life?" };
+  if (phase < 22.15) return { name: "Waning Gibbous", emoji: "🌖", desc: "Reflect and share. Gratitude and integration.", next: "New Moon", daysToNext: Math.round(synodic - phase), illum, ritual: "Write three things you are grateful for from this cycle. Share something you have learned.", journal: "What did this full moon reveal to me? What am I integrating right now?" };
+  if (phase < 23.99) return { name: "Last Quarter", emoji: "🌗", desc: "Release and let go. Clear space for what is coming.", next: "New Moon", daysToNext: Math.round(synodic - phase), illum, ritual: "Clear one physical space — a drawer, your bag, your phone. Let the outside reflect the inside.", journal: "What do I need to forgive — in myself or someone else? What am I clearing?" };
+  return { name: "Waning Crescent", emoji: "🌘", desc: "Rest, restore, and prepare for renewal.", next: "New Moon", daysToNext: Math.round(synodic - phase), illum, ritual: "Rest without guilt. Sleep early, drink water, be gentle with yourself.", journal: "What does my body need right now? What would true rest look like for me?" };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// AI GENERATOR  (live Anthropic API with growth goal + sound profile)
-// ─────────────────────────────────────────────────────────────────────────────
-function GeneratorPage({ topics, setPackages }) {
-  const [step, setStep] = useState(1);
-  const [selId, setSelId] = useState(null);
-  const [generating, setGenerating] = useState(false);
-  const [result, setResult] = useState(null);
-  const [growthGoal, setGrowthGoal] = useState("Trust Building");
-  const topic = topics.find(t=>t.id===selId);
-  const soundProfile = SOUND_PROFILES[growthGoal];
+export default function App() {
+  useEffect(() => {
+    const checkMidnight = () => {
+      const lastDate = localStorage.getItem("lf_last_date");
+      const today = new Date().toISOString().split("T")[0];
+      if (lastDate && lastDate !== today) {
+        localStorage.setItem("lf_water_today", "0");
+      }
+      localStorage.setItem("lf_last_date", today);
+    };
+    checkMidnight();
+    const interval = setInterval(checkMidnight, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const handleGenerate = async () => {
-    if(!topic) return;
-    setGenerating(true); setStep(3);
+  const [settings, setSettings] = useState(() => {
     try {
-      const resp = await fetch("https://api.anthropic.com/v1/messages", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:1000, messages:[{ role:"user", content:`You are the content AI for Lumen Flow, a wellness app for cycle syncing, fasting, and balanced health.
+      const saved = localStorage.getItem("lf_settings");
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
 
-Topic: ${topic.title}
-Pillar: ${topic.pillar} | Audience: ${topic.audience} | Phase: ${topic.phase}
-Platforms: ${topic.platforms.join(", ")} | Growth Goal: ${growthGoal}
-Sound Profile: ${soundProfile.type} / ${soundProfile.mood}
+  const [screen, setScreen] = useState("home");
+  const [showWaitlist, setShowWaitlist] = useState(false);
+  const [nourishDigestionPreset, setNourishDigestionPreset] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  useSwipeNavigation(screen, setScreen);
 
-Brand rules: soft supportive feminine tone, 💚 green heart, no dashes, no shame language, no medical claims, gentle fasting (always say break fast if weak/dizzy/shaky), CTA = "link in bio 💚", shape entire piece around growth goal "${growthGoal}".
-
-Return ONLY valid JSON, no markdown:
-{"caption":"...","hashtags":"...","cta":"...","hook":"first 5 words","pinterest_title":"...","pinterest_description":"...","instagram_slide_1":"hook","instagram_slide_2":"insight","instagram_slide_3":"teaching","instagram_slide_4":"soft CTA","tiktok_hook":"3s spoken hook","tiktok_concept":"video concept","youtube_title":"...","growth_note":"one sentence on why this serves ${growthGoal}","sound_note":"one sentence on how sound choice supports this post"}` }] }) });
-      const data = await resp.json();
-      const text = data.content?.map(c=>c.text||"").join("")||"";
-      try { setResult(JSON.parse(text.replace(/```json|```/g,"").trim())); } catch { setResult({ caption:`${topic.title} 💚 Your body already knows the rhythm. Trust it, support it. Link in bio 💚`, hashtags:"#cyclesyncing #lumenflo #hormonalhealth #cycleaware", cta:"Link in bio 💚", hook:"Your body already knows…", pinterest_title:topic.title, pinterest_description:`${topic.title} with Lumen Flow 💚`, instagram_slide_1:`${topic.title} 💚`, instagram_slide_2:"Here is what is actually happening", instagram_slide_3:"Three things to know this week", instagram_slide_4:"Save this and share it 💚", tiktok_hook:"Nobody told me this…", tiktok_concept:`Educational TikTok: ${topic.title}`, youtube_title:`${topic.title} | Lumen Flow 💚`, growth_note:`Builds ${growthGoal.toLowerCase()} through gentle education.`, sound_note:`Use ${soundProfile.type} to match the ${soundProfile.mood} energy.` }); }
-    } catch { setResult({ caption:`${topic.title} 💚 Link in bio 💚`, hashtags:"#lumenflo", cta:"Link in bio 💚", hook:"This changes everything…", pinterest_title:topic.title, pinterest_description:"With Lumen Flow 💚", instagram_slide_1:"Hook", instagram_slide_2:"Insight", instagram_slide_3:"Teaching", instagram_slide_4:"Save 💚", tiktok_hook:"Nobody told me…", tiktok_concept:"Educational video", youtube_title:`${topic.title} 💚`, growth_note:`Supports ${growthGoal}.`, sound_note:`Use ${soundProfile.type}.` }); }
-    setGenerating(false);
+  const saveSettings = (data) => {
+    setSettings(data);
+    localStorage.setItem("lf_settings", JSON.stringify(data));
   };
 
-  const handleSave = () => {
-    if(!result||!topic) return;
-    setPackages(p=>[...p,{ id:Date.now(), topicId:topic.id, title:topic.title, pillar:topic.pillar, audience:topic.audience, phase:topic.phase, platforms:topic.platforms, status:"Needs Review", scheduledDate:"", caption:result.caption, hashtags:result.hashtags, cta:result.cta, growthTags:[growthGoal], analytics:null }]);
-    setStep(1); setSelId(null); setResult(null);
-    alert("Package saved to review queue 💚");
-  };
+  if (!settings) {
+    return <Onboarding onDone={saveSettings} />;
+  }
 
   return (
-    <div className="fade">
-      <SectionHead title="AI Content Generator" sub="Turn one topic into a complete multi-platform growth package"/>
-      <div style={{ display:"flex", gap:0, marginBottom:22 }}>
-        {["Select Topic","Set Growth Goal","Review & Save"].map((s,i)=>(
-          <div key={s} style={{ display:"flex", alignItems:"center" }}>
-            <div style={{ display:"flex", alignItems:"center", gap:7 }}>
-              <div style={{ width:24, height:24, borderRadius:"50%", background:step>i+1?"#5a8a6a":step===i+1?"#3a6a4a":"#e8e0d0", color:step>=i+1?"white":"#9a9a8a", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Jost',sans-serif", fontSize:11, fontWeight:700 }}>{step>i+1?"✓":i+1}</div>
-              <span style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:step===i+1?"#2d4a3a":"#8a9a8a", fontWeight:step===i+1?600:400 }}>{s}</span>
+    <div style={s.app}>
+      {showWaitlist && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+          <div style={{ background: "#fff", borderRadius: 24, padding: "28px 24px", width: "100%", maxWidth: 400, position: "relative" }}>
+            <button onClick={() => setShowWaitlist(false)} style={{ position: "absolute", top: 12, right: 16, background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#8FA090" }}>✕</button>
+            <div style={{ textAlign: "center", marginBottom: 16 }}>
+              <div style={{ fontSize: 36, marginBottom: 8 }}>🌿</div>
+              <h2 style={{ fontFamily: "Georgia, serif", fontSize: 20, color: "#2D3B2E", margin: "0 0 6px" }}>Join the Waitlist</h2>
+              <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#6b7b6b", margin: 0 }}>Be first to know when Lumen Flow launches on Google Play!</p>
             </div>
-            {i<2&&<div style={{ width:32, height:1, background:"#d8d0c0", margin:"0 9px" }}/>}
-          </div>
-        ))}
-      </div>
-
-      {step===1&&(
-        <div>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:19, fontWeight:600, color:"#2d4a3a", marginBottom:13 }}>Choose a topic</div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(275px,1fr))", gap:10 }}>
-            {topics.filter(t=>!["Posted","Scheduled"].includes(t.status)).map(t=>(
-              <div key={t.id} className="ch" onClick={()=>{setSelId(t.id);setStep(2);}} style={{ background:selId===t.id?"#e8f5ee":"#faf7f2", borderRadius:12, border:`2px solid ${selId===t.id?"#5a8a6a":"#e8e0d0"}`, padding:15, cursor:"pointer" }}>
-                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}><div style={{ display:"flex", gap:5 }}><PhaseDot phase={t.phase}/><span style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#5a6a5a" }}>{t.phase}</span></div><Tag label={t.status} color={STATUS_COLORS[t.status]||"#b8c9a3"}/></div>
-                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:14, fontWeight:600, color:"#2d4a3a", marginBottom:5 }}>{t.title}</div>
-                <div style={{ display:"flex", gap:4, flexWrap:"wrap" }}>{(t.growthTags||[]).map(g=><GrowthTagBadge key={g} tag={g}/>)}</div>
-              </div>
-            ))}
+            <iframe
+              src="https://docs.google.com/forms/d/e/1FAIpQLScTYq7u3u7yW1LPIy5ae3sW4Q4saRJFXoNaKPxUX6v0o-GobA/viewform?embedded=true"
+              width="100%"
+              height="480"
+              frameBorder="0"
+              marginHeight="0"
+              marginWidth="0"
+              style={{ borderRadius: 12 }}
+            >Loading…</iframe>
           </div>
         </div>
       )}
-
-      {step===2&&topic&&(
-        <div style={{ maxWidth:560 }}>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:19, fontWeight:600, color:"#2d4a3a", marginBottom:4 }}>Generating for: <em>{topic.title}</em></div>
-          <div style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#7a8a7a", marginBottom:18 }}>{topic.pillar} · {topic.phase} · {topic.audience}</div>
-          <div style={{ fontFamily:"'Jost',sans-serif", fontSize:13, color:"#3a5a4a", marginBottom:9, fontWeight:600 }}>Primary Growth Goal</div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:20 }}>
-            {GROWTH_TAGS.map(g=>(
-              <div key={g} onClick={()=>setGrowthGoal(g)} style={{ background:growthGoal===g?`${GROWTH_TAG_COLORS[g]}22`:"#faf7f2", border:`2px solid ${growthGoal===g?GROWTH_TAG_COLORS[g]:"#e8e0d0"}`, borderRadius:10, padding:12, cursor:"pointer" }}>
-                <div style={{ fontFamily:"'Jost',sans-serif", fontSize:12, fontWeight:600, color:GROWTH_TAG_COLORS[g], marginBottom:2 }}>{g}</div>
-                <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a", lineHeight:1.4, marginBottom:4 }}>{{  "Awareness":"Max reach and new eyes","Trust Building":"Save-worthy credibility","Education":"Deep cycle-aware teaching","App Feature Promotion":"Show what the app does","Premium Teaser":"Soft preview of Premium","Conversion Focused":"Drive app store clicks","Community Building":"Build connection and belonging" }[g]}</div>
-                {growthGoal===g&&soundProfile&&<div style={{ fontFamily:"'Jost',sans-serif", fontSize:9.5, color:"#5a8a6a", fontWeight:600 }}>🎵 Sound: {soundProfile.type}</div>}
-              </div>
-            ))}
-          </div>
-          <div style={{ display:"flex", gap:8 }}><Btn onClick={handleGenerate} style={{ padding:"12px 28px" }}><I n="ai" s={14} c="white"/> Generate 💚</Btn><Btn variant="ghost" onClick={()=>setStep(1)}>Back</Btn></div>
-        </div>
-      )}
-
-      {step===3&&(
-        generating?(
-          <div style={{ textAlign:"center", padding:"58px 0" }}>
-            <div style={{ fontSize:40, marginBottom:13 }} className="pulse">💚</div>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:24, color:"#2d4a3a", marginBottom:7 }}>Generating your {growthGoal} package…</div>
-            <div style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#8a9a8a" }}>Captions, hooks, slides, sound direction, and growth strategy 🌿</div>
-          </div>
-        ):result&&(
-          <div>
-            <div style={{ display:"flex", alignItems:"center", gap:9, marginBottom:16 }}>
-              <h3 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:600, color:"#2d4a3a" }}>Generated Package 💚</h3>
-              <GrowthTagBadge tag={growthGoal}/>
-            </div>
-            {result.growth_note&&<div style={{ background:"#f0f8f4", borderRadius:10, padding:13, border:"1px solid #b8d8c8", marginBottom:12, display:"flex", gap:8 }}><I n="target" s={15} c="#5a8a6a"/><p style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#2d5a4a", lineHeight:1.6 }}><strong>Growth note:</strong> {result.growth_note}</p></div>}
-            {result.sound_note&&soundProfile&&<div style={{ background:"#f0f4fa", borderRadius:10, padding:13, border:"1px solid #b8c8e0", marginBottom:14, display:"flex", gap:8, alignItems:"flex-start" }}><I n="music" s={15} c="#5a7ab8"/><div><div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#5a7ab8", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:3 }}>Sound Direction</div><p style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#2d3a5a", lineHeight:1.6 }}>{result.sound_note}</p><div style={{ display:"flex", gap:5, marginTop:6, flexWrap:"wrap" }}>{soundProfile.searchTerms.map(t=><span key={t} style={{ background:"#e8ecf8", color:"#3a4a8a", padding:"2px 9px", borderRadius:18, fontFamily:"'Jost',sans-serif", fontSize:9.5, fontWeight:500 }}>{t}</span>)}</div><div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#8a9a8a", marginTop:5 }}>Add inside: {soundProfile.addWhere}</div></div></div>}
-            {result.hook&&<div style={{ background:"linear-gradient(135deg,#2d4a3a,#1e3329)", borderRadius:11, padding:14, marginBottom:13 }}><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"rgba(184,201,163,0.7)", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:5 }}>Scroll-Stop Hook</div><p style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:500, color:"#b8e0c8", fontStyle:"italic" }}>"{result.hook}"</p></div>}
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-              {[["Main Caption 💚",result.caption,true],["Hashtags",result.hashtags,false],["CTA",result.cta,false],["Pinterest Title",result.pinterest_title,false],["Pinterest Description",result.pinterest_description,false],["Instagram Slide 1",result.instagram_slide_1,false],["Instagram Slide 2",result.instagram_slide_2,false],["Instagram Slide 3",result.instagram_slide_3,false],["Instagram Slide 4",result.instagram_slide_4,false],["TikTok Hook",result.tiktok_hook,false],["TikTok Concept",result.tiktok_concept,false],["YouTube Title",result.youtube_title,false]].map(([l,v,full])=>(
-                <div key={l} style={{ gridColumn:full?"1/-1":"auto", background:"#f5f0e8", borderRadius:10, padding:13, border:"1px solid #e8e0d0" }}>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#8a9a8a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:4 }}>{l}</div>
-                  <p style={{ fontFamily:"'Jost',sans-serif", fontSize:11.5, color:"#2d4a3a", lineHeight:1.65 }}>{v}</p>
-                </div>
-              ))}
-            </div>
-            <div style={{ display:"flex", gap:8, marginTop:16 }}>
-              <Btn onClick={handleSave} style={{ padding:"11px 26px" }}>Save to Review Queue 💚</Btn>
-              <Btn variant="ghost" onClick={()=>{setStep(2);setResult(null);}}>Regenerate</Btn>
-              <Btn variant="ghost" onClick={()=>{setStep(1);setSelId(null);setResult(null);}}>Start Over</Btn>
-            </div>
-          </div>
-        )
-      )}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// VIDEO QUEUE  (with music status column)
-// ─────────────────────────────────────────────────────────────────────────────
-function VideoQueuePage({ videoQueue, setVideoQueue, selVideo, setSelVideo }) {
-  const sColors = { "Waiting":"#d4a574","Generating":"#8fb5a0","Complete":"#6b8f7a","Needs Review":"#e8c5a0","Approved":"#5a8a6a","Posted":"#3a6a4a","Failed":"#c4726a" };
-  const upd = (id,status) => setVideoQueue(p=>p.map(v=>v.id===id?{...v,status}:v));
-  return (
-    <div className="fade">
-      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:20 }}>
-        <SectionHead title="Gemini / Veo Video Queue" sub="Pre-generate videos so they are ready ahead of your posting schedule"/>
-        <Btn><I n="plus" s={14} c="white"/> Queue Video</Btn>
+      <div style={{ position: "fixed", bottom: 80, right: 16, zIndex: 999 }}>
+        <button onClick={() => setShowWaitlist(true)} style={{ background: "#7A9E7E", border: "none", borderRadius: 50, padding: "12px 18px", fontFamily: "sans-serif", fontSize: 12, color: "#fff", cursor: "pointer", boxShadow: "0 2px 12px rgba(0,0,0,0.15)", fontWeight: 600, letterSpacing: "0.03em" }}>
+          🌿 Join Waitlist
+        </button>
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:10, marginBottom:18 }}>
-        {["Waiting","Generating","Needs Review","Approved","Posted","Failed"].map(s=>(
-          <Card key={s} style={{ padding:14, textAlign:"center" }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:24, fontWeight:600, color:sColors[s] }}>{videoQueue.filter(v=>v.status===s).length}</div>
-            <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a", marginTop:2 }}>{s}</div>
-          </Card>
-        ))}
-      </div>
-      <Card style={{ padding:16, marginBottom:16 }}>
-        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:10 }}>Daily Settings</div>
-        <div style={{ display:"flex", gap:16 }}>
-          {[["Videos to generate per day",[1,2,3,4,5],3],["TikToks to post per day",[1,2,3,4],2]].map(([l,opts,def])=>(
-            <div key={l}><Label>{l}</Label><Select value={String(def)} onChange={()=>{}} options={opts.map(String)}/></div>
-          ))}
-        </div>
-      </Card>
-      <div style={{ display:"grid", gap:8 }}>
-        {videoQueue.map(v=>(
-          <Card key={v.id} style={{ padding:16, display:"flex", alignItems:"center", gap:13, border:`1px solid ${v.music.musicStatus==="Needs Music"&&v.status==="Approved"?"#e8c080":"#e8e0d0"}` }}>
-            <div style={{ width:42, height:42, borderRadius:9, background:`${PHASE_COLORS[v.phase]}33`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><I n="vid" s={19} c={PHASE_COLORS[v.phase]}/></div>
-            <div style={{ flex:1 }}>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:15, fontWeight:600, color:"#2d4a3a", marginBottom:3 }}>{v.topic}</div>
-              <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10.5, color:"#7a8a7a", marginBottom:5 }}>{v.concept}</div>
-              <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"wrap" }}>
-                <span style={{ padding:"1px 7px", borderRadius:9, fontSize:9.5, fontFamily:"'Jost',sans-serif", fontWeight:700, background:"#e8f0e8", color:"#3a5a4a" }}>{v.platform}</span>
-                <PhaseDot phase={v.phase} size={7}/>
-                <GrowthTagBadge tag={v.growthTag}/>
-                <Tag label={v.music.musicStatus} color={MUSIC_STATUS_COLORS[v.music.musicStatus]||"#b8c9a3"}/>
-                <span style={{ fontFamily:"'Jost',sans-serif", fontSize:9.5, color:"#7a8a7a" }}>🎵 {v.music.recommendedType}</span>
-              </div>
-            </div>
-            <div style={{ display:"flex", gap:7, alignItems:"center", flexShrink:0 }}>
-              <Tag label={v.status} color={sColors[v.status]||"#b8c9a3"}/>
-              {v.status==="Needs Review"&&<Btn style={{ fontSize:11, padding:"6px 12px" }} onClick={()=>upd(v.id,"Approved")}>Approve</Btn>}
-              {v.status==="Failed"&&<Btn variant="danger" style={{ fontSize:11, padding:"6px 10px" }} onClick={()=>upd(v.id,"Waiting")}><I n="refresh" s={11} c="#c4726a"/> Retry</Btn>}
-              <Btn variant="sm" onClick={()=>setSelVideo(selVideo?.id===v.id?null:v)}><I n="music" s={11}/> Sound</Btn>
-            </div>
-          </Card>
-        ))}
+      <div style={s.container}>
+        {screen === "home"     && <HomeScreen     name={settings.name} lastPeriod={settings.lastPeriod} mode={settings.mode || "cycle"} settings={settings} />}
+        {screen === "calendar" && <CalendarScreen lastPeriod={settings.lastPeriod} cycleLength={settings.cycleLength || 28} periodLength={settings.periodLength || 7} mode={settings.mode || "cycle"} onSave={(date, cycleLen, periodLen) => saveSettings({...settings, lastPeriod: date, cycleLength: cycleLen || settings.cycleLength || 28, periodLength: periodLen || settings.periodLength || 7})} onNavigate={setScreen} />}
+       {screen === "recipes"  && <RecipesScreen phase={getPhase(getCycleDay(settings.lastPeriod))} onNavigate={setScreen} mode={settings.mode || "cycle"} digestionPreset={nourishDigestionPreset} onClearDigestionPreset={() => setNourishDigestionPreset(false)} />}
+        {screen === "checkin"  && <CheckInScreen mode={settings.mode || "cycle"} lastPeriod={settings.lastPeriod || ""} onNavigate={setScreen} onNourishDigestion={() => { setScreen("recipes"); setNourishDigestionPreset(true); }} />}
+        {screen === "learn"    && <LearnScreen mode={settings.mode || "cycle"} lastPeriod={settings.lastPeriod || ""} />}
+        {screen === "settings" && <SettingsScreen settings={settings} onSave={saveSettings} onShowPaywall={() => setShowPaywall(true)} />}
+
+<BottomNav current={screen} onChange={setScreen} mode={settings.mode || "cycle"} phase={getPhase(Math.max(1, getCycleDay(settings.lastPeriod || "") - 1))} />
+      {showPaywall && <PaywallScreen onClose={() => setShowPaywall(false)} mode={settings.mode || "cycle"} />}
       </div>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// APPROVALS
-// ─────────────────────────────────────────────────────────────────────────────
-function ApprovalsPage({ packages, setPackages }) {
-  const pending = packages.filter(p=>p.status==="Needs Review");
-  const upd = (id,s) => setPackages(p=>p.map(x=>x.id===id?{...x,status:s}:x));
-  return (
-    <div className="fade">
-      <SectionHead title="Approval Queue" sub={`${pending.length} packages waiting for review`}/>
-      {pending.length===0?<Card style={{ padding:"55px 0", textAlign:"center" }}><div style={{ fontSize:36, marginBottom:11 }}>💚</div><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, color:"#2d4a3a" }}>All caught up!</div><div style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#7a8a7a", marginTop:5 }}>Nothing waiting for approval.</div></Card>:(
-        <div style={{ display:"grid", gap:14 }}>
-          {pending.map(pkg=>(
-            <Card key={pkg.id} style={{ overflow:"hidden" }}>
-              <div style={{ padding:"16px 20px 13px", borderBottom:"1px solid #f0e8d8", display:"flex", justifyContent:"space-between" }}>
-                <div>
-                  <div style={{ display:"flex", gap:6, marginBottom:5, flexWrap:"wrap" }}><PhaseDot phase={pkg.phase}/><span style={{ fontFamily:"'Jost',sans-serif", fontSize:10.5, color:"#7a8a7a" }}>{pkg.phase} · {pkg.pillar}</span>{(pkg.growthTags||[]).map(g=><GrowthTagBadge key={g} tag={g}/>)}</div>
-                  <h3 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:19, fontWeight:600, color:"#2d4a3a" }}>{pkg.title}</h3>
-                </div>
-                <div style={{ display:"flex", gap:4 }}>{pkg.platforms.map(p=><span key={p} style={{ padding:"2px 8px", borderRadius:9, fontSize:10, fontFamily:"'Jost',sans-serif", fontWeight:700, background:"#e8f0e8", color:"#3a5a4a" }}>{p}</span>)}</div>
-              </div>
-              <div style={{ padding:"16px 20px" }}>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:11, marginBottom:16 }}>
-                  <div style={{ background:"#f5f0e8", borderRadius:9, padding:12, gridColumn:"1/-1" }}><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#8a9a8a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:4 }}>Caption 💚</div><p style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#2d4a3a", lineHeight:1.65 }}>{pkg.caption}</p></div>
-                  <div style={{ background:"#f5f0e8", borderRadius:9, padding:12 }}><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#8a9a8a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:3 }}>Hashtags</div><p style={{ fontFamily:"'Jost',sans-serif", fontSize:10.5, color:"#5a8a6a", lineHeight:1.6 }}>{pkg.hashtags}</p></div>
-                  <div style={{ background:"#f5f0e8", borderRadius:9, padding:12 }}><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#8a9a8a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:3 }}>CTA</div><p style={{ fontFamily:"'Jost',sans-serif", fontSize:11.5, color:"#2d4a3a" }}>{pkg.cta}</p></div>
-                  <div style={{ background:"#f5f0e8", borderRadius:9, padding:12 }}><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#8a9a8a", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:3 }}>Scheduled</div><p style={{ fontFamily:"'Jost',sans-serif", fontSize:11.5, color:"#2d4a3a" }}>{pkg.scheduledDate||"Not set"}</p></div>
-                </div>
-                <div style={{ display:"flex", gap:8 }}>
-                  <Btn onClick={()=>upd(pkg.id,"Approved")}><I n="check" s={14} c="white"/> Approve 💚</Btn>
-                  <Btn variant="danger" onClick={()=>upd(pkg.id,"Draft")}><I n="x" s={14} c="#c4726a"/> Reject</Btn>
-                  <Btn variant="ghost"><I n="edit" s={13}/> Edit</Btn>
-                  <Btn variant="ghost"><I n="refresh" s={13}/> Regenerate</Btn>
-                  <Btn variant="purple" style={{ marginLeft:"auto" }}><I n="crown" s={13} c="white"/> Premium Teaser</Btn>
-                  <Btn style={{ background:"linear-gradient(135deg,#3a6a4a,#2a5a3a)", color:"white", padding:"10px 18px" }}>Post Now</Btn>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ANALYTICS  (with sound performance tab)
-// ─────────────────────────────────────────────────────────────────────────────
-function AnalyticsPage({ packages, topics, videoQueue, tab, setTab }) {
-  const posted = packages.filter(p=>p.analytics);
-  const tViews = posted.reduce((a,p)=>a+(p.analytics.views||0),0);
-  const tSaves = posted.reduce((a,p)=>a+(p.analytics.saves||0),0);
-  const tFollow = posted.reduce((a,p)=>a+(p.analytics.followersGained||0),0);
-  const tApp = posted.reduce((a,p)=>a+(p.analytics.appStoreClicks||0),0);
-  return (
-    <div className="fade">
-      <SectionHead title="Analytics" sub="All metrics connected to business goals"/>
-      <div style={{ display:"flex", gap:5, marginBottom:20, background:"#f0ebe0", padding:4, borderRadius:14, width:"fit-content" }}>
-        {[["growth","Growth"],["phase","Phase"],["platform","Platform"],["pillars","Pillars"],["conversion","Conversion"],["sound","Sound"]].map(([t,l])=>(
-          <button key={t} className="tab-pill" onClick={()=>setTab(t)} style={{ background:tab===t?"#faf7f2":"transparent", color:tab===t?"#2d4a3a":"#7a8a7a", boxShadow:tab===t?"0 1px 4px rgba(0,0,0,0.08)":"none", fontWeight:tab===t?600:400 }}>{l}</button>
-        ))}
-      </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:11, marginBottom:18 }}>
-        {[["Views",tViews.toLocaleString(),"#7ab5d4","eye"],["Saves",tSaves.toLocaleString(),"#d4a574","save"],["Followers",`+${tFollow}`,"#5a8a6a","users"],["Bio Clicks","992","#b08fbe","link"],["App Clicks",tApp,"#9a6ab8","phone"]].map(([l,v,c,ic])=>(
-          <Card key={l} style={{ padding:16 }}><div style={{ display:"flex", justifyContent:"space-between" }}><div><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:26, fontWeight:600, color:c, lineHeight:1 }}>{v}</div><div style={{ fontFamily:"'Jost',sans-serif", fontSize:10.5, color:"#7a8a7a", marginTop:4 }}>{l}</div></div><I n={ic} s={15} c={c}/></div></Card>
-        ))}
-      </div>
-
-      {tab==="growth"&&(
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-          <Card style={{ padding:20 }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:13 }}>Follower Growth by Platform</div>
-            {PLATFORM_GROWTH.map(p=>(
-              <div key={p.platform} style={{ marginBottom:11 }}>
-                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}><span style={{ fontFamily:"'Jost',sans-serif", fontSize:11.5, fontWeight:600, color:"#2d4a3a" }}>{p.platform}</span><span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#5a8a6a", fontWeight:700 }}>{p.followers}</span></div>
-                <ScoreBar score={p.score} color={p.score>80?"#5a8a6a":"#d4a574"}/>
-              </div>
-            ))}
-          </Card>
-          <Card style={{ padding:20 }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:13 }}>Top Posts by Follower Gain</div>
-            {TOP_POSTS.map((p,i)=>(
-              <div key={i} style={{ padding:"9px 0", borderBottom:i<2?"1px solid #f0e8d8":"none" }}>
-                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:14, fontWeight:600, color:"#2d4a3a", marginBottom:4 }}>{p.title}</div>
-                <div style={{ display:"flex", gap:7 }}><GrowthTagBadge tag={p.growthTag}/><span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#5a8a6a", fontWeight:700 }}>+{p.followersGained}</span><span style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a" }}>{p.saves} saves</span></div>
-              </div>
-            ))}
-          </Card>
-        </div>
-      )}
-
-      {tab==="phase"&&(
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-          <Card style={{ padding:20 }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:13 }}>Performance by Phase</div>
-            {PHASES.map(phase=>{const s={Menstrual:72,Follicular:88,Ovulation:65,Luteal:94,Men:58,General:45}[phase];return(<div key={phase} style={{ marginBottom:11 }}><div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}><div style={{ display:"flex", alignItems:"center", gap:5 }}><PhaseDot phase={phase}/><span style={{ fontFamily:"'Jost',sans-serif", fontSize:11.5, color:"#3a5a4a" }}>{phase}</span></div><span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#5a8a6a", fontWeight:700 }}>{s}/100</span></div><ScoreBar score={s} color={PHASE_COLORS[phase]}/></div>);})}
-          </Card>
-          <Card style={{ padding:20 }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:13 }}>Phase + Growth Tag Matrix</div>
-            {[["Luteal","Trust Building","Highest saves, most reposts"],["Follicular","Education","Strong Pinterest performance"],["Men","Awareness","Growing — underposted"],["Ovulation","Community Building","High engagement, lower saves"],["Menstrual","Trust Building","Builds deep loyalty"]].map((r,i)=>(
-              <div key={i} style={{ display:"flex", gap:7, alignItems:"center", padding:"7px 0", borderBottom:i<4?"1px solid #f0e8d8":"none" }}><PhaseDot phase={r[0]}/><span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#2d4a3a", fontWeight:500, width:76 }}>{r[0]}</span><GrowthTagBadge tag={r[1]}/><span style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a" }}>{r[2]}</span></div>
-            ))}
-          </Card>
-        </div>
-      )}
-
-      {tab==="platform"&&(
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-          {PLATFORM_GROWTH.map(p=>(
-            <Card key={p.platform} style={{ padding:18 }}>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:19, fontWeight:600, color:"#2d4a3a", marginBottom:13 }}>{p.platform}</div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:11 }}>
-                {[["Followers",p.followers,"#5a8a6a"],["Reach",p.reach,"#7ab5d4"],["Saves",p.saves,"#d4a574"],["App Clicks",p.appClicks,"#9a6ab8"]].map(([l,v,c])=>(
-                  <div key={l} style={{ background:`${c}12`, borderRadius:8, padding:10 }}><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:600, color:c }}>{v}</div><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9.5, color:"#7a8a7a" }}>{l}</div></div>
-                ))}
-              </div>
-              <ScoreBar score={p.score} color={p.score>80?"#5a8a6a":"#d4a574"} height={7}/>
-              <div style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"#5a8a6a", marginTop:6, fontWeight:600 }}>Score: {p.score}/100</div>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {tab==="pillars"&&(
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:11 }}>
-          {[{p:"Fasting",c:14,saves:"8.2K",app:94,f:"+203",color:"#d4a574"},{p:"Cycle Education",c:18,saves:"12.1K",app:61,f:"+142",color:"#8fb5a0"},{p:"Men",c:5,saves:"2.1K",app:64,f:"+98",color:"#5a7a6a"},{p:"Food",c:9,saves:"5.4K",app:22,f:"+67",color:"#b8c9a3"},{p:"App Features",c:3,saves:"0.8K",app:188,f:"+44",color:"#9a6ab8"},{p:"Workouts",c:7,saves:"3.2K",app:31,f:"+88",color:"#b08fbe"}].map(({p,c,saves,app,f,color})=>(
-            <div key={p} style={{ background:`${color}12`, border:`1px solid ${color}33`, borderRadius:13, padding:16 }}>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:17, fontWeight:600, color, marginBottom:2 }}>{p}</div>
-              <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a", marginBottom:10 }}>{c} posted</div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7 }}>
-                {[["Saves",saves],["App Clicks",app],["Followers",f]].map(([l,v])=>(
-                  <div key={l} style={{ background:"rgba(255,255,255,0.6)", borderRadius:7, padding:9 }}><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color }}>{v}</div><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#7a8a7a" }}>{l}</div></div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {tab==="conversion"&&(
-        <div>
-          <Card style={{ padding:20, marginBottom:14 }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:17, fontWeight:600, color:"#2d4a3a", marginBottom:14 }}>Conversion Funnel</div>
-            <div style={{ display:"flex", alignItems:"flex-end", gap:9 }}>
-              {[["Reach","94.2K",100,"#7ab5d4"],["Engaged","14.3K",15.2,"#8fb5a0"],["Saved","10.4K",11.1,"#d4a574"],["Clicked","992",1.05,"#b08fbe"],["App","365",0.39,"#9a6ab8"]].map(([l,v,pct,c])=>(
-                <div key={l} style={{ flex:1, textAlign:"center" }}>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:9.5, color:c, fontWeight:700, marginBottom:4 }}>{pct===100?"100%":pct+"%"}</div>
-                  <div style={{ height:`${Math.max(pct,1.5)*1.6}px`, background:`${c}66`, borderRadius:"4px 4px 0 0", border:`1px solid ${c}88`, minHeight:6 }}/>
-                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:15, fontWeight:600, color:c, marginTop:5 }}>{v}</div>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:9.5, color:"#8a9a8a", marginTop:2 }}>{l}</div>
-                </div>
-              ))}
-            </div>
-          </Card>
-          <Card style={{ padding:20, background:"#f5f0f8", border:"1px solid #c8b8e0" }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#4a2a6a", marginBottom:10, display:"flex", gap:7 }}><I n="crown" s={15} c="#9a6ab8"/> Premium Conversion Signals</div>
-            {["Users who saved 3+ fasting posts are ready for Premium CTA","High-performing cycle education should link to Premium reports","Add 'see the full breakdown in the app' to trust building posts","Pinterest fasting pins are driving the most Premium-intent clicks"].map((note,i)=>(
-              <div key={i} style={{ fontFamily:"'Jost',sans-serif", fontSize:11.5, color:"#4a2a6a", padding:"5px 0", borderBottom:i<3?"1px dashed #d0b8e8":"none", lineHeight:1.55 }}>💜 {note}</div>
-            ))}
-          </Card>
-        </div>
-      )}
-
-      {tab==="sound"&&(
-        <div>
-          <div style={{ background:"#f0f4fa", borderRadius:13, padding:18, marginBottom:16, border:"1px solid #b8c8e0" }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:17, fontWeight:600, color:"#2d3a5a", marginBottom:10, display:"flex", gap:7 }}><I n="music" s={15} c="#5a7ab8"/> Sound Performance Comparison</div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:11 }}>
-              {[["Calm Instrumental",8,"3.2K","+94","Best for saves","#8fb5a0"],["Trending Sound",5,"1.8K","+189","Best for followers","#7ab5d4"],["Voiceover Only",4,"2.4K","+72","Best for trust","#d4a574"],["No Music",2,"0.6K","+18","Lowest performance","#c4726a"]].map(([t,posts,saves,follow,verdict,c])=>(
-                <div key={t} style={{ background:"#faf7f2", borderRadius:11, padding:14, border:`1px solid ${c}33` }}>
-                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:15, fontWeight:600, color:c, marginBottom:2 }}>{t}</div>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:9.5, color:"#7a8a7a", marginBottom:9 }}>{posts} videos</div>
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7 }}>
-                    {[["avg saves",saves],["avg followers",follow]].map(([l,v])=>(
-                      <div key={l} style={{ background:`${c}12`, borderRadius:7, padding:9 }}><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:c }}>{v}</div><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#7a8a7a" }}>{l}</div></div>
-                    ))}
-                  </div>
-                  <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10.5, color:c, fontWeight:600, marginTop:8 }}>💚 {verdict}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-            <Card style={{ padding:18 }}>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:12 }}>Videos Tracking Music</div>
-              {videoQueue.map(v=>(
-                <div key={v.id} style={{ display:"flex", justifyContent:"space-between", padding:"7px 0", borderBottom:"1px solid #f0e8d8" }}>
-                  <div>
-                    <div style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#2d4a3a", fontWeight:500 }}>{v.topic.length>30?v.topic.slice(0,30)+"…":v.topic}</div>
-                    <div style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"#7a8a7a" }}>{v.music.audioSource}</div>
-                  </div>
-                  <Tag label={v.music.musicStatus} color={MUSIC_STATUS_COLORS[v.music.musicStatus]||"#b8c9a3"}/>
-                </div>
-              ))}
-            </Card>
-            <Card style={{ padding:18, background:"#f0f8f4", border:"1px solid #b8d8c8" }}>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:12 }}>💚 Sound Strategy Recommendations</div>
-              {["Calm Instrumental under voiceover is your strongest format — use it for Trust Building and Education posts.","Trending sounds on Awareness posts expand reach most efficiently. Search in TikTok before posting.","Never post a video silent by mistake. Always check music status in the Video Queue before scheduling.","Men's content performs better with commercial-safe beats over trending feminine audio.","Premium Teaser videos should use aspirational, dreamy instrumental — not energetic or upbeat."].map((note,i)=>(
-                <div key={i} style={{ fontFamily:"'Jost',sans-serif", fontSize:11.5, color:"#2d5a4a", padding:"5px 0", borderBottom:i<4?"1px dashed #c8e8d0":"none", lineHeight:1.55 }}>💚 {note}</div>
-              ))}
-            </Card>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// BRAND RULES
-// ─────────────────────────────────────────────────────────────────────────────
-function BrandPage() {
-  const [rules, setRules] = useState({ brandName:"Lumen Flow", ctaDefault:"link in bio 💚", tone:"Soft, supportive, feminine, practical, clean, calm, encouraging", avoidShame:true, avoidMedical:true, useGreenHeart:true, minimalDashes:true, noPrematureConvert:true, trustFirst:true });
-  const [saved, setSaved] = useState(false);
-  return (
-    <div className="fade" style={{ maxWidth:700 }}>
-      <SectionHead title="Brand Rules" sub="Define how Lumen Flow communicates — and converts — with integrity"/>
-      <div style={{ display:"grid", gap:13 }}>
-        <Card style={{ padding:20 }}>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:13 }}>Identity</div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:11 }}>
-            <div><Label>Brand Name</Label><Input value={rules.brandName} onChange={e=>setRules(p=>({...p,brandName:e.target.value}))}/></div>
-            <div><Label>Default CTA</Label><Input value={rules.ctaDefault} onChange={e=>setRules(p=>({...p,ctaDefault:e.target.value}))}/></div>
-            <div style={{ gridColumn:"1/-1" }}><Label>Brand Tone</Label><Input value={rules.tone} onChange={e=>setRules(p=>({...p,tone:e.target.value}))}/></div>
-          </div>
-        </Card>
-        <Card style={{ padding:20 }}>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:13 }}>Content Rules</div>
-          {[["Avoid shame-based fitness and body language","avoidShame"],["Avoid medical claims or hormone balancing promises","avoidMedical"],["Use 💚 green heart in all captions","useGreenHeart"],["Use zero to minimal dashes","minimalDashes"],["Never lead with Premium — build trust first","noPrematureConvert"],["Trust building content before Conversion content","trustFirst"]].map(([l,k])=>(
-            <div key={k} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"9px 0", borderBottom:"1px solid #f0e8d8" }}>
-              <span style={{ fontFamily:"'Jost',sans-serif", fontSize:12.5, color:"#3a5a4a" }}>{l}</span>
-              <Toggle on={rules[k]} onChange={v=>setRules(p=>({...p,[k]:v}))}/>
-            </div>
-          ))}
-        </Card>
-        <Card style={{ padding:18 }}>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a", marginBottom:9 }}>Visual Style</div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:9, marginBottom:12 }}>
-            {[["Background","#f5f0e8","Cream"],["Typography","#5a8a6a","Sage Green"],["Accent","#d4a0a0","Blush"],["Men's","#3a5a3a","Deep Green"]].map(c=>(
-              <div key={c[0]} style={{ textAlign:"center" }}><div style={{ width:"100%", height:40, borderRadius:9, background:c[1], border:"1px solid #e8e0d0", marginBottom:4 }}/><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9.5, color:"#5a6a5a", fontWeight:600 }}>{c[0]}</div><div style={{ fontFamily:"'Jost',sans-serif", fontSize:9, color:"#8a9a8a" }}>{c[2]}</div></div>
-            ))}
-          </div>
-        </Card>
-        <div style={{ background:"#f0f8f4", borderRadius:11, padding:14, border:"1px solid #b8d8c8" }}>
-          <p style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#2d5a4a", lineHeight:1.7 }}>💚 <strong>Safety reminder:</strong> Always encourage listeners to break their fast if they feel weak, dizzy, shaky, sick, or unwell. No post should ever contradict this.</p>
-        </div>
-        <Btn onClick={()=>{setSaved(true);setTimeout(()=>setSaved(false),2200);}} style={{ justifyContent:"center", padding:"12px" }}>{saved?<><I n="check" s={14} c="white"/> Saved!</>:"Save Brand Rules 💚"}</Btn>
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// POSTING SETTINGS
-// ─────────────────────────────────────────────────────────────────────────────
-function PostingPage() {
-  const [tab, setTab] = useState("frequency");
-  const [s, setS] = useState({ igDay:1, ttDay:2, pinDay:3, ytDay:1, minMens:1, minFasting:2, minAppFeat:1, minPremium:1, requireApproval:true, autoSchedule:false });
-  const [saved, setSaved] = useState(false);
-  return (
-    <div className="fade" style={{ maxWidth:700 }}>
-      <SectionHead title="Posting Settings" sub="Configure frequency, weekly requirements, and platform connections"/>
-      <div style={{ display:"flex", gap:5, marginBottom:20, background:"#f0ebe0", padding:4, borderRadius:12, width:"fit-content" }}>
-        {[["frequency","Post Frequency"],["requirements","Weekly Requirements"],["connections","Platform Connections"]].map(([t,l])=>(
-          <button key={t} className="tab-pill" onClick={()=>setTab(t)} style={{ background:tab===t?"#faf7f2":"transparent", color:tab===t?"#2d4a3a":"#7a8a7a", boxShadow:tab===t?"0 1px 4px rgba(0,0,0,0.08)":"none", fontWeight:tab===t?600:400 }}>{l}</button>
-        ))}
-      </div>
-      {tab==="frequency"&&(
-        <div style={{ display:"grid", gap:11 }}>
-          {[["📸 Instagram","igDay"],["🎵 TikTok","ttDay"],["📌 Pinterest","pinDay"],["▶️ YouTube Shorts","ytDay"]].map(([l,k])=>(
-            <Card key={k} style={{ padding:16, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:17, fontWeight:600, color:"#2d4a3a" }}>{l}</div>
-              <div style={{ display:"flex", gap:14, alignItems:"center" }}>
-                <div><Label>Per day</Label><Select value={String(s[k])} onChange={e=>setS(p=>({...p,[k]:+e.target.value}))} options={["0","1","2","3","4","5"]} style={{ width:75 }}/></div>
-                <div><Label>Per week</Label><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:24, fontWeight:600, color:"#5a8a6a", paddingTop:2 }}>{s[k]*7}</div></div>
-              </div>
-            </Card>
-          ))}
-          <Card style={{ padding:16 }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:15, fontWeight:600, color:"#2d4a3a", marginBottom:10 }}>Approval & Scheduling</div>
-            {[["Require manual approval before posting","requireApproval"],["Auto-schedule approved content","autoSchedule"]].map(([l,k])=>(
-              <div key={k} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid #f0e8d8" }}>
-                <span style={{ fontFamily:"'Jost',sans-serif", fontSize:12.5, color:"#3a5a4a" }}>{l}</span>
-                <Toggle on={s[k]} onChange={v=>setS(p=>({...p,[k]:v}))}/>
-              </div>
-            ))}
-          </Card>
-          <Btn onClick={()=>{setSaved(true);setTimeout(()=>setSaved(false),2200);}} style={{ justifyContent:"center", padding:"11px" }}>{saved?<><I n="check" s={14} c="white"/> Saved!</>:"Save Settings 💚"}</Btn>
-        </div>
-      )}
-      {tab==="requirements"&&(
-        <div style={{ display:"grid", gap:11 }}>
-          {[["👥 Min men's posts per week","minMens"],["⏱ Min fasting posts per week","minFasting"],["📱 Min app feature posts per week","minAppFeat"],["💜 Min Premium teaser posts per week","minPremium"]].map(([l,k])=>(
-            <Card key={k} style={{ padding:16, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-              <span style={{ fontFamily:"'Jost',sans-serif", fontSize:12.5, color:"#2d4a3a", fontWeight:500 }}>{l}</span>
-              <Select value={String(s[k])} onChange={e=>setS(p=>({...p,[k]:+e.target.value}))} options={["0","1","2","3","4"]} style={{ width:75 }}/>
-            </Card>
-          ))}
-          <div style={{ background:"#f0f8f4", borderRadius:11, padding:14, border:"1px solid #b8d8c8" }}>
-            <p style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"#2d5a4a", lineHeight:1.65 }}>💚 The system will alert you in the briefing, dashboard, and calendar view if any weekly requirement is not met.</p>
-          </div>
-          <Btn onClick={()=>{setSaved(true);setTimeout(()=>setSaved(false),2200);}} style={{ justifyContent:"center", padding:"11px" }}>{saved?<><I n="check" s={14} c="white"/> Saved!</>:"Save Requirements 💚"}</Btn>
-        </div>
-      )}
-      {tab==="connections"&&(
-        <div style={{ display:"grid", gap:10 }}>
-          {[["Instagram","Instagram Graph API"],["TikTok","TikTok Content Posting API"],["Pinterest","Pinterest API v5"],["YouTube","YouTube Data API v3"]].map(([p,a])=>(
-            <Card key={p} style={{ padding:16, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-              <div><div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:600, color:"#2d4a3a" }}>{p}</div><div style={{ fontFamily:"'Jost',sans-serif", fontSize:10.5, color:"#7a8a7a", marginTop:2 }}>{a}</div></div>
-              <Btn>Connect via OAuth</Btn>
-            </Card>
-          ))}
-          <Card style={{ padding:13 }}>
-            <p style={{ fontFamily:"'Jost',sans-serif", fontSize:11.5, color:"#5a6a5a", lineHeight:1.65 }}>🔒 Lumen Flow uses official OAuth only. No passwords stored. All connections use official developer APIs. If direct posting is unavailable, assets and captions can be exported for manual posting.</p>
-          </Card>
-        </div>
-      )}
-    </div>
-  );
-}
+// ─────────────────────────────────────────────
+//  STYLES
+// ─────────────────────────────────────────────
+const s = {
+  app:        { minHeight: "100vh", background: "#F4F8F4", display: "flex", justifyContent: "center", fontFamily: "sans-serif" },
+  container:  { width: "100%", maxWidth: 480, background: "#fff", minHeight: "100vh", position: "relative", boxShadow: "0 0 40px rgba(0,0,0,0.08)" },
+  screen:     { minHeight: "100vh", background: "linear-gradient(160deg, #EAF2EA, #fff)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 28, boxSizing: "border-box" },
+  onboardBox: { width: "100%", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" },
+  heading:    { fontFamily: "Georgia, serif", fontSize: 26, fontWeight: 400, color: "#2D3B2E", margin: "0 0 8px", lineHeight: 1.3 },
+  sub:        { fontSize: 14, color: "#6b7b6b", margin: 0, lineHeight: 1.6 },
+  chip:       { borderRadius: 100, padding: "5px 14px", fontSize: 13, fontWeight: 600 },
+  header:     { display: "flex", alignItems: "center", gap: 8, padding: "14px 16px" },
+  title:      { fontFamily: "Georgia, serif", fontWeight: 400, fontSize: 20, color: "#2D3B2E", margin: "0 0 12px" },
+  card:       { background: "#F8FAF8", padding: 16, borderRadius: 18, textAlign: "left", marginBottom: 12 },
+  label:      { margin: 0, fontSize: 13, color: "#6b7b6b" },
+  btn:        { width: "100%", padding: 14, borderRadius: 16, border: "none", background: "#8FAF8F", color: "#fff", fontWeight: "bold", fontSize: 15, cursor: "pointer" },
+  backBtn:    { marginTop: 10, background: "none", border: "none", color: "#8FA090", fontSize: 14, cursor: "pointer", padding: 8 },
+  input:      { width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid #C5D9C5", fontFamily: "sans-serif", fontSize: 15, color: "#2D3B2E", background: "#F4F8F4", boxSizing: "border-box", outline: "none", marginBottom: 4 },
+  nav:        { position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 480, background: "#fff", borderTop: "1px solid #EAF2EA", display: "flex", justifyContent: "space-around", padding: "8px 0 12px", boxShadow: "0 -4px 16px rgba(0,0,0,0.05)", zIndex: 100 },
+  navItem:    { cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 60, paddingTop: 4 },
+};
