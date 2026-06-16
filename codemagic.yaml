@@ -51,10 +51,10 @@
     max_build_duration: 120
     environment:
       android_signing:
-        - lumenflow_keystore
+        - lumenflow-upload-key
       java: 21
       vars:
-        PACKAGE_NAME: com.wLumenFlow_19769943
+        PACKAGE_NAME: com.lumen.flow
     scripts:
       - name: Install dependencies
         script: npm install
