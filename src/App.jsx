@@ -2146,7 +2146,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
               display: "flex", alignItems: "center", justifyContent: "center", position: "relative",
             }}>
               <span style={{ fontSize: 11, lineHeight: 1 }}>{d}</span>
-              {mode !== "fast" && <span style={{ fontSize: 7, lineHeight: 1, position: "absolute", top: 1, right: 1 }}>{dayMoon}</span>}
+              {mode !== "fast" && showMoon && <span style={{ fontSize: 7, lineHeight: 1, position: "absolute", top: 1, right: 1 }}>{dayMoon}</span>}
               {fertile && mode !== "fast" && <span style={{ position: "absolute", bottom: 1, right: 1, width: 4, height: 4, borderRadius: "50%", background: "#86efac" }} />}
             </button>
           );
