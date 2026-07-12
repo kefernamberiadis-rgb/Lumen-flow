@@ -352,6 +352,7 @@ function MoonPhaseCard({ mode, lastPeriod, cycleDay, phase }) {
 
 function HomeScreen({ name, lastPeriod, mode, settings }) {
   const cycleDay = Math.max(1, getCycleDay(lastPeriod) - 1);
+  const daysLate = lastPeriod ? getDaysLate(lastPeriod, settings?.cycleLength || 28) : 0;
 
   useEffect(() => {
     if (localStorage.getItem("lf_auto_start_fast") === "true") {
