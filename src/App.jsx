@@ -369,6 +369,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
   const [showEditFast, setShowEditFast] = useState(false);
   const [editTimeVal, setEditTimeVal] = useState("");
   const [editEndTimeVal, setEditEndTimeVal] = useState("");
+  const [fastSummary, setFastSummary] = useState(null);
   const [waterToday, setWaterToday] = useState(() => parseInt(localStorage.getItem("lf_water_today") || "0"));
 
   useEffect(() => {
@@ -532,6 +533,28 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
           <button onClick={startFast} style={{ ...s.btn, background: mode === "fast" ? "rgba(184,148,60,0.06)" : phase === "Menstrual" ? "linear-gradient(135deg,#7BA8C9,#5888b0)" : phase === "Follicular" ? "linear-gradient(135deg,#f472b6,#c4809a)" : phase === "Ovulation" ? "linear-gradient(135deg,#f59e0b,#d97706)" : "linear-gradient(135deg,#ea580c,#c2410c)", color: mode === "fast" ? "#C9A84C" : "#fff", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.3)" : "none", letterSpacing: mode === "fast" ? "0.1em" : "0", opacity: goalHours ? 1 : 0.5 }}>
             {mode === "fast" ? "BEGIN FAST ›" : "Begin Fast 🌙"}
           </button>
+        )}
+        {fastSummary && (
+          <div style={{ background: "#F8FAF8", borderRadius: 16, padding: "20px", border: "0.5px solid #dce8dc", marginTop: 8, textAlign: "center" }}>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 18, color: "#2D3B2E", margin: "0 0 4px" }}>🎉 Fast complete!</p>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 28, color: "#5C7F60", margin: "0 0 16px", fontWeight: 600 }}>{fastSummary.hoursText}</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Edit end time (optional)</p>
+            <input type="time" defaultValue={fastSummary.editEnd}
+              onChange={e => {
+                const [hh, mm] = e.target.value.split(":").map(Number);
+                const d = new Date(); d.setHours(hh, mm, 0, 0);
+                let endTime = d.getTime();
+                if (endTime > Date.now()) endTime -= 86400000;
+                const hours = ((endTime - fastStart) / 3600000);
+                const h = Math.floor(hours); const m = Math.floor((hours - h) * 60);
+                setFastSummary({ ...fastSummary, endTime, hoursText: h + "h " + m + "m", editEnd: e.target.value });
+              }}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12 }}
+            />
+            <button onClick={() => confirmStopFast(fastSummary.endTime)} style={{ width: "100%", padding: "12px", borderRadius: 12, background: "linear-gradient(135deg,#5C7F60,#7A9E7E)", color: "#fff", fontFamily: "sans-serif", fontSize: 14, border: "none", cursor: "pointer" }}>
+              Confirm & Save Fast ✦
+            </button>
+          </div>
         )}
         {showEditFast && fastStart && (
           <div style={{ background: "#F8FAF8", borderRadius: 16, padding: "16px", border: "0.5px solid #dce8dc", marginTop: 8 }}>
