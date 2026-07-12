@@ -2519,7 +2519,7 @@ function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
       <div style={{ display: "flex", overflowX: "auto", gap: 8, padding: "0 16px 14px", scrollbarWidth: "none" }}>
         {tabs.map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
-            flexShrink: 0, padding: "7px 16px", borderRadius: 100, border: "none",
+            width: "100%", padding: "12px 16px", borderRadius: 12, border: "none", textAlign: "left",
             background: tab === t ? (mode === "fast" ? "#7A9E7E" : learnPhase === "Menstrual" ? "#7BA8C9" : learnPhase === "Follicular" ? "#f472b6" : learnPhase === "Ovulation" ? "#0891b2" : "#ea580c") : "rgba(255,255,255,0.5)",
             color: tab === t ? "#fff" : "#6b7b6b",
             fontFamily: "sans-serif", fontSize: 13, fontWeight: tab === t ? 700 : 400, cursor: "pointer",
