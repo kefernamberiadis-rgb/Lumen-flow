@@ -389,6 +389,13 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
     localStorage.setItem("lf_fast_start", now);
   };
   const stopFast = () => {
+    const endTime = Date.now();
+    const hours = ((endTime - fastStart) / 3600000);
+    const h = Math.floor(hours);
+    const m = Math.floor((hours - h) * 60);
+    setFastSummary({ endTime, hoursText: h + "h " + m + "m", editEnd: new Date(endTime).toTimeString().slice(0,5) });
+  };
+  const confirmStopFast = (endTime) => {
     const today = new Date().toISOString().split("T")[0];
     const existing = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
     if (!existing.includes(today)) {
@@ -397,6 +404,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
     setFastStart(null);
     setElapsed(0);
     localStorage.removeItem("lf_fast_start");
+    setFastSummary(null);
   };
 
   const fmtTime = ms => {
