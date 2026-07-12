@@ -4096,7 +4096,7 @@ export default function App() {
           </div>
         </div>
       )}
-      <div style={{ position: "fixed", bottom: 80, right: 16, zIndex: 999 }}>
+      <div style={{ display: "none" }}>
         <button onClick={() => setShowWaitlist(true)} style={{ background: "#7A9E7E", border: "none", borderRadius: 50, padding: "12px 18px", fontFamily: "sans-serif", fontSize: 12, color: "#fff", cursor: "pointer", boxShadow: "0 2px 12px rgba(0,0,0,0.15)", fontWeight: 600, letterSpacing: "0.03em" }}>
           🌿 Join Waitlist
         </button>
