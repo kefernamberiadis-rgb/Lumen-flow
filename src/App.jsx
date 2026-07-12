@@ -368,6 +368,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
   const [showGoals, setShowGoals]   = useState(false);
   const [showEditFast, setShowEditFast] = useState(false);
   const [editTimeVal, setEditTimeVal] = useState("");
+  const [editEndTimeVal, setEditEndTimeVal] = useState("");
   const [waterToday, setWaterToday] = useState(() => parseInt(localStorage.getItem("lf_water_today") || "0"));
 
   useEffect(() => {
@@ -574,6 +575,12 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
                 <button key={h} onClick={() => setGoalHours(h)} style={{ flex: 1, padding: "8px 4px", borderRadius: 10, border: "0.5px solid #dce8dc", background: goalHours === h ? "#7A9E7E" : "#fff", color: goalHours === h ? "#fff" : "#4a5a4b", fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{h}h</button>
               ))}
             </div>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Fast end time (optional)</p>
+            <input
+              type="time"
+              onChange={e => { setEditEndTimeVal(e.target.value); }}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12 }}
+            />
             <button onClick={() => {
               if (editTimeVal) {
                 const [hh, mm] = editTimeVal.split(":").map(Number);
@@ -583,6 +590,14 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
                 if (newStart > Date.now()) newStart -= 86400000;
                 setFastStart(newStart);
                 localStorage.setItem("lf_fast_start", newStart);
+              }
+              if (editEndTimeVal) {
+                const [hh2, mm2] = editEndTimeVal.split(":").map(Number);
+                const d2 = new Date();
+                d2.setHours(hh2, mm2, 0, 0);
+                let endTime = d2.getTime();
+                if (endTime < Date.now() - 86400000) endTime += 86400000;
+                localStorage.setItem("lf_fast_end", endTime);
               }
               setShowEditFast(false);
             }} style={{ ...s.btn, fontSize: 13, padding: "10px 0" }}>Save changes</button>
