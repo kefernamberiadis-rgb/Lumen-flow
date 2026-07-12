@@ -367,6 +367,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
   const [goalHours, setGoalHours]   = useState(16);
   const [showGoals, setShowGoals]   = useState(false);
   const [showEditFast, setShowEditFast] = useState(false);
+  const [editTimeVal, setEditTimeVal] = useState("");
   const [waterToday, setWaterToday] = useState(() => parseInt(localStorage.getItem("lf_water_today") || "0"));
 
   useEffect(() => {
@@ -573,7 +574,18 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
                 <button key={h} onClick={() => setGoalHours(h)} style={{ flex: 1, padding: "8px 4px", borderRadius: 10, border: "0.5px solid #dce8dc", background: goalHours === h ? "#7A9E7E" : "#fff", color: goalHours === h ? "#fff" : "#4a5a4b", fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{h}h</button>
               ))}
             </div>
-            <button onClick={() => setShowEditFast(false)} style={{ ...s.btn, fontSize: 13, padding: "10px 0" }}>Save changes</button>
+            <button onClick={() => {
+              if (editTimeVal) {
+                const [hh, mm] = editTimeVal.split(":").map(Number);
+                const d = new Date();
+                d.setHours(hh, mm, 0, 0);
+                let newStart = d.getTime();
+                if (newStart > Date.now()) newStart -= 86400000;
+                setFastStart(newStart);
+                localStorage.setItem("lf_fast_start", newStart);
+              }
+              setShowEditFast(false);
+            }} style={{ ...s.btn, fontSize: 13, padding: "10px 0" }}>Save changes</button>
           </div>
         )}
       </div>
