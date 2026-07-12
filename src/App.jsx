@@ -556,7 +556,10 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
               defaultValue={fastStart ? new Date(fastStart).toTimeString().slice(0,5) : "00:00"}
               onChange={e => {
                 const currentDate = fastStart ? new Date(fastStart).toISOString().split("T")[0] : new Date().toISOString().split("T")[0];
-                let newStart = new Date(currentDate + "T" + e.target.value).getTime();
+                const [hh, mm] = e.target.value.split(":").map(Number);
+                const d = new Date();
+                d.setHours(hh, mm, 0, 0);
+                let newStart = d.getTime();
                 if (newStart > Date.now()) newStart -= 86400000;
                 setFastStart(newStart);
                 localStorage.setItem("lf_fast_start", newStart);
