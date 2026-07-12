@@ -363,6 +363,8 @@ function MoonPhaseCard({ mode, lastPeriod, cycleDay, phase }) {
 function HomeScreen({ name, lastPeriod, mode, settings }) {
   const cycleDay = Math.max(1, getCycleDay(lastPeriod) - 1);
   const daysLate = lastPeriod ? getDaysLate(lastPeriod, settings?.cycleLength || 28) : 0;
+  const cycleLen = settings?.cycleLength || 28;
+  const daysUntilPeriod = daysLate > 0 ? 0 : Math.max(0, cycleLen - getCycleDay(lastPeriod));
 
   useEffect(() => {
     if (localStorage.getItem("lf_auto_start_fast") === "true") {
@@ -461,7 +463,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
               <span style={{ ...s.chip, background: info.bg, color: info.color, fontFamily: "sans-serif" }}>
                 {info.emoji} {phase}
               </span>
-              <p style={{ ...s.label, marginTop: 4 }}>Day {cycleDay}</p>
+              <p style={{ ...s.label, marginTop: 4 }}>{daysLate > 0 ? `${daysLate} day${daysLate === 1 ? "" : "s"} late 🌸` : daysUntilPeriod === 0 ? "Period today 🌸" : daysUntilPeriod <= 5 ? `${daysUntilPeriod} day${daysUntilPeriod === 1 ? "" : "s"} until period 🌸` : `Day ${cycleDay}`}</p>
             </>
           ) : (
             <span style={{ ...s.chip, background: "#EAF2EA", color: "#5C7F60", fontFamily: "sans-serif" }}>
