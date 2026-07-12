@@ -1852,6 +1852,7 @@ function getSeasonalBg(mode, phase) {
 }
 
 function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, periodLength = 7, mode }) {
+  const [showMoon, setShowMoon] = useState(() => JSON.parse(localStorage.getItem("lf_show_moon") ?? "true"));
   const [showMenu, setShowMenu] = useState(false);
   const [calendarKey, setCalendarKey] = useState(0);
   const [periodMsg, setPeriodMsg] = useState(null);
