@@ -1950,7 +1950,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
 
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
         <button onClick={() => setShowPlanner(!showPlanner)} style={{ padding: "9px 20px", borderRadius: 50, border: "none", background: mode === "fast" ? "rgba(201,168,76,0.15)" : getSeasonalAccent(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))).btn, color: "#fff", fontFamily: "Georgia, serif", fontSize: 13, cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.1)" }}>
-          {showPlanner ? "✕ Close Planner" : "🗓️ Plan My Month"}
+          {showPlanner ? "✕ Close" : "🗓️ Plan My Month"}
         </button>
       </div>
 
