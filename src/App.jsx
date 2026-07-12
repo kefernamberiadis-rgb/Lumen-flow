@@ -2516,7 +2516,7 @@ function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
         </div>
       </div>
 
-      <div style={{ display: "flex", overflowX: "auto", gap: 8, padding: "0 16px 14px", scrollbarWidth: "none" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 16px 14px" }}>
         {tabs.map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
             width: "100%", display: "block", padding: "12px 16px", borderRadius: 12, border: "none", textAlign: "left", boxSizing: "border-box",
