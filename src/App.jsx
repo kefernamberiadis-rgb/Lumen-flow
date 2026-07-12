@@ -13,6 +13,16 @@ function getCycleDay(lastPeriod, cycleLength = 28) {
   return (diff % cycleLength) + 1;
 }
 
+function getDaysLate(lastPeriod, cycleLength = 28) {
+  if (!lastPeriod) return 0;
+  const start = new Date(lastPeriod);
+  start.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff = Math.floor((today - start) / 86400000);
+  return diff >= cycleLength ? diff - cycleLength + 1 : 0;
+}
+
 function getPeriodPhase(lastPeriod, periodEnded, cycleLength = 28) {
   if (!lastPeriod) return null;
   if (!periodEnded) return "Menstrual";
