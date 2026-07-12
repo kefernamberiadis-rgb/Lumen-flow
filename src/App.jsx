@@ -2519,7 +2519,7 @@ function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 16px 14px" }}>
         {tabs.map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
-            flexShrink: 0, padding: "7px 16px", borderRadius: 100, border: "none",
+            width: "100%", padding: "12px 16px", borderRadius: 12, border: "none", textAlign: "left",
             background: tab === t ? (mode === "fast" ? "#7A9E7E" : learnPhase === "Menstrual" ? "#7BA8C9" : learnPhase === "Follicular" ? "#f472b6" : learnPhase === "Ovulation" ? "#0891b2" : "#ea580c") : "rgba(255,255,255,0.5)",
             color: tab === t ? "#fff" : "#6b7b6b",
             fontFamily: "sans-serif", fontSize: 13, fontWeight: tab === t ? 700 : 400, cursor: "pointer",
@@ -4062,6 +4062,9 @@ const s = {
   nav:        { position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 480, background: "#fff", borderTop: "1px solid #EAF2EA", display: "flex", justifyContent: "space-around", padding: "8px 0 12px", boxShadow: "0 -4px 16px rgba(0,0,0,0.05)", zIndex: 100 },
   navItem:    { cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 60, paddingTop: 4 },
 };
+
+
+
 
 
 
