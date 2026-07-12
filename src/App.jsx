@@ -1955,118 +1955,55 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
       </div>
 
       {showPlanner && (() => {
-        const PLAN_LABELS = [
-          { key: "rest",    label: "Rest Day",  hours: 0,  color: "#C97B7B", bg: "#FDEAEA" },
-          { key: "gentle",  label: "Gentle",    hours: 12, color: "#7BA8C9", bg: "#EAF2F9" },
-          { key: "balanced",label: "Balanced",  hours: 14, color: "#7A9E7E", bg: "#EAF2EA" },
-          { key: "steady",  label: "Steady",    hours: 16, color: "#C9A87B", bg: "#FDF6EA" },
-          { key: "strong",  label: "Strong",    hours: 18, color: "#9B7BC9", bg: "#F5F0FF" },
-        ];
-
-        const getPhaseForDay = (d) => {
-          if (!lastPeriod) return "follicular";
-          const date = new Date(year, month, d);
-          const parts = lastPeriod.split("-");
-          const start = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-          const diff = Math.floor((date - start) / 86400000);
-          const dayInCycle = ((diff % cycleLength) + cycleLength) % cycleLength;
-          if (dayInCycle < periodLength) return "menstrual";
-          if (dayInCycle < 13) return "follicular";
-          if (dayInCycle < 16) return "ovulation";
-          return "luteal";
-        };
-
-        const getSuggestion = (phase) => {
-          if (mode === "fast") {
-            const dayOfWeek = new Date(year, month, parseInt(phase)).getDay();
-            if (dayOfWeek === 0 || dayOfWeek === 6) return "gentle";
-            if (dayOfWeek === 1 || dayOfWeek === 4) return "steady";
-            return "balanced";
-          }
-          if (phase === "menstrual") return "gentle";
-          if (phase === "follicular") return "balanced";
-          if (phase === "ovulation") return "steady";
-          return "balanced";
-        };
-
-        const planKey = `${year}-${month}`;
-        const currentPlan = plannerData[planKey] || {};
-
-        const autoFill = () => {
-          const newPlan = {};
-          for (let d = 1; d <= daysInMonth; d++) {
-            const phase = mode === "fast" ? String(d) : getPhaseForDay(d);
-            newPlan[d] = getSuggestion(phase);
-          }
-          const updated = { ...plannerData, [planKey]: newPlan };
-          setPlannerData(updated);
-          localStorage.setItem("lf_monthly_plan", JSON.stringify(updated));
-        };
-
-        const resetPlan = () => {
-          const updated = { ...plannerData };
-          delete updated[planKey];
-          setPlannerData(updated);
-          localStorage.setItem("lf_monthly_plan", JSON.stringify(updated));
-          setEditPlanDay(null);
-        };
-
-        const setDayPlan = (d, key) => {
-          const newPlan = { ...currentPlan, [d]: key };
-          const updated = { ...plannerData, [planKey]: newPlan };
-          setPlannerData(updated);
-          localStorage.setItem("lf_monthly_plan", JSON.stringify(updated));
-          setEditPlanDay(null);
-        };
-
-        const hasPlan = Object.keys(currentPlan).length > 0;
-
+        const fastDaysArr = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
+        const goalHrs = parseInt(localStorage.getItem("lf_selectedFast") || "16");
+        const totalFasts = fastDaysArr.length;
+        let streak = 0;
+        const tod = new Date();
+        for (let i = 0; i < 365; i++) {
+          const d2 = new Date(tod); d2.setDate(tod.getDate() - i);
+          const k = d2.toISOString().split("T")[0];
+          if (fastDaysArr.includes(k)) streak++; else if (i > 0) break;
+        }
+        const daysInMonth2 = new Date(year, month + 1, 0).getDate();
+        const firstDow2 = new Date(year, month, 1).getDay();
         return (
-          <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 18, padding: "16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : "0.5px solid rgba(180,160,200,0.3)", marginBottom: 16 }}>
-            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 4px" }}>🗓️ Monthly Rhythm Planner</p>
-            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: "0 0 14px", lineHeight: 1.6 }}>Plan your month with your body, not against it.</p>
-            <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
-              <button onClick={autoFill} style={{ padding: "8px 16px", borderRadius: 50, border: "none", background: mode === "fast" ? "#7A9E7E" : "#9B7BC9", color: "#fff", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>✨ Suggest my month</button>
-              {hasPlan && <button onClick={resetPlan} style={{ padding: "8px 16px", borderRadius: 50, border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(155,123,201,0.3)", background: "none", color: mode === "fast" ? "#C9A84C" : "#9B7BC9", fontFamily: "sans-serif", fontSize: 12, cursor: "pointer" }}>↺ Reset</button>}
+          <div style={{ background: "#F8FAF8", borderRadius: 16, padding: 16, border: "0.5px solid #dce8dc", marginBottom: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+              <div style={{ textAlign: "center" }}>
+                <p style={{ fontFamily: "Georgia,serif", fontSize: 22, color: "#5C7F60", margin: 0, fontWeight: 600 }}>{totalFasts}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: 0 }}>Total Fasts</p>
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <p style={{ fontFamily: "Georgia,serif", fontSize: 22, color: "#5C7F60", margin: 0, fontWeight: 600 }}>{streak}</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: 0 }}>Streak</p>
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <p style={{ fontFamily: "Georgia,serif", fontSize: 22, color: "#5C7F60", margin: 0, fontWeight: 600 }}>{goalHrs}h</p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: 0 }}>Goal</p>
+              </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 12 }}>
-              {["S","M","T","W","T","F","S"].map((d,i) => (
-                <div key={i} style={{ textAlign: "center", fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", fontWeight: 600, padding: "4px 0" }}>{d}</div>
-              ))}
-              {Array.from({ length: new Date(year, month, 1).getDay() }).map((_, i) => <div key={`e${i}`} />)}
-              {Array.from({ length: daysInMonth }).map((_, i) => {
-                const d = i + 1;
-                const planKey2 = currentPlan[d];
-                const planItem = PLAN_LABELS.find(p => p.key === planKey2);
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 4 }}>
+              {["S","M","T","W","T","F","S"].map((d,i) => <div key={i} style={{ textAlign: "center", fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", fontWeight: 600 }}>{d}</div>)}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
+              {Array.from({ length: firstDow2 }).map((_,i) => <div key={"e"+i} />)}
+              {Array.from({ length: daysInMonth2 }, (_,i) => i+1).map(d => {
+                const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+                const fasted = fastDaysArr.includes(dateStr);
+                const isToday2 = d === tod.getDate() && month === tod.getMonth() && year === tod.getFullYear();
                 return (
-                  <div key={d} onClick={() => setEditPlanDay(editPlanDay === d ? null : d)} style={{ aspectRatio: "1", borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", background: planItem ? planItem.bg : mode === "fast" ? "rgba(255,255,255,0.04)" : "#F8FAF8", border: `0.5px solid ${planItem ? planItem.color + "44" : "rgba(150,150,150,0.15)"}`, padding: 2 }}>
-                    <span style={{ fontFamily: "sans-serif", fontSize: 11, color: planItem ? planItem.color : "#8FA090", fontWeight: 600 }}>{d}</span>
-                    {planItem && <span style={{ fontFamily: "sans-serif", fontSize: 7, color: planItem.color, lineHeight: 1, textAlign: "center" }}>{planItem.label}</span>}
+                  <div key={d} style={{ aspectRatio: "1", borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: fasted ? "#7A9E7E" : "#F0F6F0", border: isToday2 ? "2px solid #5C7F60" : "none" }}>
+                    <span style={{ fontFamily: "sans-serif", fontSize: 10, color: fasted ? "#fff" : "#8FA090", fontWeight: fasted ? 700 : 400 }}>{d}</span>
+                    {fasted && <span style={{ fontFamily: "sans-serif", fontSize: 7, color: "#fff" }}>{goalHrs}h</span>}
                   </div>
                 );
               })}
             </div>
-            {editPlanDay && (
-              <div style={{ background: mode === "fast" ? "rgba(0,0,0,0.2)" : "#fff", borderRadius: 14, padding: "14px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : "0.5px solid #dce8dc", marginBottom: 12 }}>
-                <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 10px" }}>Day {editPlanDay} — choose your rhythm</p>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  {PLAN_LABELS.map(p => (
-                    <button key={p.key} onClick={() => setDayPlan(editPlanDay, p.key)} style={{ padding: "7px 14px", borderRadius: 50, border: "none", background: currentPlan[editPlanDay] === p.key ? p.color : p.bg, color: currentPlan[editPlanDay] === p.key ? "#fff" : p.color, fontFamily: "sans-serif", fontSize: 12, cursor: "pointer", fontWeight: currentPlan[editPlanDay] === p.key ? 600 : 400 }}>
-                      {p.label} {p.hours > 0 ? `${p.hours}h` : ""}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {PLAN_LABELS.map(p => (
-                <div key={p.key} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: 2, background: p.color }} />
-                  <span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#6b7b6b" }}>{p.label} {p.hours > 0 ? `${p.hours}h` : ""}</span>
-                </div>
-              ))}
+            <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}><div style={{ width: 10, height: 10, borderRadius: 3, background: "#7A9E7E" }} /><span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#6b7b6b" }}>Fasted</span></div>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}><div style={{ width: 10, height: 10, borderRadius: 3, background: "#F0F6F0", border: "0.5px solid #dce8dc" }} /><span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#6b7b6b" }}>No fast</span></div>
             </div>
-            <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "10px 0 0", lineHeight: 1.6 }}>🌿 Free during beta — premium coming soon. These are gentle suggestions, not rules. Always listen to your body first.</p>
           </div>
         );
       })()}
