@@ -67,7 +67,6 @@ function Onboarding({ onDone }) {
             width: i === step ? 40 : 16, transition: "width 0.3s",
           }} />
         ))}
-        <button onClick={() => { const v = !showMoon; setShowMoon(v); localStorage.setItem("lf_show_moon", JSON.stringify(v)); }} style={{ marginLeft: "auto", background: "none", border: "0.5px solid #C5D9C5", borderRadius: 50, padding: "3px 10px", fontFamily: "sans-serif", fontSize: 10, color: "#5C7F60", cursor: "pointer" }}>{showMoon ? "Hide Moon" : "Show Moon"}</button>
       </div>
 
       {step === 1 && (
@@ -2093,6 +2092,13 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
       </div>
 
       {/* Legend */}
+      {mode !== "fast" && (
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+        <button onClick={() => { const v = !showMoon; setShowMoon(v); localStorage.setItem("lf_show_moon", JSON.stringify(v)); }} style={{ background: "none", border: "0.5px solid #C5D9C5", borderRadius: 50, padding: "6px 14px", fontFamily: "sans-serif", fontSize: 11, color: "#5C7F60", cursor: "pointer" }}>
+          {showMoon ? "Hide Moon" : "Show Moon"}
+        </button>
+      </div>,
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16, paddingTop: 12, borderTop: "1px solid #EAF2EA" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
           <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#86efac" }} />
           <span style={{ fontFamily: "sans-serif", fontSize: 11, color: "#6b7b6b" }}>Fertile</span>
