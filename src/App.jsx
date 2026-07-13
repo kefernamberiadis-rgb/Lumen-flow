@@ -3152,7 +3152,7 @@ function RecipesScreen({ phase, onNavigate, mode, digestionPreset, onClearDigest
     { id: "glutenfree", label: "Gluten free", emoji: "🌾" },
   ];
   const ALLERGY_OPTIONS = [
-    { id: "fruit", label: "Fresh fruit", emoji: "🍓" },
+    { id: "fruit", label: "OAS - Stone Fruit Allergy", emoji: "🍓" },
     { id: "peanuts", label: "Peanuts", emoji: "🥜" },
     { id: "dairy", label: "Dairy", emoji: "🥛" },
     { id: "gluten", label: "Gluten/wheat", emoji: "🌾" },
