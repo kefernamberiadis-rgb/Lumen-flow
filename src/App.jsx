@@ -380,6 +380,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
   const [goalHours, setGoalHours]   = useState(16);
   const [showGoals, setShowGoals]   = useState(false);
   const [showEditFast, setShowEditFast] = useState(false);
+  const [selectedBadge, setSelectedBadge] = useState(null);
   const [editTimeVal, setEditTimeVal] = useState("");
   const [editEndTimeVal, setEditEndTimeVal] = useState("");
   const [fastSummary, setFastSummary] = useState(null);
