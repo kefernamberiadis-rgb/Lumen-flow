@@ -1303,26 +1303,37 @@ if (saved) {
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setShowLogPreview(false)}>
           <div style={{ background: mode === "fast" ? "#1a2f1e" : "#fff", borderRadius: 24, padding: 24, width: "100%", maxWidth: 400, position: "relative" }} onClick={e => e.stopPropagation()}>
             <button onClick={() => setShowLogPreview(false)} style={{ position: "absolute", top: 12, right: 16, background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#8FA090" }}>✕</button>
-            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 16px" }}>📋 Today so far</p>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 16px" }}>📋 Check-in Log</p>
             {(() => {
               try {
                 const existing = JSON.parse(localStorage.getItem(key)) || {};
-                if (Object.keys(existing).length === 0) return <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#8FA090", textAlign: "center" }}>Nothing logged yet today.</p>;
+                const days = [];
+                for (let i = 0; i < 30; i++) {
+                  const d = new Date(); d.setDate(d.getDate() - i);
+                  const dk = d.toISOString().split("T")[0];
+                  try { const e = JSON.parse(localStorage.getItem(`lf_checkin_${dk}`)); if (e && Object.keys(e).length > 1) days.push({ date: dk, data: e }); } catch(err) {}
+                }
+                if (days.length === 0) return <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "#8FA090", textAlign: "center", padding: 16 }}>Nothing logged yet.</p>;
                 return (
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                    {[
-                      { label: "⚡ Energy", value: existing.energy ? ["Very low","Low","Neutral","Good","Great"][existing.energy-1] : "—" },
-                      { label: "🌙 Sleep", value: existing.sleep ? ["Poor","Light","Fair","Good","Great"][existing.sleep-1] : "—" },
-                      { label: "💧 Water", value: existing.water ? `${existing.water} glasses` : "—" },
-                      { label: "💭 Mood", value: existing.namedMood || "—" },
-                      { label: "🚽 Bowel", value: existing.bowelCheck?.entries?.length ? `${existing.bowelCheck.entries.length} logged` : "—" },
-                      { label: "🩺 Symptoms", value: existing.symptoms?.length ? existing.symptoms.slice(0,2).join(", ") : "—" },
-                      { label: "🌿 Body", value: existing.bodyCheck ? `${existing.bodyCheck} ${existing.weightUnit||"lbs"}` : "—" },
-                      { label: "🏃 Movement", value: existing.movements?.length ? `${existing.movements.length} logged` : "—" },
-                    ].map((item, i) => (
-                      <div key={i} style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "#F8FAF8", borderRadius: 10, padding: "8px 10px", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.2)" : "0.5px solid #dce8dc" }}>
-                        <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: "0 0 3px" }}>{item.label}</p>
-                        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", fontWeight: 600, margin: 0 }}>{item.value}</p>
+                  <div style={{ maxHeight: 400, overflowY: "auto" }}>
+                    {days.map((day, idx) => (
+                      <div key={idx} style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "#F8FAF8", borderRadius: 12, padding: "10px 12px", marginBottom: 8, border: "0.5px solid #dce8dc" }}>
+                        <p style={{ fontFamily: "Georgia,serif", fontSize: 13, color: "#5C7F60", margin: "0 0 6px", fontWeight: 600 }}>{new Date(day.date + "T12:00:00").toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" })}</p>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
+                          {[
+                            { label: "⚡ Energy", value: day.data.energy ? ["Very low","Low","Neutral","Good","Great"][day.data.energy-1] : null },
+                            { label: "🌙 Sleep", value: day.data.sleep ? ["Poor","Light","Fair","Good","Great"][day.data.sleep-1] : null },
+                            { label: "💧 Water", value: day.data.water ? `${day.data.water} glasses` : null },
+                            { label: "💭 Mood", value: day.data.namedMood || null },
+                            { label: "🩸 Flow", value: day.data.flow && day.data.flow !== "none" ? day.data.flow : null },
+                            { label: "🚽 Bowel", value: day.data.bowelCheck?.entries?.length ? `${day.data.bowelCheck.entries.length} logged` : null },
+                          ].filter(item => item.value).map((item, i) => (
+                            <div key={i}>
+                              <p style={{ fontFamily: "sans-serif", fontSize: 9, color: "#8FA090", margin: 0 }}>{item.label}</p>
+                              <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#2D3B2E", fontWeight: 600, margin: 0 }}>{item.value}</p>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>
