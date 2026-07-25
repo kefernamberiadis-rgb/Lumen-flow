@@ -863,9 +863,10 @@ function CheckInScreen({ mode, lastPeriod, onNavigate, onNourishDigestion }) {
   const [saved,  setSaved]  = useState(() => {
     try { return JSON.parse(localStorage.getItem(key)) || null; } catch { return null; }
   });
-  const [energy, setEnergy] = useState(3);
-  const [mood,   setMood]   = useState(3);
-  const [flow,   setFlow]   = useState("none");
+  const _saved = (() => { try { return JSON.parse(localStorage.getItem(`lf_checkin_${new Date().toISOString().split("T")[0]}`)) || {}; } catch(e) { return {}; } })();
+  const [energy, setEnergy] = useState(_saved.energy ?? 3);
+  const [mood,   setMood]   = useState(_saved.mood ?? 3);
+  const [flow,   setFlow]   = useState(_saved.flow ?? "none");
   const [notes,  setNotes]  = useState("");
 
   const save = () => {
@@ -876,15 +877,15 @@ function CheckInScreen({ mode, lastPeriod, onNavigate, onNourishDigestion }) {
 
   const flowOptions  = ["none","spotting","light","medium","heavy"];
   const gutOptions   = ["good","none","bloating","constipation","diarrhea","cramps","nausea","reflux","gas","sensitive"];
-  const [gut, setGut] = useState([]);
-  const [clarity, setClarity] = useState(3);
+  const [gut, setGut] = useState(_saved.gut ?? []);
+  const [clarity, setClarity] = useState(_saved.clarity ?? 3);
   const [workout, setWorkout] = useState(3);
-  const [sleep, setSleep] = useState(3);
+  const [sleep, setSleep] = useState(_saved.sleep ?? 3);
   const [water, setWater] = useState(() => parseInt(localStorage.getItem("lf_water_today") || "0"));
 
   
   const [movement, setMovement] = useState("none");
-  const [movements, setMovements] = useState([]);
+  const [movements, setMovements] = useState(_saved.movements ?? []);
   const MOVEMENT_TYPES = ["🚶 Walk","🏃 Run","🏋️ Weights","🧘 Yoga","⚡ HIIT","🚴 Cycling","🏊 Swimming","🏀 Sport","💃 Dance","🤸 Stretching","🌀 Mobility","🧘 Pilates","🌿 Yard work","🔨 Carpentry","🎨 Painting","🧹 Cleaning","📦 Moving","🛒 Errands","🪴 Gardening","🛌 None today","🌙 Rest day"];
   const INTENSITIES = ["🌿 Gentle","🚶 Moderate","💪 Strong","🔥 Intense","🌙 Recovery"];
   const DURATIONS = ["5 min","10 min","15 min","20 min","30 min","45 min","60 min","90 min","2 hours","2.5 hours","3 hours","4 hours","5 hours","6 hours","7 hours","8 hours"];
@@ -895,17 +896,17 @@ function CheckInScreen({ mode, lastPeriod, onNavigate, onNourishDigestion }) {
   const removeMovement = (i) => setMovements(prev => prev.filter((_, idx) => idx !== i));
   const needsDistance = (type) => ["Walk","Run","Cycling","Swimming"].some(t => type.includes(t));
   const needsWeight = (type) => type.includes("Weights");
-  const [bodyCheck, setBodyCheck] = useState("");
-  const [symptoms, setSymptoms] = useState([]);
-  const [weightUnit, setWeightUnit] = useState("lbs");
-  const [bowelEntries, setBowelEntries] = useState([]);
+  const [bodyCheck, setBodyCheck] = useState(_saved.bodyCheck ?? "");
+  const [symptoms, setSymptoms] = useState(_saved.symptoms ?? []);
+  const [weightUnit, setWeightUnit] = useState(_saved.weightUnit ?? "lbs");
+  const [bowelEntries, setBowelEntries] = useState(_saved.bowelCheck?.entries ?? []);
   const [showBowelForm, setShowBowelForm] = useState(false);
   const [bowelTime, setBowelTime] = useState("");
   const [bowelTexture, setBowelTexture] = useState("");
   const [bowelNotes, setBowelNotes] = useState("");
   const [bowelDate, setBowelDate] = useState(today);
   const ratingEmojis = ["😞","😔","😐","🙂","😄"];
-  const [namedMood, setNamedMood] = useState(null);
+  const [namedMood, setNamedMood] = useState(_saved.namedMood ?? null);
   const [moodNote, setMoodNote] = useState("");
   const [showMoodNote, setShowMoodNote] = useState(false);
   const [morningSignal, setMorningSignal] = useState(null);
