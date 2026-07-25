@@ -726,7 +726,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
         ))}
       </div>
 
-      <MoonPhaseCard mode={mode} lastPeriod={lastPeriod} cycleDay={cycleDay} phase={phase} />
+      
       {(() => {
         const now = new Date();
         const year = now.getFullYear();
