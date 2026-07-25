@@ -345,6 +345,16 @@ function MoonPhaseCard({ mode, lastPeriod, cycleDay, phase }) {
       {mode !== "fast" && (
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: phase === "Menstrual" ? "#7BA8C9" : phase === "Follicular" ? "#f472b6" : phase === "Ovulation" ? "#f59e0b" : "#ea580c", margin: "0 0 6px" }}>Your cycle season — {cycleSeasonMap[phase] || "—"}</p>
       )}
+      {sync && <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", margin: "0 0 8px", lineHeight: 1.6, fontStyle: "italic" }}>{sync}</p>}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
+        <div style={{ background: mode === "fast" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.6)", borderRadius: 10, padding: "8px 12px" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.06em" }}>🕯️ Ritual</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#a8c4a8" : "#4a3a5a", margin: 0, lineHeight: 1.6 }}>{moon.ritual}</p>
+        </div>
+        <div style={{ background: mode === "fast" ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.6)", borderRadius: 10, padding: "8px 12px" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 10, color: mode === "fast" ? "#7A9E7E" : "#9B7BC9", margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.06em" }}>📝 Journal prompt</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#a8c4a8" : "#4a3a5a", margin: 0, lineHeight: 1.6 }}>{moon.journal}</p>
+        </div>
       </div>
     </div>
   );
@@ -2136,7 +2146,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
           const isOvulation = cycDay >= 14 && cycDay <= 16;
           const moon = getMoonPhase();
           return (
-            <div style={{ display: "none" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
               {fertile && (
                 <div style={{ background: "rgba(134,239,172,0.15)", borderRadius: 10, padding: "6px 10px", border: "0.5px solid rgba(134,239,172,0.4)" }}>
                   <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#16a34a", margin: 0 }}>
