@@ -4605,20 +4605,6 @@ const CRAVINGS = {
       )}
 
       <LumenSuggests mode={mode} selectedCravings={cravingType} supportFilter={nourishSupportFilter} setSupportFilter={setNourishSupportFilter} activeTab={nourishTab} />
-
-      {nourishTab === "cravings" && mode !== "fast" && (
-      <div onClick={() => onNavigate && onNavigate("calendar")} style={{ background: "#F8F0FF", borderRadius: 18, padding: "16px", border: "0.5px solid #D4C5E9", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 24 }}>🌙</span>
-          <div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: "#2D3B2E", margin: "0 0 4px" }}>Cycle reflection</p>
-            <p style={{ fontSize: 12, color: "#6b7b6b", margin: 0 }}>What stage of your cycle are you in?</p>
-            <p style={{ fontSize: 12, color: "#6b7b6b", margin: 0 }}>Are you tired, stressed, or needing comfort?</p>
-          </div>
-        </div>
-        <span style={{ fontSize: 20, color: "#9B7BC9" }}>›</span>
-      </div>
-      )}
     </div>
   );
 }
