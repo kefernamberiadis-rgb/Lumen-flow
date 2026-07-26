@@ -2426,7 +2426,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
   const selInfo  = PHASE_INFO[selPhase];
 
   return (
-    <div style={{ padding: "16px 16px 90px", background: getSeasonalBg(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))), minHeight: "100vh" }}>
+    <div style={{ padding: "16px 16px 90px", background: getSeasonalBg(mode, getPhaseWithPeriodEnd(Math.max(1, getCycleDay(lastPeriod) - 1), new Date(), lastPeriod)), minHeight: "100vh" }}>
       {/* Mini Dashboard */}
       {lastPeriod && mode !== "fast" && (
         <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.75)", borderRadius: 18, border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.25)" : "0.5px solid rgba(180,160,200,0.3)", padding: "16px", marginBottom: 14 }}>
@@ -3739,7 +3739,7 @@ function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
   ];
 
   return (
-    <div style={{ padding: "0 0 90px", background: getSeasonalBg(mode, getPhase(Math.max(1, getCycleDay((() => { try { return JSON.parse(localStorage.getItem("lf_settings"))?.lastPeriod || ""; } catch(e) { return ""; } })()) - 1))), minHeight: "100vh" }}>
+    <div style={{ padding: "0 0 90px", background: getSeasonalBg(mode, getPhaseWithPeriodEnd(Math.max(1, getCycleDay((() => { try { return JSON.parse(localStorage.getItem("lf_settings"))?.lastPeriod || ""; } catch(e) { return ""; } })()) - 1), new Date(), (() => { try { return JSON.parse(localStorage.getItem("lf_settings"))?.lastPeriod || ""; } catch(e) { return ""; } })())), minHeight: "100vh" }}>
       <div style={{ padding: "16px 16px 12px" }}>
         <h3 style={{ ...s.title, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E" }}>Learn & Optimise</h3>
         <p style={{ ...s.label, marginBottom: 12 }}>Knowledge for your body, your cycle, and your rhythm.</p>
@@ -4194,7 +4194,7 @@ function SettingsScreen({ settings, onSave, onShowPaywall }) {
   };
 
   return (
-    <div style={{ padding: "16px 16px 90px", background: getSeasonalBg(settings?.mode || "cycle", getPhase(Math.max(1, getCycleDay(settings?.lastPeriod || "") - 1))), minHeight: "100vh" }}>
+    <div style={{ padding: "16px 16px 90px", background: getSeasonalBg(settings?.mode || "cycle", getPhaseWithPeriodEnd(Math.max(1, getCycleDay(settings?.lastPeriod || "") - 1), new Date(), settings?.lastPeriod || "")), minHeight: "100vh" }}>
       <h3 style={s.title}>Settings</h3>
 
       <div style={{ ...s.card, textAlign: "left", marginBottom: 12 }}>
@@ -4467,7 +4467,7 @@ const CRAVINGS = {
   const cravingKeys = Object.keys(CRAVINGS);
 
   return (
-    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: getSeasonalBg(mode, getPhase(Math.max(1, getCycleDay((() => { try { return JSON.parse(localStorage.getItem("lf_settings"))?.lastPeriod || ""; } catch(e) { return ""; } })()) - 1))), minHeight: "100vh" }}>
+    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: getSeasonalBg(mode, getPhaseWithPeriodEnd(Math.max(1, getCycleDay((() => { try { return JSON.parse(localStorage.getItem("lf_settings"))?.lastPeriod || ""; } catch(e) { return ""; } })()) - 1), new Date(), (() => { try { return JSON.parse(localStorage.getItem("lf_settings"))?.lastPeriod || ""; } catch(e) { return ""; } })())), minHeight: "100vh" }}>
       <h2 style={{ fontFamily: "Georgia, serif", fontSize: 22, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 4px" }}>Nourish ✨</h2>
       <p style={{ fontSize: 13, color: mode === "fast" ? "#3a5a3a" : "#8FA090", margin: "0 0 16px" }}>Food craving or soul craving?</p>
 
