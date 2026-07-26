@@ -3924,27 +3924,7 @@ function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
                   </div>
                 </div>
               );
-            })()}
-
-            <div style={{ background: "linear-gradient(135deg, #F5F0FF, #FFF0F5)", borderRadius: 18, padding: "18px 16px", border: "0.5px solid rgba(180,140,200,0.3)", marginTop: 4 }}>
-              <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "#2D3B2E", margin: "0 0 4px" }}>✨ More coming to Lumen Life</p>
-              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#9B7BC9", margin: "0 0 16px", lineHeight: 1.6 }}>Moon reflections, emotional patterns, rituals, and deeper wellness tools are being built.</p>
-              {[
-                { title: "🪞 Lumen Mirror", desc: "Emotional pattern tracking and private reflection — journal, year in pixels, moon journal, cycle-matched prompts.", tag: "Plus · Coming Soon" },
-                { title: "🕯️ Lumen Ritual", desc: "Moon, cycle, and spiritual reflection tools — moon phase display, release rituals, womb-space reflection, astrology.", tag: "Plus · Coming Soon" },
-                { title: "⚡ Lumen Drive", desc: "Men's rhythm and partner wellness — testosterone window, morning report, drive check-in, performance patterns.", tag: "Coming Soon" },
-                { title: "🛍️ Lumen Market", desc: "Period cups, discs, underwear, wellness and fasting-friendly products.", tag: "Coming Soon" },
-              ].map((card, i) => (
-                <div key={i} style={{ background: "rgba(255,255,255,0.7)", borderRadius: 14, padding: "14px 16px", marginBottom: 10, border: "0.5px solid rgba(180,140,200,0.2)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
-                    <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: 0 }}>{card.title}</p>
-                    <span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#9B7BC9", background: "rgba(155,123,201,0.1)", borderRadius: 50, padding: "2px 8px", whiteSpace: "nowrap", marginLeft: 8 }}>{card.tag}</span>
-                  </div>
-                  <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: 0, lineHeight: 1.6 }}>{card.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+            })()}</div>
         )}
 
         {tab === "Fasting Basics" && FASTING_INFO.map((f, i) => (
