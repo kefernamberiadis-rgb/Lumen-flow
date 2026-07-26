@@ -309,8 +309,7 @@ function BotanicalAccent({ phase }) {
 }
 
 function MoonPhaseCard({ mode, lastPeriod, cycleDay, phase }) {
-  const moon = getMoonPhase();
-  const cycleSeasonMap = { Menstrual: "Winter 🌨️", Follicular: "Spring 🌸", Ovulation: "Summer ☀️", Luteal: "Autumn 🍂" };
+const cycleSeasonMap = { Menstrual: "Winter 🌨️", Follicular: "Spring 🌸", Ovulation: "Summer ☀️", Luteal: "Autumn 🍂" };
   const moonSync = () => {
     if (!lastPeriod) return null;
     const moonDay = (() => {
@@ -1817,7 +1816,7 @@ function getSeasonalBg(mode, phase) {
 }
 
 function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, periodLength = 7, mode }) {
-  const [showMoon, setShowMoon] = useState(() => JSON.parse(localStorage.getItem("lf_show_moon") ?? "true"));
+  const [showDayDetails, setShowDayDetails] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [calendarKey, setCalendarKey] = useState(0);
   const [periodMsg, setPeriodMsg] = useState(null);
@@ -2048,8 +2047,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
               display: "flex", alignItems: "center", justifyContent: "center", position: "relative",
             }}>
               <span style={{ fontSize: 11, lineHeight: 1 }}>{d}</span>
-              {mode !== "fast" && showMoon && <span style={{ fontSize: 7, lineHeight: 1, position: "absolute", top: 1, right: 1 }}>{dayMoon}</span>}
-              {fertile && mode !== "fast" && <span style={{ position: "absolute", bottom: 1, right: 1, width: 4, height: 4, borderRadius: "50%", background: "#86efac" }} />}
+{fertile && mode !== "fast" && <span style={{ position: "absolute", bottom: 1, right: 1, width: 4, height: 4, borderRadius: "50%", background: "#86efac" }} />}
             </button>
           );
         });
@@ -2058,11 +2056,6 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
 
       {/* Legend */}
       {mode !== "fast" && (
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
-        <button onClick={() => { const v = !showMoon; setShowMoon(v); localStorage.setItem("lf_show_moon", JSON.stringify(v)); }} style={{ background: "none", border: "0.5px solid #C5D9C5", borderRadius: 50, padding: "6px 14px", fontFamily: "sans-serif", fontSize: 11, color: "#5C7F60", cursor: "pointer" }}>
-          {showMoon ? "Hide Moon" : "Show Moon"}
-        </button>
-      </div>,
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16, paddingTop: 12, borderTop: "1px solid #EAF2EA" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
           <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#86efac" }} />
@@ -2081,9 +2074,25 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
       {/* Selected day detail */}
       {mode !== "fast" ? (
       <div style={{ ...s.card, background: selInfo.bg, border: `1px solid ${selInfo.color}33`, textAlign: "left", marginTop: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+        <button
+          type="button"
+          onClick={() => setShowDayDetails(!showDayDetails)}
+          aria-expanded={showDayDetails}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            background: "none",
+            border: "none",
+            padding: 0,
+            marginBottom: showDayDetails ? 8 : 0,
+            textAlign: "left",
+            cursor: "pointer"
+          }}
+        >
           <span style={{ fontSize: 24 }}>{selInfo.emoji}</span>
-          <div>
+          <div style={{ flex: 1 }}>
             <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: selInfo.color, margin: 0 }}>
               {MONTHS[month]} {selDay}
             </p>
@@ -2091,8 +2100,11 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
               {selPhase} phase · Day {getCycleDayFor(selDay)}
             </p>
           </div>
-        </div>
-        {(() => {
+          <span style={{ fontSize: 16, color: selInfo.color }}>
+            {showDayDetails ? "▴" : "▾"}
+          </span>
+        </button>
+        {showDayDetails && (() => {
           const fertile = isFertileDay(selDay);
           const cycDay = getCycleDayFor(selDay);
           const isOvulation = cycDay >= 14 && cycDay <= 16;
@@ -2118,9 +2130,6 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
               </div>
               <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
                 <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#4a5a4b", margin: 0 }}>🌿 <b>Nourish:</b> {selInfo.nourish}</p>
-              </div>
-              <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
-                <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#7BA8C9", margin: 0 }}>🌙 {moon.emoji} {moon.name} — {moon.desc}</p>
               </div>
               <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "6px 10px" }}>
                 <p style={{ fontFamily: "sans-serif", fontSize: 12, color: selInfo.color, margin: 0, fontStyle: "italic" }}>✨ {selInfo.reflection}</p>
