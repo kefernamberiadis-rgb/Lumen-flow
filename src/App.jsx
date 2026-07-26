@@ -3690,7 +3690,15 @@ function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
     { color: "#C4A882", label: "Orange-tinged",  note: "Could indicate infection if paired with unusual odor. See your provider." },
   ];
 
-  const CRAVINGS = [
+  const CRAVINGS = mode === "fast" ? [
+    { craving: "🍫 Chocolate", why: "Chocolate cravings may be connected to comfort, habit, stress, low energy, or wanting something rich and satisfying." },
+    { craving: "🧂 Salty / Crunchy", why: "Salty or crunchy cravings may appear with thirst, sweating, stress, habit, or after a demanding workout." },
+    { craving: "🍬 Sugar / Sweets", why: "Sweet cravings may become stronger after poor sleep, stress, extended fasting, long gaps between meals, or meals low in protein and fibre." },
+    { craving: "🍞 Carbs / Bread", why: "Carb cravings may be your body asking for accessible energy, especially after exercise, poor sleep, extended fasting, or a demanding day." },
+    { craving: "🥩 Protein / Savoury", why: "Cravings for meat or savoury foods may appear after training, during recovery, or when recent meals have not included enough protein or overall energy." },
+    { craving: "🥑 Fatty Foods", why: "Cravings for fatty or rich foods may reflect hunger, comfort seeking, or meals that were not satisfying enough." },
+    { craving: "😶 No Appetite", why: "Low appetite can happen with stress, illness, heat, poor sleep, dehydration, intense training, or extended fasting. Start with fluids and simple, balanced foods when you feel ready to eat." },
+  ] : [
     { craving: "🍫 Chocolate",       why: "Chocolate cravings may be linked to comfort, mood, blood sugar shifts, or a desire for magnesium-rich foods. Your body is communicating something — it is worth listening to without judgment." },
     { craving: "🧂 Salty / Crunchy", why: "Salt cravings may show up when you feel depleted, stressed, or when your body is asking for minerals and grounding. They often come with dehydration too." },
     { craving: "🍬 Sugar / Sweets",  why: "Sweet cravings may be connected to energy needs, mood shifts, comfort seeking, or blood sugar fluctuations. They are especially common in the luteal phase." },
