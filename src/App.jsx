@@ -63,6 +63,18 @@ function getPhaseWithPeriodEnd(
   try {
     const dateKey = getLocalDateKey(dateValue);
 
+    const periodEndOverride =
+      localStorage.getItem("lf_period_end_override");
+
+    // The day the user ends their period becomes Follicular immediately.
+    if (
+      periodEndOverride &&
+      dateKey >= periodEndOverride &&
+      calculatedPhase === "Menstrual"
+    ) {
+      return "Follicular";
+    }
+
     const ranges = JSON.parse(
       localStorage.getItem("lf_period_ranges") || "[]"
     )
@@ -80,12 +92,10 @@ function getPhaseWithPeriodEnd(
       return calculatedPhase;
     }
 
-    // An open period range remains menstrual.
     if (!latestRange.end && dateKey >= latestRange.start) {
       return "Menstrual";
     }
 
-    // Ending the period immediately starts the follicular theme.
     if (
       latestRange.end &&
       dateKey >= latestRange.end &&
@@ -94,7 +104,6 @@ function getPhaseWithPeriodEnd(
       return "Follicular";
     }
 
-    // Dates between the recorded start and end remain menstrual.
     if (
       latestRange.end &&
       dateKey >= latestRange.start &&
@@ -103,7 +112,7 @@ function getPhaseWithPeriodEnd(
       return "Menstrual";
     }
   } catch (error) {
-    console.warn("Unable to read period ranges:", error);
+    console.warn("Unable to read period status:", error);
   }
 
   return calculatedPhase;
@@ -1795,7 +1804,7 @@ if (saved) {
     );
   }
   return (
-    <div style={{ padding: "16px 16px 90px", background: getSeasonalBg(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))), minHeight: "100vh" }}>
+    <div style={{ padding: "16px 16px 90px", background: getSeasonalBg(mode, getPhaseWithPeriodEnd(Math.max(1, getCycleDay(lastPeriod) - 1), new Date(), lastPeriod)), minHeight: "100vh" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
         <h3 style={{ ...s.title, color: mode === "fast" ? "#e8eaf0" : "#2D3B2E", margin: 0 }}>Daily Check-In {mode !== "fast" ? "🌸" : ""}</h3>
         <button onClick={() => setShowLogPreview(true)} style={{ background: mode === "fast" ? "rgba(201,168,76,0.1)" : "rgba(155,123,201,0.1)", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(155,123,201,0.3)", borderRadius: 50, padding: "6px 12px", fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", cursor: "pointer" }}>📋 View log</button>
@@ -3362,7 +3371,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
           <div style={{ background: "#fff", borderRadius: 18, padding: "8px 0", boxShadow: "0 4px 24px rgba(0,0,0,0.12)", border: "0.5px solid #dce8dc", minWidth: 200 }}>
             {mode !== "fast" ? (
               <>
-                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); const isDuplicate = ranges.some(r => r.start === selectedDate); if (!isDuplicate) { ranges.push({ start: selectedDate, end: null, predicted: false }); } const deduped = ranges.filter((r, i, arr) => arr.findIndex(x => x.start === r.start) === i); localStorage.setItem("lf_period_ranges", JSON.stringify(deduped)); setPeriodRangesState(deduped); setCalendarKey(k => k + 1); onSave && onSave(selectedDate); setShowMenu(false); setPeriodMsg(`🩸 Period started ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#C97B7B", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); const isDuplicate = ranges.some(r => r.start === selectedDate); if (!isDuplicate) { ranges.push({ start: selectedDate, end: null, predicted: false }); } const deduped = ranges.filter((r, i, arr) => arr.findIndex(x => x.start === r.start) === i); localStorage.setItem("lf_period_ranges", JSON.stringify(deduped)); localStorage.removeItem("lf_period_end_override"); setPeriodRangesState(deduped); setCalendarKey(k => k + 1); onSave && onSave(selectedDate); setShowMenu(false); setPeriodMsg(`🩸 Period started ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#C97B7B", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 18 }}>🩸</span> Period started today
                 </button>
                 <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
@@ -3424,8 +3433,25 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
                       actualPeriodLength
                     );
 
+                    localStorage.setItem(
+
+
+                      "lf_period_end_override",
+
+
+                      selectedDate
+
+
+                    );
+
+
+
                     setPeriodMsg(
+
+
                       `✅ Period ended ${displayDate} · Follicular phase started`
+
+
                     );
                   } else {
                     setPeriodMsg(
