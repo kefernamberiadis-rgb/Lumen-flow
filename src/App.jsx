@@ -823,7 +823,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
             <button onClick={stopFast} style={{ ...s.btn, background: mode === "fast" ? "linear-gradient(135deg,#1a3a2a,#2D5A3D)" : "linear-gradient(135deg,#8B5E7A,#7D5490)", color: mode === "fast" ? "#C9A84C" : "#fff", flex: 1, letterSpacing: mode === "fast" ? "0.06em" : "0" }}>
               {mode === "fast" ? "END FAST ›" : "End Fast ✦"}
             </button>
-            <button onClick={() => setShowEditFast(!showEditFast)} style={{ background: mode === "fast" ? "rgba(184,148,60,0.06)" : "#F0F6F0", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.3)" : "0.5px solid #C5D9C5", borderRadius: mode === "fast" ? 5 : 50, padding: "0 16px", fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#C9A84C" : "#5C7F60", cursor: "pointer" }}>✏️</button>
+            <button onClick={() => setShowEditFast(!showEditFast)} style={{ background: mode === "fast" ? "rgba(184,148,60,0.06)" : "#F0F6F0", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.3)" : "0.5px solid #C5D9C5", borderRadius: mode === "fast" ? 5 : 50, padding: "0 16px", fontFamily: "sans-serif", fontSize: 13, color: mode === "fast" ? "#C9A84C" : "#5C7F60", cursor: "pointer", whiteSpace: "nowrap" }}>✏️ Edit</button>
           </div>
         ) : (
           <button onClick={startFast} style={{ ...s.btn, background: mode === "fast" ? "rgba(184,148,60,0.06)" : phase === "Menstrual" ? "linear-gradient(135deg,#7BA8C9,#5888b0)" : phase === "Follicular" ? "linear-gradient(135deg,#f472b6,#c4809a)" : phase === "Ovulation" ? "linear-gradient(135deg,#f59e0b,#d97706)" : "linear-gradient(135deg,#ea580c,#c2410c)", color: mode === "fast" ? "#C9A84C" : "#fff", border: mode === "fast" ? "0.5px solid rgba(184,148,60,0.3)" : "none", letterSpacing: mode === "fast" ? "0.1em" : "0", opacity: goalHours ? 1 : 0.5 }}>
@@ -834,7 +834,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
           <div style={{ background: "#F8FAF8", borderRadius: 16, padding: "20px", border: "0.5px solid #dce8dc", marginTop: 8, textAlign: "center" }}>
             <p style={{ fontFamily: "Georgia, serif", fontSize: 18, color: "#2D3B2E", margin: "0 0 4px" }}>🎉 Fast complete!</p>
             <p style={{ fontFamily: "Georgia, serif", fontSize: 28, color: "#5C7F60", margin: "0 0 16px", fontWeight: 600 }}>{fastSummary.hoursText}</p>
-            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Edit end time (optional)</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>End time</p>
             <input type="time" defaultValue={fastSummary.editEnd}
               onChange={e => {
                 const [hh, mm] = e.target.value.split(":").map(Number);
@@ -845,16 +845,16 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
                 const h = Math.floor(hours); const m = Math.floor((hours - h) * 60);
                 setFastSummary({ ...fastSummary, endTime, hoursText: h + "h " + m + "m", editEnd: e.target.value });
               }}
-              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12 }}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12, boxSizing: "border-box" }}
             />
             <button onClick={() => confirmStopFast(fastSummary.endTime)} style={{ width: "100%", padding: "12px", borderRadius: 12, background: "linear-gradient(135deg,#5C7F60,#7A9E7E)", color: "#fff", fontFamily: "sans-serif", fontSize: 14, border: "none", cursor: "pointer" }}>
-              Confirm & Save Fast ✦
+              Save completed fast
             </button>
           </div>
         )}
         {showEditFast && fastStart && (
           <div style={{ background: "#F8FAF8", borderRadius: 16, padding: "16px", border: "0.5px solid #dce8dc", marginTop: 8 }}>
-            <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: "0 0 12px" }}>Edit your fast</p>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2D3B2E", margin: "0 0 12px" }}>Edit fast details</p>
             
             <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Fast start date</p>
             <input
@@ -868,7 +868,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
                 setFastStart(newStart);
                 localStorage.setItem("lf_fast_start", newStart);
               }}
-              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12 }}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12, boxSizing: "border-box" }}
             />
 
             <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Fast start time</p>
@@ -885,7 +885,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
                 setFastStart(newStart);
                 localStorage.setItem("lf_fast_start", newStart);
               }}
-              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12 }}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12, boxSizing: "border-box" }}
             />
 
             <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Goal hours</p>
@@ -894,11 +894,11 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
                 <button key={h} onClick={() => setGoalHours(h)} style={{ flex: 1, padding: "8px 4px", borderRadius: 10, border: "0.5px solid #dce8dc", background: goalHours === h ? "#7A9E7E" : "#fff", color: goalHours === h ? "#fff" : "#4a5a4b", fontFamily: "sans-serif", fontSize: 11, cursor: "pointer" }}>{h}h</button>
               ))}
             </div>
-            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Fast end time (optional)</p>
+            <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>End time (optional)</p>
             <input
               type="time"
               onChange={e => { setEditEndTimeVal(e.target.value); }}
-              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12 }}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12, boxSizing: "border-box" }}
             />
             <button onClick={() => {
               if (editTimeVal) {
@@ -3342,7 +3342,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
               onChange={e => setEditDateInput(e.target.value)}
               max={new Date().toISOString().split("T")[0]}
               min="2015-01-01"
-              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12 }}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "0.5px solid #dce8dc", fontFamily: "sans-serif", fontSize: 13, color: "#2D3B2E", background: "#fff", marginBottom: 12, boxSizing: "border-box" }}
             />
             <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Cycle length (days)</p>
             <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
