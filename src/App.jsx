@@ -857,7 +857,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
           </div>
           <div style={{ display: "flex", gap: 4, marginTop: 10 }}>
             {[...Array(8)].map((_, i) => (
-              <div key={i} style={{ flex: 1, height: 6, borderRadius: 3, background: i < waterToday ? "#7BA8C9" : "#EAF2F9" }} />
+              <div key={i} style={{ flex: 1, height: 4, borderRadius: 3, background: i < waterToday ? "#7BA8C9" : "#EAF2F9" }} />
             ))}
           </div>
         </div>
@@ -925,8 +925,8 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
         <div style={{ fontFamily: "sans-serif", fontSize: 9, color: mode === "fast" ? "#3a5a3a" : "#b8a0b0", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Your badges</div>
         <div style={{
           display: "grid",
-          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: 10,
+          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+          gap: 8,
           paddingBottom: 4
         }}>
           {badges.map((b) => (
@@ -937,10 +937,10 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
               style={{
                 appearance: "none",
                 width: "100%",
-                minHeight: 134,
+                minHeight: 96,
                 position: "relative",
                 overflow: "hidden",
-                padding: "14px 12px 12px",
+                padding: "10px 7px 9px",
                 textAlign: "center",
                 cursor: "pointer",
                 borderRadius: mode === "fast" ? 10 : 16,
@@ -981,8 +981,8 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
               )}
 
               <div style={{
-                fontSize: 28,
-                marginBottom: 7,
+                fontSize: 22,
+                marginBottom: 4,
                 opacity: b.earned ? 1 : 0.28,
                 filter: b.earned ? "none" : "grayscale(0.75)"
               }}>
@@ -991,7 +991,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
 
               <div style={{
                 fontFamily: "sans-serif",
-                fontSize: 10,
+                fontSize: 9,
                 fontWeight: 700,
                 letterSpacing: "0.06em",
                 textTransform: "uppercase",
@@ -1004,9 +1004,9 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
 
               <div style={{
                 fontFamily: "sans-serif",
-                fontSize: 10,
-                marginTop: 4,
-                marginBottom: 9,
+                fontSize: 9,
+                marginTop: 3,
+                marginBottom: 6,
                 color: mode === "fast" ? "#7A9E7E" : "#9f8796"
               }}>
                 {b.progressText}
@@ -1034,8 +1034,8 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
 
               <div style={{
                 fontFamily: "sans-serif",
-                fontSize: 9,
-                marginTop: 5,
+                fontSize: 8,
+                marginTop: 4,
                 color: mode === "fast" ? "#49604d" : "#ad98a5"
               }}>
                 {b.percent}% complete
