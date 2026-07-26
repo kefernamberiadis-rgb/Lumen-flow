@@ -380,6 +380,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
   const [showGoals, setShowGoals]   = useState(false);
   const [showEditFast, setShowEditFast] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState(null);
+  const [badgeToast, setBadgeToast] = useState(null);
   const [editTimeVal, setEditTimeVal] = useState("");
   const [editEndTimeVal, setEditEndTimeVal] = useState("");
   const [fastSummary, setFastSummary] = useState(null);
@@ -446,10 +447,162 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
   };
   const streak = getFastStreak();
   const totalFasts = JSON.parse(localStorage.getItem("lf_fast_days") || "[]").length;
+
+  const badges = [
+    {
+      id: "streak",
+      icon: "🗓️",
+      name: "Streak",
+      current: Math.min(streak, 7),
+      target: 7,
+      earned: streak >= 1,
+      progressText: `${streak} day${streak !== 1 ? "s" : ""}`,
+      meaning: "You began building a consistent fasting rhythm.",
+      nextMilestone: streak >= 7
+        ? "You reached the seven-day milestone."
+        : `${7 - streak} more day${7 - streak === 1 ? "" : "s"} to reach seven days.`
+    },
+    {
+      id: "three-fasts",
+      icon: "⚡",
+      name: "3 Fasts",
+      current: Math.min(totalFasts, 3),
+      target: 3,
+      earned: totalFasts >= 3,
+      progressText: `${Math.min(totalFasts, 3)} / 3`,
+      meaning: "Complete three recorded fasting sessions.",
+      nextMilestone: totalFasts >= 3
+        ? "Achievement complete. Keep building your rhythm."
+        : `${3 - totalFasts} more fast${3 - totalFasts === 1 ? "" : "s"} needed.`
+    },
+    ...(mode !== "fast" ? [{
+      id: "cycle-momentum",
+      icon: "🌙",
+      name: "Cycle Mo.",
+      current: Math.min(totalFasts, 1),
+      target: 1,
+      earned: totalFasts >= 1,
+      progressText: `${Math.min(totalFasts, 1)} / 1`,
+      meaning: "Complete a fast while using cycle-aware guidance.",
+      nextMilestone: totalFasts >= 1
+        ? "Achievement complete. Continue following your body's rhythm."
+        : "Complete one fast to earn this badge."
+    }] : []),
+    {
+      id: "recovery",
+      icon: "💚",
+      name: "Recovery",
+      current: Math.min(streak, 2),
+      target: 2,
+      earned: streak >= 2,
+      progressText: streak >= 2 ? "Earned" : `${Math.min(streak, 2)} / 2`,
+      meaning: "Return for a second consecutive day while supporting recovery.",
+      nextMilestone: streak >= 2
+        ? "Achievement complete. Continue honouring recovery."
+        : `${2 - streak} more consecutive day${2 - streak === 1 ? "" : "s"} needed.`
+    },
+    {
+      id: "on-time",
+      icon: "⏰",
+      name: "On Time",
+      current: Math.min(totalFasts, 5),
+      target: 5,
+      earned: totalFasts >= 5,
+      progressText: totalFasts >= 5 ? "Earned" : `${Math.min(totalFasts, 5)} / 5`,
+      meaning: "Complete five planned fasting sessions.",
+      nextMilestone: totalFasts >= 5
+        ? "Achievement complete. Your routine is taking shape."
+        : `${5 - totalFasts} more fast${5 - totalFasts === 1 ? "" : "s"} needed.`
+    },
+    {
+      id: "listen",
+      icon: "🧘",
+      name: "Listen",
+      current: Math.min(streak, 7),
+      target: 7,
+      earned: streak >= 7,
+      progressText: streak >= 7 ? "Earned" : `${Math.min(streak, 7)} / 7`,
+      meaning: "Maintain a seven-day rhythm while listening to your body.",
+      nextMilestone: streak >= 7
+        ? "Achievement complete. Keep choosing consistency over perfection."
+        : `${7 - streak} more day${7 - streak === 1 ? "" : "s"} needed.`
+    }
+  ].map(badge => ({
+    ...badge,
+    percent: Math.min(
+      100,
+      Math.round((badge.current / badge.target) * 100)
+    )
+  }));
+
+  useEffect(() => {
+    const storageKey = `lf_earned_badges_${mode}`;
+    const earnedNow = badges
+      .filter(badge => badge.earned)
+      .map(badge => badge.id);
+
+    const saved = localStorage.getItem(storageKey);
+
+    if (saved === null) {
+      localStorage.setItem(storageKey, JSON.stringify(earnedNow));
+      return;
+    }
+
+    let earnedBefore = [];
+
+    try {
+      earnedBefore = JSON.parse(saved) || [];
+    } catch {
+      earnedBefore = [];
+    }
+
+    const newBadge = badges.find(
+      badge => badge.earned && !earnedBefore.includes(badge.id)
+    );
+
+    if (newBadge) {
+      setBadgeToast(newBadge);
+
+      const timeout = setTimeout(() => {
+        setBadgeToast(null);
+      }, 3200);
+
+      localStorage.setItem(storageKey, JSON.stringify(earnedNow));
+
+      return () => clearTimeout(timeout);
+    }
+
+    localStorage.setItem(storageKey, JSON.stringify(earnedNow));
+  }, [streak, totalFasts, mode]);
   
 
   return (
     <div style={{ padding: "0 0 90px", background: getSeasonalBg(mode, phase), minHeight: "100vh", position: "relative" }}>
+      <style>{`
+        @keyframes badgeGlow {
+          0%, 100% {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(168,120,152,0.10);
+          }
+
+          50% {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(168,120,152,0.28);
+          }
+        }
+
+        @keyframes badgeToastIn {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -14px) scale(0.94);
+          }
+
+          to {
+            opacity: 1;
+            transform: translate(-50%, 0) scale(1);
+          }
+        }
+      `}</style>
       {mode !== "fast" && <BotanicalAccent phase={phase} />}
       {/* Header */}
       <div style={{ ...s.header, justifyContent: "space-between", paddingTop: 20 }}>
@@ -770,27 +923,312 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
           </div>
         </div>
         <div style={{ fontFamily: "sans-serif", fontSize: 9, color: mode === "fast" ? "#3a5a3a" : "#b8a0b0", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Your badges</div>
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4 }}>
-          {[
-            { icon: "🗓️", name: "Streak", prog: `${streak} day${streak !== 1 ? "s" : ""}`, earned: streak > 0 },
-            { icon: "⚡", name: "3 Fasts", prog: `${Math.min(totalFasts, 3)} / 3`, earned: totalFasts >= 3 },
-            ...(mode !== "fast" ? [{ icon: "🌙", name: "Cycle Mo.", prog: `${Math.min(totalFasts, 1)} / 1`, earned: totalFasts >= 1 }] : []),
-            { icon: "💚", name: "Recovery", prog: streak >= 2 ? "Earned" : "Locked", earned: streak >= 2 },
-            { icon: "⏰", name: "On Time", prog: totalFasts >= 5 ? "Earned" : `${Math.min(totalFasts, 5)} / 5`, earned: totalFasts >= 5 },
-            { icon: "🧘", name: "Listen", prog: streak >= 7 ? "Earned" : `${Math.min(streak, 7)} / 7`, earned: streak >= 7 },
-          ].map((b, i) => (
-            <div key={i} style={{
-              flexShrink: 0,
-              background: mode === "fast" ? (b.earned ? "rgba(201,168,76,0.08)" : "rgba(255,255,255,0.03)") : (b.earned ? "rgba(168,120,152,0.08)" : "rgba(255,255,255,0.6)"),
-              border: mode === "fast" ? (b.earned ? "0.5px solid rgba(201,168,76,0.3)" : "0.5px solid rgba(184,148,60,0.1)") : (b.earned ? "0.5px solid rgba(168,120,152,0.3)" : "0.5px solid rgba(160,120,145,0.15)"),
-              borderRadius: mode === "fast" ? 8 : 14, padding: "11px 12px", textAlign: "center", minWidth: 76,
-            }}>
-              <div style={{ fontSize: 19, marginBottom: 4, opacity: b.earned ? 1 : 0.25 }}>{b.icon}</div>
-              <div style={{ fontFamily: "sans-serif", fontSize: 9, color: mode === "fast" ? (b.earned ? "#C9A84C" : "#3a5a3a") : (b.earned ? "#7D5470" : "#b8a0b0"), fontWeight: 500, letterSpacing: "0.05em", textTransform: "uppercase" }}>{b.name}</div>
-              <div style={{ fontFamily: "sans-serif", fontSize: 9, color: mode === "fast" ? "#3a5a3a" : "#b8a0b0", marginTop: 2 }}>{b.prog}</div>
-            </div>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+          gap: 10,
+          paddingBottom: 4
+        }}>
+          {badges.map((b) => (
+            <button
+              key={b.id}
+              type="button"
+              onClick={() => setSelectedBadge(b)}
+              style={{
+                appearance: "none",
+                width: "100%",
+                minHeight: 134,
+                position: "relative",
+                overflow: "hidden",
+                padding: "14px 12px 12px",
+                textAlign: "center",
+                cursor: "pointer",
+                borderRadius: mode === "fast" ? 10 : 16,
+
+                background: mode === "fast"
+                  ? b.earned
+                    ? "rgba(201,168,76,0.10)"
+                    : "rgba(255,255,255,0.03)"
+                  : b.earned
+                    ? "rgba(168,120,152,0.10)"
+                    : "rgba(255,255,255,0.65)",
+
+                border: mode === "fast"
+                  ? b.earned
+                    ? "1px solid rgba(201,168,76,0.45)"
+                    : "0.5px solid rgba(184,148,60,0.12)"
+                  : b.earned
+                    ? "1px solid rgba(168,120,152,0.38)"
+                    : "0.5px solid rgba(160,120,145,0.16)",
+
+                animation: b.earned
+                  ? "badgeGlow 2.8s ease-in-out infinite"
+                  : "none"
+              }}
+            >
+              {b.earned && (
+                <span style={{
+                  position: "absolute",
+                  top: 8,
+                  right: 9,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  fontFamily: "sans-serif",
+                  color: mode === "fast" ? "#C9A84C" : "#A87898"
+                }}>
+                  ✓
+                </span>
+              )}
+
+              <div style={{
+                fontSize: 28,
+                marginBottom: 7,
+                opacity: b.earned ? 1 : 0.28,
+                filter: b.earned ? "none" : "grayscale(0.75)"
+              }}>
+                {b.icon}
+              </div>
+
+              <div style={{
+                fontFamily: "sans-serif",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: mode === "fast"
+                  ? b.earned ? "#C9A84C" : "#49604d"
+                  : b.earned ? "#7D5470" : "#a894a1"
+              }}>
+                {b.name}
+              </div>
+
+              <div style={{
+                fontFamily: "sans-serif",
+                fontSize: 10,
+                marginTop: 4,
+                marginBottom: 9,
+                color: mode === "fast" ? "#7A9E7E" : "#9f8796"
+              }}>
+                {b.progressText}
+              </div>
+
+              <div style={{
+                width: "100%",
+                height: 6,
+                borderRadius: 20,
+                overflow: "hidden",
+                background: mode === "fast"
+                  ? "rgba(201,168,76,0.10)"
+                  : "rgba(168,120,152,0.12)"
+              }}>
+                <div style={{
+                  width: `${b.percent}%`,
+                  height: "100%",
+                  borderRadius: 20,
+                  transition: "width 0.4s ease",
+                  background: mode === "fast"
+                    ? "linear-gradient(90deg,#7A9E7E,#C9A84C)"
+                    : "linear-gradient(90deg,#A87898,#C9A8B8)"
+                }} />
+              </div>
+
+              <div style={{
+                fontFamily: "sans-serif",
+                fontSize: 9,
+                marginTop: 5,
+                color: mode === "fast" ? "#49604d" : "#ad98a5"
+              }}>
+                {b.percent}% complete
+              </div>
+            </button>
           ))}
         </div>
+
+        {selectedBadge && (
+          <div
+            onClick={() => setSelectedBadge(null)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 1200,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 22,
+              background: "rgba(32,38,33,0.42)"
+            }}
+          >
+            <div
+              onClick={event => event.stopPropagation()}
+              style={{
+                position: "relative",
+                width: "100%",
+                maxWidth: 340,
+                padding: "24px 20px 20px",
+                textAlign: "center",
+                borderRadius: 22,
+                background: mode === "fast" ? "#102018" : "#fff",
+                border: mode === "fast"
+                  ? "1px solid rgba(201,168,76,0.32)"
+                  : "1px solid rgba(168,120,152,0.24)",
+                boxShadow: "0 18px 50px rgba(0,0,0,0.22)"
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setSelectedBadge(null)}
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  right: 12,
+                  border: "none",
+                  background: "none",
+                  cursor: "pointer",
+                  fontSize: 20,
+                  color: mode === "fast" ? "#7A9E7E" : "#9f8796"
+                }}
+              >
+                ✕
+              </button>
+
+              <div style={{ fontSize: 46, marginBottom: 10 }}>
+                {selectedBadge.icon}
+              </div>
+
+              <p style={{
+                fontFamily: "Georgia, serif",
+                fontSize: 20,
+                margin: "0 0 5px",
+                color: mode === "fast" ? "#e8e0ce" : "#2D3B2E"
+              }}>
+                {selectedBadge.name}
+              </p>
+
+              <p style={{
+                fontFamily: "sans-serif",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                margin: "0 0 15px",
+                color: selectedBadge.earned
+                  ? mode === "fast" ? "#C9A84C" : "#A87898"
+                  : mode === "fast" ? "#7A9E7E" : "#9f8796"
+              }}>
+                {selectedBadge.earned
+                  ? "✓ Badge earned"
+                  : "Achievement in progress"}
+              </p>
+
+              <p style={{
+                fontFamily: "sans-serif",
+                fontSize: 13,
+                lineHeight: 1.65,
+                margin: "0 0 16px",
+                color: mode === "fast" ? "#a8c4a8" : "#59675b"
+              }}>
+                {selectedBadge.meaning}
+              </p>
+
+              <div style={{
+                height: 8,
+                borderRadius: 20,
+                overflow: "hidden",
+                marginBottom: 7,
+                background: mode === "fast"
+                  ? "rgba(201,168,76,0.10)"
+                  : "rgba(168,120,152,0.12)"
+              }}>
+                <div style={{
+                  width: `${selectedBadge.percent}%`,
+                  height: "100%",
+                  borderRadius: 20,
+                  background: mode === "fast"
+                    ? "linear-gradient(90deg,#7A9E7E,#C9A84C)"
+                    : "linear-gradient(90deg,#A87898,#C9A8B8)"
+                }} />
+              </div>
+
+              <p style={{
+                fontFamily: "sans-serif",
+                fontSize: 11,
+                margin: "0 0 14px",
+                color: mode === "fast" ? "#7A9E7E" : "#9f8796"
+              }}>
+                {selectedBadge.progressText} · {selectedBadge.percent}%
+              </p>
+
+              <div style={{
+                padding: "11px 12px",
+                borderRadius: 13,
+                background: mode === "fast"
+                  ? "rgba(201,168,76,0.07)"
+                  : "rgba(168,120,152,0.08)"
+              }}>
+                <p style={{
+                  fontFamily: "sans-serif",
+                  fontSize: 12,
+                  lineHeight: 1.55,
+                  margin: 0,
+                  color: mode === "fast" ? "#C9A84C" : "#7D5470"
+                }}>
+                  {selectedBadge.nextMilestone}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {badgeToast && (
+          <div style={{
+            position: "fixed",
+            top: 22,
+            left: "50%",
+            zIndex: 1500,
+            width: "calc(100% - 40px)",
+            maxWidth: 350,
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "13px 16px",
+            borderRadius: 18,
+            transform: "translateX(-50%)",
+            animation: "badgeToastIn 0.32s ease-out",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.18)",
+
+            background: mode === "fast"
+              ? "linear-gradient(135deg,#183526,#102018)"
+              : "linear-gradient(135deg,#fff8fc,#f5e8f0)",
+
+            border: mode === "fast"
+              ? "1px solid rgba(201,168,76,0.45)"
+              : "1px solid rgba(168,120,152,0.34)"
+          }}>
+            <span style={{ fontSize: 28 }}>
+              {badgeToast.icon}
+            </span>
+
+            <div>
+              <p style={{
+                fontFamily: "Georgia, serif",
+                fontSize: 15,
+                margin: "0 0 2px",
+                color: mode === "fast" ? "#e8e0ce" : "#2D3B2E"
+              }}>
+                ✨ Badge earned!
+              </p>
+
+              <p style={{
+                fontFamily: "sans-serif",
+                fontSize: 11,
+                margin: 0,
+                color: mode === "fast" ? "#C9A84C" : "#7D5470"
+              }}>
+                {badgeToast.name}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
