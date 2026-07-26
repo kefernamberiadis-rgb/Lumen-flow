@@ -2396,60 +2396,430 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
           {showPlanner ? "✕ Close" : "📊 Fasting History"}
         </button>
       </div>
-
       {showPlanner && (() => {
-        const fastDaysArr = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
-        const goalHrs = parseInt(localStorage.getItem("lf_selectedFast") || "16");
+        const fastDaysArr = JSON.parse(
+          localStorage.getItem("lf_fast_days") || "[]"
+        );
+
+        const fastHistory = JSON.parse(
+          localStorage.getItem("lf_fast_history") || "[]"
+        );
+
+        const goalHrs = parseInt(
+          localStorage.getItem("lf_selectedFast") || "16"
+        );
+
         const totalFasts = fastDaysArr.length;
+
         let streak = 0;
         const tod = new Date();
+
         for (let i = 0; i < 365; i++) {
-          const d2 = new Date(tod); d2.setDate(tod.getDate() - i);
-          const k = d2.toISOString().split("T")[0];
-          if (fastDaysArr.includes(k)) streak++; else if (i > 0) break;
+          const d2 = new Date(tod);
+          d2.setDate(tod.getDate() - i);
+
+          const key = d2.toISOString().split("T")[0];
+
+          if (fastDaysArr.includes(key)) {
+            streak++;
+          } else if (i > 0) {
+            break;
+          }
         }
-        const daysInMonth2 = new Date(year, month + 1, 0).getDate();
-        const firstDow2 = new Date(year, month, 1).getDay();
+
+        const monthPrefix =
+          `${year}-${String(month + 1).padStart(2, "0")}`;
+
+        const detailedEntries = fastHistory
+          .filter(item =>
+            item &&
+            item.date &&
+            item.date.startsWith(monthPrefix) &&
+            Number.isFinite(Number(item.startTime)) &&
+            Number.isFinite(Number(item.endTime))
+          )
+          .map(item => ({
+            ...item,
+            type: "detailed",
+            sortTime: Number(item.endTime)
+          }));
+
+        const detailedDates = new Set(
+          detailedEntries.map(item => item.date)
+        );
+
+        const legacyEntries = fastDaysArr
+          .filter(date =>
+            date.startsWith(monthPrefix) &&
+            !detailedDates.has(date)
+          )
+          .map(date => ({
+            type: "legacy",
+            date,
+            sortTime: new Date(date + "T12:00:00").getTime()
+          }));
+
+        const timelineEntries = [
+          ...detailedEntries,
+          ...legacyEntries
+        ].sort((a, b) => b.sortTime - a.sortTime);
+
+        const formatClock = timestamp =>
+          new Date(timestamp).toLocaleTimeString("en-CA", {
+            hour: "numeric",
+            minute: "2-digit"
+          });
+
+        const formatDate = date =>
+          new Date(date + "T12:00:00").toLocaleDateString("en-CA", {
+            month: "short",
+            day: "numeric"
+          });
+
+        const formatFullDate = timestamp =>
+          new Date(timestamp).toLocaleDateString("en-CA", {
+            month: "short",
+            day: "numeric"
+          });
+
         return (
-          <div style={{ background: "#F8FAF8", borderRadius: 16, padding: 16, border: "0.5px solid #dce8dc", marginBottom: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-              <div style={{ textAlign: "center" }}>
-                <p style={{ fontFamily: "Georgia,serif", fontSize: 22, color: "#5C7F60", margin: 0, fontWeight: 600 }}>{totalFasts}</p>
-                <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: 0 }}>Total Fasts</p>
+          <div style={{
+            background: "#F8FAF8",
+            borderRadius: 16,
+            padding: 16,
+            border: "0.5px solid #dce8dc",
+            marginBottom: 12
+          }}>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 8,
+              marginBottom: 18
+            }}>
+              <div style={{
+                textAlign: "center",
+                background: "#fff",
+                borderRadius: 12,
+                padding: "10px 6px"
+              }}>
+                <p style={{
+                  fontFamily: "Georgia,serif",
+                  fontSize: 22,
+                  color: "#5C7F60",
+                  margin: 0,
+                  fontWeight: 600
+                }}>
+                  {totalFasts}
+                </p>
+
+                <p style={{
+                  fontFamily: "sans-serif",
+                  fontSize: 10,
+                  color: "#8FA090",
+                  margin: 0
+                }}>
+                  Total Fasts
+                </p>
               </div>
-              <div style={{ textAlign: "center" }}>
-                <p style={{ fontFamily: "Georgia,serif", fontSize: 22, color: "#5C7F60", margin: 0, fontWeight: 600 }}>{streak}</p>
-                <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: 0 }}>Streak</p>
+
+              <div style={{
+                textAlign: "center",
+                background: "#fff",
+                borderRadius: 12,
+                padding: "10px 6px"
+              }}>
+                <p style={{
+                  fontFamily: "Georgia,serif",
+                  fontSize: 22,
+                  color: "#5C7F60",
+                  margin: 0,
+                  fontWeight: 600
+                }}>
+                  {streak}
+                </p>
+
+                <p style={{
+                  fontFamily: "sans-serif",
+                  fontSize: 10,
+                  color: "#8FA090",
+                  margin: 0
+                }}>
+                  Streak
+                </p>
               </div>
-              <div style={{ textAlign: "center" }}>
-                <p style={{ fontFamily: "Georgia,serif", fontSize: 22, color: "#5C7F60", margin: 0, fontWeight: 600 }}>{goalHrs}h</p>
-                <p style={{ fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", margin: 0 }}>Goal</p>
+
+              <div style={{
+                textAlign: "center",
+                background: "#fff",
+                borderRadius: 12,
+                padding: "10px 6px"
+              }}>
+                <p style={{
+                  fontFamily: "Georgia,serif",
+                  fontSize: 22,
+                  color: "#5C7F60",
+                  margin: 0,
+                  fontWeight: 600
+                }}>
+                  {goalHrs}h
+                </p>
+
+                <p style={{
+                  fontFamily: "sans-serif",
+                  fontSize: 10,
+                  color: "#8FA090",
+                  margin: 0
+                }}>
+                  Goal
+                </p>
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 4 }}>
-              {["S","M","T","W","T","F","S"].map((d,i) => <div key={i} style={{ textAlign: "center", fontFamily: "sans-serif", fontSize: 10, color: "#8FA090", fontWeight: 600 }}>{d}</div>)}
+
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 14
+            }}>
+              <p style={{
+                fontFamily: "Georgia, serif",
+                fontSize: 16,
+                color: "#2D3B2E",
+                margin: 0
+              }}>
+                Fasting timeline
+              </p>
+
+              <span style={{
+                fontFamily: "sans-serif",
+                fontSize: 10,
+                color: "#8FA090"
+              }}>
+                {MONTHS[month]} {year}
+              </span>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
-              {Array.from({ length: firstDow2 }).map((_,i) => <div key={"e"+i} />)}
-              {Array.from({ length: daysInMonth2 }, (_,i) => i+1).map(d => {
-                const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-                const fasted = fastDaysArr.includes(dateStr);
-                const isToday2 = d === tod.getDate() && month === tod.getMonth() && year === tod.getFullYear();
-                return (
-                  <div key={d} style={{ aspectRatio: "1", borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: fasted ? "#7A9E7E" : "#F0F6F0", border: isToday2 ? "2px solid #5C7F60" : "none" }}>
-                    <span style={{ fontFamily: "sans-serif", fontSize: 10, color: fasted ? "#fff" : "#8FA090", fontWeight: fasted ? 700 : 400 }}>{d}</span>
-                    {fasted && <span style={{ fontFamily: "sans-serif", fontSize: 7, color: "#fff" }}>{goalHrs}h</span>}
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 4 }}><div style={{ width: 10, height: 10, borderRadius: 3, background: "#7A9E7E" }} /><span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#6b7b6b" }}>Fasted</span></div>
-              <div style={{ display: "flex", alignItems: "center", gap: 4 }}><div style={{ width: 10, height: 10, borderRadius: 3, background: "#F0F6F0", border: "0.5px solid #dce8dc" }} /><span style={{ fontFamily: "sans-serif", fontSize: 10, color: "#6b7b6b" }}>No fast</span></div>
-            </div>
+
+            {timelineEntries.length === 0 ? (
+              <div style={{
+                background: "#fff",
+                borderRadius: 14,
+                padding: "18px 14px",
+                textAlign: "center",
+                border: "0.5px solid #e5eee5"
+              }}>
+                <div style={{ fontSize: 24, marginBottom: 6 }}>🌿</div>
+
+                <p style={{
+                  fontFamily: "Georgia, serif",
+                  fontSize: 14,
+                  color: "#2D3B2E",
+                  margin: "0 0 4px"
+                }}>
+                  No fasts recorded this month
+                </p>
+
+                <p style={{
+                  fontFamily: "sans-serif",
+                  fontSize: 11,
+                  color: "#8FA090",
+                  margin: 0
+                }}>
+                  Completed fasts will appear here.
+                </p>
+              </div>
+            ) : (
+              <div>
+                {timelineEntries.map((item, index) => {
+                  const isDetailed = item.type === "detailed";
+
+                  const minutes = isDetailed
+                    ? Math.max(0, Number(item.durationMinutes) || 0)
+                    : 0;
+
+                  const hoursPart = Math.floor(minutes / 60);
+                  const minutesPart = minutes % 60;
+
+                  const durationText =
+                    minutesPart > 0
+                      ? `${hoursPart}h ${minutesPart}m`
+                      : `${hoursPart}h`;
+
+                  const sessionGoal =
+                    Number(item.goalHours) || goalHrs;
+
+                  const goalMinutes = sessionGoal * 60;
+                  const difference = minutes - goalMinutes;
+                  const differenceAbs = Math.abs(difference);
+                  const differenceHours = Math.floor(differenceAbs / 60);
+                  const differenceMinutes = differenceAbs % 60;
+
+                  const differenceText = [
+                    differenceHours > 0 ? `${differenceHours}h` : "",
+                    differenceMinutes > 0 ? `${differenceMinutes}m` : ""
+                  ].filter(Boolean).join(" ");
+
+                  const reachedGoal =
+                    isDetailed &&
+                    (item.completedGoal || minutes >= goalMinutes);
+
+                  return (
+                    <div
+                      key={item.id || item.date}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "52px 18px 1fr",
+                        gap: 8,
+                        position: "relative"
+                      }}
+                    >
+                      <div style={{
+                        paddingTop: 5,
+                        textAlign: "right"
+                      }}>
+                        <p style={{
+                          fontFamily: "sans-serif",
+                          fontSize: 11,
+                          color: "#5C7F60",
+                          margin: 0,
+                          fontWeight: 700
+                        }}>
+                          {formatDate(item.date)}
+                        </p>
+                      </div>
+
+                      <div style={{
+                        position: "relative",
+                        display: "flex",
+                        justifyContent: "center"
+                      }}>
+                        {index < timelineEntries.length - 1 && (
+                          <div style={{
+                            position: "absolute",
+                            top: 15,
+                            bottom: -12,
+                            width: 1,
+                            background: "#C5D9C5"
+                          }} />
+                        )}
+
+                        <div style={{
+                          width: 11,
+                          height: 11,
+                          borderRadius: "50%",
+                          marginTop: 6,
+                          zIndex: 1,
+                          background: reachedGoal
+                            ? "#7A9E7E"
+                            : isDetailed
+                              ? "#C9A87B"
+                              : "#B8C8B8",
+                          border: "2px solid #F8FAF8",
+                          boxShadow: reachedGoal
+                            ? "0 0 0 2px rgba(122,158,126,0.18)"
+                            : "none"
+                        }} />
+                      </div>
+
+                      <div style={{
+                        background: "#fff",
+                        borderRadius: 14,
+                        padding: "11px 12px",
+                        border: reachedGoal
+                          ? "0.5px solid rgba(122,158,126,0.35)"
+                          : "0.5px solid #e3ece3",
+                        marginBottom: 12,
+                        boxShadow: reachedGoal
+                          ? "0 3px 12px rgba(122,158,126,0.08)"
+                          : "none"
+                      }}>
+                        {isDetailed ? (
+                          <>
+                            <div style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: 8,
+                              marginBottom: 5
+                            }}>
+                              <p style={{
+                                fontFamily: "Georgia, serif",
+                                fontSize: 15,
+                                color: "#2D3B2E",
+                                margin: 0
+                              }}>
+                                {durationText} fast
+                              </p>
+
+                              <span style={{
+                                fontFamily: "sans-serif",
+                                fontSize: 10,
+                                fontWeight: 700,
+                                color: reachedGoal
+                                  ? "#5C7F60"
+                                  : "#B07A52"
+                              }}>
+                                {reachedGoal ? "✓ Goal reached" : "In progress"}
+                              </span>
+                            </div>
+
+                            <p style={{
+                              fontFamily: "sans-serif",
+                              fontSize: 11,
+                              color: "#6b7b6b",
+                              margin: "0 0 5px",
+                              lineHeight: 1.5
+                            }}>
+                              {formatClock(item.startTime)} {formatFullDate(item.startTime)}
+                              {" → "}
+                              {formatClock(item.endTime)} {formatFullDate(item.endTime)}
+                            </p>
+
+                            <p style={{
+                              fontFamily: "sans-serif",
+                              fontSize: 10,
+                              color: "#8FA090",
+                              margin: 0
+                            }}>
+                              Goal: {sessionGoal}h
+                              {reachedGoal && difference > 0
+                                ? ` · ${differenceText} beyond goal`
+                                : !reachedGoal && difference < 0
+                                  ? ` · ${differenceText} short`
+                                  : ""}
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p style={{
+                              fontFamily: "Georgia, serif",
+                              fontSize: 14,
+                              color: "#2D3B2E",
+                              margin: "0 0 4px"
+                            }}>
+                              Fast completed
+                            </p>
+
+                            <p style={{
+                              fontFamily: "sans-serif",
+                              fontSize: 10,
+                              color: "#8FA090",
+                              margin: 0
+                            }}>
+                              Detailed times were not saved for this older fast.
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
       })()}
+
+
 
       {/* Day of week headers */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 8 }}>
