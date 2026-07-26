@@ -37,6 +37,78 @@ function getPhase(day, periodLength = 7) {
   if (day <= periodLength + 10) return "Ovulation";
   return "Luteal";
 }
+
+function getLocalDateKey(dateValue = new Date()) {
+  const date =
+    dateValue instanceof Date
+      ? new Date(dateValue)
+      : new Date(String(dateValue) + (
+          String(dateValue).includes("T") ? "" : "T12:00:00"
+        ));
+
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0")
+  ].join("-");
+}
+
+function getPhaseWithPeriodEnd(
+  cycleDay,
+  dateValue = new Date(),
+  cycleStart = ""
+) {
+  const calculatedPhase = getPhase(cycleDay);
+
+  try {
+    const dateKey = getLocalDateKey(dateValue);
+
+    const ranges = JSON.parse(
+      localStorage.getItem("lf_period_ranges") || "[]"
+    )
+      .filter(range =>
+        range &&
+        range.start &&
+        range.predicted !== true &&
+        range.start <= dateKey
+      )
+      .sort((a, b) => b.start.localeCompare(a.start));
+
+    const latestRange = ranges[0];
+
+    if (!latestRange) {
+      return calculatedPhase;
+    }
+
+    // An open period range remains menstrual.
+    if (!latestRange.end && dateKey >= latestRange.start) {
+      return "Menstrual";
+    }
+
+    // Ending the period immediately starts the follicular theme.
+    if (
+      latestRange.end &&
+      dateKey >= latestRange.end &&
+      calculatedPhase === "Menstrual"
+    ) {
+      return "Follicular";
+    }
+
+    // Dates between the recorded start and end remain menstrual.
+    if (
+      latestRange.end &&
+      dateKey >= latestRange.start &&
+      dateKey < latestRange.end
+    ) {
+      return "Menstrual";
+    }
+  } catch (error) {
+    console.warn("Unable to read period ranges:", error);
+  }
+
+  return calculatedPhase;
+}
+
 const PHASE_INFO = {
   Menstrual:  { emoji: "🌑", color: "#C97B7B", bg: "#FDEAEA", fast: "12–14h if comfortable — skip fasting if your body needs food", move: "Rest, gentle stretching, slow walks, or restorative movement", energy: "🌙 Low — rest and restore", nourish: "Iron-rich foods, warm soups, dark leafy greens, dark chocolate, warming teas", reflection: "What am I ready to release? What needs rest?" },
   Follicular: { emoji: "🌒", color: "#7BA8C9", bg: "#EAF2F9", fast: "14–16h if it feels supportive", move: "Light strength, cardio, Pilates, walking, or trying something new", energy: "🌱 Rising — energy is building", nourish: "Protein, fresh vegetables, fruit, fermented foods, light and bright meals", reflection: "What am I ready to grow? What feels exciting right now?" },
@@ -371,7 +443,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
       if (!fastStart) startFast();
     }
   }, []);
-  const phase    = getPhase(cycleDay);
+  const phase    = getPhaseWithPeriodEnd(cycleDay, new Date(), lastPeriod);
   const info     = PHASE_INFO[phase];
 
   const [fastStart, setFastStart]   = useState(null);
@@ -1407,7 +1479,7 @@ if (saved) {
       return "Every check-in is a small act of self-awareness. You are building a picture of your body over time — that is powerful.";
     })();
     return (
-    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: getSeasonalBg(mode, getPhase(Math.max(1, getCycleDay(lastPeriod) - 1))), minHeight: "100vh" }}>
+    <div style={{ padding: "16px 16px 100px", fontFamily: "sans-serif", background: getSeasonalBg(mode, getPhaseWithPeriodEnd(Math.max(1, getCycleDay(lastPeriod) - 1), new Date(), lastPeriod)), minHeight: "100vh" }}>
       <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.75)", borderRadius: 20, padding: 20, marginBottom: 16, textAlign: "center", border: mode === "fast" ? "0.5px solid rgba(122,158,126,0.3)" : "0.5px solid rgba(180,160,210,0.3)" }}>
         <p style={{ fontSize: 28, marginBottom: 6 }}>✦</p>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 18, color: "#2D3B2E", marginBottom: 4 }}>Today's check-in saved!</p>
@@ -2334,7 +2406,14 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
     return ((diff % 28) + 28) % 28 + 1;
   };
 
-  const selPhase = getPhase(getCycleDayFor(selDay));
+  const selectedDateKey =
+    `${year}-${String(month + 1).padStart(2, "0")}-${String(selDay).padStart(2, "0")}`;
+
+  const selPhase = getPhaseWithPeriodEnd(
+    getCycleDayFor(selDay),
+    selectedDateKey,
+    lastPeriod
+  );
   const selInfo  = PHASE_INFO[selPhase];
 
   return (
@@ -2572,6 +2651,201 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
                 }}>
                   Goal
                 </p>
+              </div>
+            </div>
+
+            {/* Fasting calendar */}
+            <div style={{
+              background: "#fff",
+              borderRadius: 14,
+              padding: "12px",
+              border: "0.5px solid #e3ece3",
+              marginBottom: 18
+            }}>
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 10
+              }}>
+                <p style={{
+                  fontFamily: "Georgia, serif",
+                  fontSize: 15,
+                  color: "#2D3B2E",
+                  margin: 0
+                }}>
+                  Fasting calendar
+                </p>
+
+                <span style={{
+                  fontFamily: "sans-serif",
+                  fontSize: 10,
+                  color: "#8FA090"
+                }}>
+                  {MONTHS[month]} {year}
+                </span>
+              </div>
+
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(7, 1fr)",
+                gap: 4,
+                marginBottom: 5
+              }}>
+                {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      textAlign: "center",
+                      fontFamily: "sans-serif",
+                      fontSize: 10,
+                      color: "#8FA090",
+                      fontWeight: 600
+                    }}
+                  >
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(7, 1fr)",
+                gap: 4
+              }}>
+                {Array.from({
+                  length: new Date(year, month, 1).getDay()
+                }).map((_, index) => (
+                  <div key={`fast-empty-${index}`} />
+                ))}
+
+                {Array.from({
+                  length: new Date(year, month + 1, 0).getDate()
+                }, (_, index) => index + 1).map(day => {
+                  const dateKey =
+                    `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+                  const fasted = fastDaysArr.includes(dateKey);
+
+                  const detailedSession = fastHistory
+                    .filter(item => item && item.date === dateKey)
+                    .sort(
+                      (a, b) =>
+                        Number(b.endTime || 0) -
+                        Number(a.endTime || 0)
+                    )[0];
+
+                  const sessionMinutes = detailedSession
+                    ? Number(detailedSession.durationMinutes) || 0
+                    : 0;
+
+                  const sessionHours = sessionMinutes
+                    ? Math.floor(sessionMinutes / 60)
+                    : goalHrs;
+
+                  const sessionRemainder = sessionMinutes % 60;
+
+                  const durationLabel = detailedSession
+                    ? sessionRemainder > 0
+                      ? `${sessionHours}h${sessionRemainder}m`
+                      : `${sessionHours}h`
+                    : `${goalHrs}h`;
+
+                  const isToday =
+                    day === tod.getDate() &&
+                    month === tod.getMonth() &&
+                    year === tod.getFullYear();
+
+                  return (
+                    <div
+                      key={dateKey}
+                      style={{
+                        minHeight: 42,
+                        borderRadius: 9,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: fasted ? "#7A9E7E" : "#F0F6F0",
+                        border: isToday
+                          ? "2px solid #5C7F60"
+                          : "0.5px solid transparent",
+                        boxSizing: "border-box"
+                      }}
+                    >
+                      <span style={{
+                        fontFamily: "sans-serif",
+                        fontSize: 11,
+                        color: fasted ? "#fff" : "#6b7b6b",
+                        fontWeight: fasted ? 700 : 400
+                      }}>
+                        {day}
+                      </span>
+
+                      {fasted && (
+                        <span style={{
+                          fontFamily: "sans-serif",
+                          fontSize: 7,
+                          color: "#fff",
+                          marginTop: 1,
+                          whiteSpace: "nowrap"
+                        }}>
+                          {durationLabel}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                marginTop: 10
+              }}>
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5
+                }}>
+                  <div style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 3,
+                    background: "#7A9E7E"
+                  }} />
+
+                  <span style={{
+                    fontFamily: "sans-serif",
+                    fontSize: 10,
+                    color: "#6b7b6b"
+                  }}>
+                    Fasted
+                  </span>
+                </div>
+
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5
+                }}>
+                  <div style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 3,
+                    background: "#F0F6F0",
+                    border: "0.5px solid #dce8dc"
+                  }} />
+
+                  <span style={{
+                    fontFamily: "sans-serif",
+                    fontSize: 10,
+                    color: "#6b7b6b"
+                  }}>
+                    No fast
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -2836,7 +3110,14 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
           const allFastDays = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
           return Array.from({ length: daysInMonth }, (_, i) => i + 1).map(d => {
           const cycDay  = getCycleDayFor(d);
-          const phase   = getPhase(cycDay);
+          const calendarDateKey =
+            `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+
+          const phase = getPhaseWithPeriodEnd(
+            cycDay,
+            calendarDateKey,
+            lastPeriod
+          );
           const info    = PHASE_INFO[phase];
           const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
           const isSel   = d === selDay;
@@ -2896,7 +3177,22 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
               display: "flex", alignItems: "center", justifyContent: "center", position: "relative",
             }}>
               <span style={{ fontSize: 11, lineHeight: 1 }}>{d}</span>
-{fertile && mode !== "fast" && <span style={{ position: "absolute", bottom: 1, right: 1, width: 4, height: 4, borderRadius: "50%", background: "#86efac" }} />}
+{fertile && mode !== "fast" && (
+                <span
+                  title="Fertile window"
+                  style={{
+                    position: "absolute",
+                    bottom: 2,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: 14,
+                    height: 3,
+                    borderRadius: 999,
+                    background: "#22C55E",
+                    boxShadow: "0 1px 4px rgba(34,197,94,0.45)"
+                  }}
+                />
+              )}
             </button>
           );
         });
@@ -2907,7 +3203,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
       {mode !== "fast" && (
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16, paddingTop: 12, borderTop: "1px solid #EAF2EA" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#86efac" }} />
+          <div style={{ width: 18, height: 3, borderRadius: 999, background: "#22C55E", boxShadow: "0 1px 4px rgba(34,197,94,0.35)" }} />
           <span style={{ fontFamily: "sans-serif", fontSize: 11, color: "#6b7b6b" }}>Fertile</span>
         </div>
         
@@ -3070,7 +3366,76 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
                   <span style={{ fontSize: 18 }}>🩸</span> Period started today
                 </button>
                 <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
-                <button onClick={() => { const selectedDate = `${year}-${String(month+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`; const displayDate = new Date(selectedDate + "T12:00:00").toLocaleDateString("en-CA", {month:"long", day:"numeric"}); const ranges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]"); if (ranges.length > 0 && !ranges[ranges.length-1].end) { ranges[ranges.length-1].end = selectedDate; localStorage.setItem("lf_period_ranges", JSON.stringify(ranges)); setPeriodRangesState([...ranges]); } setShowMenu(false); setPeriodMsg(`✅ Period ended ${displayDate}`); setTimeout(() => setPeriodMsg(null), 3000); }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#7A9E7E", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                <button onClick={() => {
+                  const selectedDate =
+                    `${year}-${String(month + 1).padStart(2, "0")}-${String(selDay).padStart(2, "0")}`;
+
+                  const displayDate = new Date(
+                    selectedDate + "T12:00:00"
+                  ).toLocaleDateString("en-CA", {
+                    month: "long",
+                    day: "numeric"
+                  });
+
+                  const ranges = JSON.parse(
+                    localStorage.getItem("lf_period_ranges") || "[]"
+                  );
+
+                  const openRangeIndex = ranges.findLastIndex(
+                    range => range && !range.end && range.predicted !== true
+                  );
+
+                  if (openRangeIndex >= 0) {
+                    const periodStart = ranges[openRangeIndex].start;
+
+                    ranges[openRangeIndex] = {
+                      ...ranges[openRangeIndex],
+                      end: selectedDate
+                    };
+
+                    localStorage.setItem(
+                      "lf_period_ranges",
+                      JSON.stringify(ranges)
+                    );
+
+                    setPeriodRangesState([...ranges]);
+                    setCalendarKey(key => key + 1);
+
+                    const startDate = new Date(
+                      periodStart + "T12:00:00"
+                    );
+
+                    const endDate = new Date(
+                      selectedDate + "T12:00:00"
+                    );
+
+                    const actualPeriodLength = Math.max(
+                      1,
+                      Math.floor(
+                        (endDate - startDate) / 86400000
+                      ) + 1
+                    );
+
+                    setEditPeriodLength(actualPeriodLength);
+
+                    onSave && onSave(
+                      periodStart,
+                      cycleLength,
+                      actualPeriodLength
+                    );
+
+                    setPeriodMsg(
+                      `✅ Period ended ${displayDate} · Follicular phase started`
+                    );
+                  } else {
+                    setPeriodMsg(
+                      "No active period was found to end."
+                    );
+                  }
+
+                  setShowMenu(false);
+                  setTimeout(() => setPeriodMsg(null), 3000);
+                }} style={{ width: "100%", padding: "12px 20px", background: "none", border: "none", textAlign: "left", fontFamily: "sans-serif", fontSize: 13, color: "#7A9E7E", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 18 }}>✅</span> Period ended today
                 </button>
 <div style={{ height: 1, background: "#F0F6F0", margin: "0 12px" }} />
@@ -4870,12 +5235,12 @@ export default function App() {
       <div style={s.container}>
         {screen === "home"     && <HomeScreen     name={settings.name} lastPeriod={settings.lastPeriod} mode={settings.mode || "cycle"} settings={settings} />}
         {screen === "calendar" && <CalendarScreen lastPeriod={settings.lastPeriod} cycleLength={settings.cycleLength || 28} periodLength={settings.periodLength || 7} mode={settings.mode || "cycle"} onSave={(date, cycleLen, periodLen) => saveSettings({...settings, lastPeriod: date, cycleLength: cycleLen || settings.cycleLength || 28, periodLength: periodLen || settings.periodLength || 7})} onNavigate={setScreen} />}
-       {screen === "recipes"  && <RecipesScreen phase={getPhase(getCycleDay(settings.lastPeriod))} onNavigate={setScreen} mode={settings.mode || "cycle"} digestionPreset={nourishDigestionPreset} onClearDigestionPreset={() => setNourishDigestionPreset(false)} />}
+       {screen === "recipes"  && <RecipesScreen phase={getPhaseWithPeriodEnd(getCycleDay(settings.lastPeriod), new Date(), settings.lastPeriod)} onNavigate={setScreen} mode={settings.mode || "cycle"} digestionPreset={nourishDigestionPreset} onClearDigestionPreset={() => setNourishDigestionPreset(false)} />}
         {screen === "checkin"  && <CheckInScreen mode={settings.mode || "cycle"} lastPeriod={settings.lastPeriod || ""} onNavigate={setScreen} onNourishDigestion={() => { setScreen("recipes"); setNourishDigestionPreset(true); }} />}
         {screen === "learn"    && <LearnScreen mode={settings.mode || "cycle"} lastPeriod={settings.lastPeriod || ""} />}
         {screen === "settings" && <SettingsScreen settings={settings} onSave={saveSettings} onShowPaywall={() => setShowPaywall(true)} />}
 
-<BottomNav current={screen} onChange={setScreen} mode={settings.mode || "cycle"} phase={getPhase(Math.max(1, getCycleDay(settings.lastPeriod || "") - 1))} />
+<BottomNav current={screen} onChange={setScreen} mode={settings.mode || "cycle"} phase={getPhaseWithPeriodEnd(Math.max(1, getCycleDay(settings.lastPeriod || "") - 1), new Date(), settings.lastPeriod || "")} />
       {showPaywall && <PaywallScreen onClose={() => setShowPaywall(false)} mode={settings.mode || "cycle"} />}
       </div>
     </div>
