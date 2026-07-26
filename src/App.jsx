@@ -410,11 +410,52 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
     setFastSummary({ endTime, hoursText: h + "h " + m + "m", editEnd: new Date(endTime).toTimeString().slice(0,5) });
   };
   const confirmStopFast = (endTime) => {
-    const today = new Date().toISOString().split("T")[0];
-    const existing = JSON.parse(localStorage.getItem("lf_fast_days") || "[]");
-    if (!existing.includes(today)) {
-      localStorage.setItem("lf_fast_days", JSON.stringify([...existing, today]));
+    const today = new Date(endTime).toISOString().split("T")[0];
+
+    // Preserve the existing list of completed fasting dates.
+    const existingDays = JSON.parse(
+      localStorage.getItem("lf_fast_days") || "[]"
+    );
+
+    if (!existingDays.includes(today)) {
+      localStorage.setItem(
+        "lf_fast_days",
+        JSON.stringify([...existingDays, today])
+      );
     }
+
+    // Save the complete fasting session for the new timeline.
+    const startTime = Number(fastStart);
+    const finalEndTime = Number(endTime);
+    const durationMinutes = Math.max(
+      0,
+      Math.round((finalEndTime - startTime) / 60000)
+    );
+
+    const history = JSON.parse(
+      localStorage.getItem("lf_fast_history") || "[]"
+    );
+
+    const session = {
+      id: `${startTime}-${finalEndTime}`,
+      startTime,
+      endTime: finalEndTime,
+      durationMinutes,
+      goalHours,
+      completedGoal: durationMinutes >= goalHours * 60,
+      date: today
+    };
+
+    const updatedHistory = [
+      session,
+      ...history.filter(item => item.id !== session.id)
+    ];
+
+    localStorage.setItem(
+      "lf_fast_history",
+      JSON.stringify(updatedHistory)
+    );
+
     setFastStart(null);
     setElapsed(0);
     localStorage.removeItem("lf_fast_start");
