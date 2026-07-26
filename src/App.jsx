@@ -765,7 +765,7 @@ function HomeScreen({ name, lastPeriod, mode, settings }) {
             </div>
             <div style={{ marginBottom: 10 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                <span style={{ fontSize: 8, color: "#3a5a3a", textTransform: "uppercase", letterSpacing: "0.06em" }}>0h</span>
+                <span style={{ fontSize: 8, color: "#3a5a3a", textTransform: "uppercase", letterSpacing: "0.06em" }}>{fastStart ? `${Math.floor(elapsed / 3600000)}h` : "0h"}</span>
                 <span style={{ fontSize: 8, color: "#C9A84C" }}>{fastStart ? `${Math.round(progress * 100)}% complete ⚡` : "Begin your fast"}</span>
                 <span style={{ fontSize: 8, color: "#3a5a3a", textTransform: "uppercase", letterSpacing: "0.06em" }}>{goalHours}h</span>
               </div>
@@ -3665,9 +3665,9 @@ function LumenMirror({ mode, lastPeriod }) {
 
 function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
   const learnPhase = getPhase(Math.max(1, getCycleDay(lastPeriod) - 1));
-  const [tab, setTab] = useState(mode === "fast" ? "Fasting" : "Phases");
+  const [tab, setTab] = useState(mode === "fast" ? "Fasting Basics" : "Lumen Life");
   const tabs = mode === "fast"
-    ? ["Lumen Life", "Lumen Mirror", "Fasting Basics", "Movement Map", "Partner Wellness", "Body Glossary", "Cycle Workouts", "Craving Wisdom", "Grooming", "Gut + Cycle Health"]
+    ? ["Fasting Basics", "Movement Map", "Body Glossary", "Craving Wisdom", "Grooming", "Gut Health"]
     : ["Lumen Life", "Lumen Mirror", "Fasting Basics", "Cycle Phases", "Health Conditions", "Partner Wellness", "Body Glossary", "Cycle Workouts", "Cycle Nutrition", "Period Blood Guide", "Craving Wisdom", "Cycle Guide", "Gut + Cycle Health", "Movement Map"];
 
   const MOVE_MAP = [
@@ -3742,9 +3742,9 @@ function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
     <div style={{ padding: "0 0 90px", background: getSeasonalBg(mode, getPhaseWithPeriodEnd(Math.max(1, getCycleDay((() => { try { return JSON.parse(localStorage.getItem("lf_settings"))?.lastPeriod || ""; } catch(e) { return ""; } })()) - 1), new Date(), (() => { try { return JSON.parse(localStorage.getItem("lf_settings"))?.lastPeriod || ""; } catch(e) { return ""; } })())), minHeight: "100vh" }}>
       <div style={{ padding: "16px 16px 12px" }}>
         <h3 style={{ ...s.title, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E" }}>Learn & Optimise</h3>
-        <p style={{ ...s.label, marginBottom: 12 }}>Knowledge for your body, your cycle, and your rhythm.</p>
+        <p style={{ ...s.label, marginBottom: 12, color: mode === "fast" ? "#c7d7c9" : undefined }}>{mode === "fast" ? "Knowledge for fasting, recovery, performance, and everyday wellbeing." : "Knowledge for your body, your cycle, and your rhythm."}</p>
         <div style={{ background: mode === "fast" ? "rgba(201,168,76,0.08)" : "rgba(155,123,201,0.08)", borderRadius: 14, padding: "12px 14px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : "0.5px solid rgba(155,123,201,0.2)" }}>
-          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", margin: 0, lineHeight: 1.7 }}>📚 Educational only — not medical advice. If you have a diagnosed condition, are pregnant, breastfeeding, underweight, recovering from disordered eating, or managing thyroid or blood sugar concerns, speak with a healthcare provider before fasting or making changes to your routine.</p>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: mode === "fast" ? "#C9A84C" : "#9B7BC9", margin: 0, lineHeight: 1.7 }}>{mode === "fast" ? "📚 Educational only — not medical advice. Speak with a healthcare provider before fasting if you have a diagnosed condition, take medication affected by food intake, are underweight, are recovering from disordered eating, or manage blood sugar, kidney, liver, or thyroid concerns." : "📚 Educational only — not medical advice. If you have a diagnosed condition, are pregnant, breastfeeding, underweight, recovering from disordered eating, or managing thyroid or blood sugar concerns, speak with a healthcare provider before fasting or making changes to your routine."}</p>
         </div>
       </div>
 
@@ -3752,8 +3752,8 @@ function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
         {tabs.map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
             width: "100%", display: "block", padding: "12px 16px", borderRadius: 12, border: "none", textAlign: "left", boxSizing: "border-box",
-            background: tab === t ? (mode === "fast" ? "#7A9E7E" : learnPhase === "Menstrual" ? "#7BA8C9" : learnPhase === "Follicular" ? "#f472b6" : learnPhase === "Ovulation" ? "#0891b2" : "#ea580c") : "rgba(255,255,255,0.5)",
-            color: tab === t ? "#fff" : "#6b7b6b",
+            background: tab === t ? (mode === "fast" ? "#7A9E7E" : learnPhase === "Menstrual" ? "#7BA8C9" : learnPhase === "Follicular" ? "#f472b6" : learnPhase === "Ovulation" ? "#0891b2" : "#ea580c") : (mode === "fast" ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.5)"),
+            color: tab === t ? "#fff" : mode === "fast" ? "#dbe7dc" : "#6b7b6b",
             fontFamily: "sans-serif", fontSize: 13, fontWeight: tab === t ? 700 : 400, cursor: "pointer",
           }}>{t}</button>
         ))}
@@ -3775,7 +3775,7 @@ function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ background: mode === "fast" ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.75)", borderRadius: 16, padding: "14px 16px", border: mode === "fast" ? "0.5px solid rgba(201,168,76,0.15)" : "0.5px solid rgba(200,170,180,0.3)" }}>
               <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: mode === "fast" ? "#e8e0ce" : "#2D3B2E", margin: "0 0 6px" }}>🗺️ Move Map</p>
-              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#6b7b6b", margin: 0, lineHeight: 1.7 }}>Select a muscle group to see exercises matched to your cycle phase, energy level, and fasting window.</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#7A9E7E" : "#6b7b6b", margin: 0, lineHeight: 1.7 }}>{mode === "fast" ? "Select a muscle group to see exercises matched to your energy, training level, and fasting window." : "Select a muscle group to see exercises matched to your cycle phase, energy level, and fasting window."}</p>
             </div>
             {MOVE_MAP.map((item, idx) => <MoveMapCard key={idx} item={item} mode={mode} />)}
           </div>
@@ -4126,7 +4126,7 @@ function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
           </>
         )}
 
-        {tab === "Gut + Cycle Health" && mode === "fast" && (
+        {tab === "Gut Health" && mode === "fast" && (
           <>
             {[
               { icon: "🦠", title: "The gut-hormone connection", tip: "Your gut microbiome directly influences testosterone and estrogen levels. A healthy gut produces neurotransmitters that affect mood, energy, and hormonal balance." },
