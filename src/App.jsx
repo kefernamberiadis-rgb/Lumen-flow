@@ -3105,14 +3105,14 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
 
 
       {/* Day of week headers */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 8 }}>
+      <div style={{ display: mode === "fast" ? "none" : "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 8 }}>
         {["S","M","T","W","T","F","S"].map((d,i) => (
           <div key={i} style={{ textAlign: "center", fontFamily: "sans-serif", fontSize: 11, color: "#8FA090", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", aspectRatio: "1" }}>{d}</div>
         ))}
       </div>
 
       {/* Calendar grid */}
-      <div key={calendarKey} style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
+      <div key={calendarKey} style={{ display: mode === "fast" ? "none" : "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
         {Array.from({ length: firstDow }).map((_, i) => <div key={`e${i}`} />)}
         {(() => {
           const allPeriodRanges = JSON.parse(localStorage.getItem("lf_period_ranges") || "[]");
@@ -3499,50 +3499,7 @@ function CalendarScreen({ lastPeriod, onSave, onNavigate, cycleLength = 28, peri
 // ─────────────────────────────────────────────
 //  LEARN SCREEN
 // ─────────────────────────────────────────────
-function PaywallScreen({ onClose, mode }) {
-  return (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 2000, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div style={{ background: "linear-gradient(160deg, #1a1a2e, #16213e)", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 480, maxHeight: "90vh", overflowY: "auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <p style={{ fontFamily: "Georgia, serif", fontSize: 22, color: "#fff", margin: 0 }}>Lumen Flow</p>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "#8FA090", fontSize: 22, cursor: "pointer" }}>x</button>
-        </div>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 15, color: "rgba(255,255,255,0.8)", margin: "0 0 6px", lineHeight: 1.6, fontStyle: "italic" }}>Your body has a rhythm. Lumen Flow helps you live inside it.</p>
-        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "rgba(255,255,255,0.5)", margin: "0 0 16px", lineHeight: 1.6 }}>More ways to go deeper with Lumen Flow are coming soon - cycle-synced fasting, moon phase guidance, seasonal tools, rituals, journaling, and more.</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
-          {["Cycle-synced fasting guidance", "Full check-in - gut, bowel, movement, sleep", "7 / 30 / 90 day trend charts", "Lumen Suggests - food recommendations", "Dietary preferences and allergy filtering", "Move Map and cycle workouts", "Lumen Life - cycle empowerment tools", "Lumen Mirror - private journal", "Monthly Rhythm Planner", "Moon phase rituals and journal prompts", "Almanac - seasonal wisdom"].map((f, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ color: "#9B7BC9", fontSize: 12 }}>-</span>
-              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "rgba(255,255,255,0.8)", margin: 0 }}>{f}</p>
-            </div>
-          ))}
-        </div>
-        <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#9B7BC9", textAlign: "center", margin: "0 0 6px" }}>Coming soon to Lumen Flow</p>
-        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", textAlign: "center", margin: 0 }}>Everything in Lumen Flow is free right now. Thank you for being here early.</p>
-      </div>
-    </div>
-  );
-}
 
-function PremiumLock({ tier = "premium", mode }) {
-  const isPlus = tier === "plus";
-  const isPartner = tier === "partner";
-  const color = mode === "fast" ? "#C9A84C" : isPlus ? "#9B7BC9" : "#7A9E7E";
-  const bg = mode === "fast" ? "rgba(201,168,76,0.08)" : isPlus ? "rgba(155,123,201,0.08)" : "rgba(122,158,126,0.08)";
-  const border = mode === "fast" ? "0.5px solid rgba(201,168,76,0.2)" : isPlus ? "0.5px solid rgba(155,123,201,0.2)" : "0.5px solid rgba(122,158,126,0.2)";
-  const title = isPartner ? "Partner Sharing Coming Soon" : isPlus ? "Coming Soon to Lumen Flow Plus" : "More Features Coming Soon";
-  const body = isPartner ? "Supportive rhythm tools for men and partners are planned for a future Lumen Flow update." : isPlus ? "Moon reflections, emotional patterns, rituals, and deeper wellness tools are being built for a future update." : "Go deeper with full check-ins, cycle insights, Nourish support, trend charts, movement guidance, and gentle fasting tools.";
-  return (
-    <div style={{ background: bg, borderRadius: 16, padding: "16px", border, marginBottom: 8 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-        <span style={{ fontSize: 18 }}>{isPlus ? "✨" : isPartner ? "🤝" : "🔒"}</span>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color, margin: 0 }}>{title}</p>
-      </div>
-      <p style={{ fontFamily: "sans-serif", fontSize: 12, color: mode === "fast" ? "#a8c4a8" : "#6b7b6b", margin: "0 0 10px", lineHeight: 1.7 }}>{body}</p>
-      <p style={{ fontFamily: "sans-serif", fontSize: 11, color, margin: 0, fontStyle: "italic" }}>🌿 Free during beta — premium coming soon</p>
-    </div>
-  );
-}
 
 function LumenLifeCard({ section, mode }) {
   const [open, setOpen] = useState(false);
@@ -3999,8 +3956,7 @@ function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
 
         {tab === "Partner Wellness" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <PremiumLock tier="partner" mode={mode} />
-            {[
+{[
               { title: "🧬 Testosterone + fasting", body: "Short-term fasting increases testosterone by reducing insulin, which suppresses sex hormone binding globulin (SHBG). Lower SHBG means more free testosterone available to your cells.\n\nPractical tip: 16h fasts 3–4 times a week can meaningfully improve free testosterone levels over time." },
               { title: "📈 Growth hormone spike", body: "Growth hormone can increase up to 5x baseline after extended fasting. Even 16–18h fasts produce a significant spike.\n\nWhy it matters for muscle: GH stimulates muscle protein synthesis and accelerates fat burning. It is your body's natural anabolic hormone — fasting amplifies it." },
               { title: "💪 Fasting + muscle growth", body: "Will fasting eat my muscle? The research says no — if you do it right.\n\nKey rules: Hit your daily protein target (1.6–2.2g per kg bodyweight). Break your fast with a protein-rich meal post-workout. Keep fasting windows at 16–18h. Resistance train 3–4x per week." },
@@ -4163,7 +4119,7 @@ function LearnScreen({ mode, lastPeriod, cycleLength = 28, periodLength = 7 }) {
 // ─────────────────────────────────────────────
 //  SETTINGS SCREEN
 // ─────────────────────────────────────────────
-function SettingsScreen({ settings, onSave, onShowPaywall }) {
+function SettingsScreen({ settings, onSave }) {
   const [subScreen,    setSubScreen]    = useState(null);
   const [name,         setName]         = useState(settings.name || "");
   const [saved,        setSaved]        = useState(false);
@@ -4216,8 +4172,7 @@ function SettingsScreen({ settings, onSave, onShowPaywall }) {
       <div style={{ ...s.card, textAlign: "left", marginBottom: 12, background: "#F5F0FF", border: "0.5px solid #D4C5E9" }}>
         <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#9B7BC9", margin: "0 0 4px" }}>🤝 Partner mode</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7b6b", margin: "0 0 8px" }}>Fast together and understand each other's rhythm</p>
-        <PremiumLock tier="partner" mode={settings.mode || "cycle"} />
-        {false && <>
+{false && <>
         {(() => {
           const code = settings.partnerCode || (() => {
             const newCode = Math.random().toString(36).substring(2,8).toUpperCase();
@@ -4293,8 +4248,7 @@ function SettingsScreen({ settings, onSave, onShowPaywall }) {
         </button>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#C97B7B", margin: "0 0 4px", textAlign: "center" }}>⚠️ This changes the whole app experience.</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "#A8BEA8", margin: "0 0 16px", textAlign: "center" }}>Your data is saved — you can switch back anytime</p>
-        <button onClick={() => onShowPaywall && onShowPaywall()} style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg, #9B7BC9, #7B5BA9)", color: "#fff", fontFamily: "Georgia, serif", fontSize: 16, cursor: "pointer", marginBottom: 12 }}>✦ What's Coming Next</button>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>🌿 Lumen Flow</p>
+<p style={{ fontFamily: "Georgia, serif", fontSize: 16, color: "#2D3B2E", margin: "0 0 4px" }}>🌿 Lumen Flow</p>
         <p style={{ fontFamily: "sans-serif", fontSize: 12, color: "#8FA090", margin: 0 }}>Version 1.0.0 · Made with care</p>
       </div>
     </div>
@@ -5192,8 +5146,7 @@ export default function App() {
   const [screen, setScreen] = useState("home");
   const [showWaitlist, setShowWaitlist] = useState(false);
   const [nourishDigestionPreset, setNourishDigestionPreset] = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
-  useSwipeNavigation(screen, setScreen);
+useSwipeNavigation(screen, setScreen);
 
   const saveSettings = (data) => {
     setSettings(data);
@@ -5238,10 +5191,10 @@ export default function App() {
        {screen === "recipes"  && <RecipesScreen phase={getPhaseWithPeriodEnd(getCycleDay(settings.lastPeriod), new Date(), settings.lastPeriod)} onNavigate={setScreen} mode={settings.mode || "cycle"} digestionPreset={nourishDigestionPreset} onClearDigestionPreset={() => setNourishDigestionPreset(false)} />}
         {screen === "checkin"  && <CheckInScreen mode={settings.mode || "cycle"} lastPeriod={settings.lastPeriod || ""} onNavigate={setScreen} onNourishDigestion={() => { setScreen("recipes"); setNourishDigestionPreset(true); }} />}
         {screen === "learn"    && <LearnScreen mode={settings.mode || "cycle"} lastPeriod={settings.lastPeriod || ""} />}
-        {screen === "settings" && <SettingsScreen settings={settings} onSave={saveSettings} onShowPaywall={() => setShowPaywall(true)} />}
+        {screen === "settings" && <SettingsScreen settings={settings} onSave={saveSettings} />}
 
 <BottomNav current={screen} onChange={setScreen} mode={settings.mode || "cycle"} phase={getPhaseWithPeriodEnd(Math.max(1, getCycleDay(settings.lastPeriod || "") - 1), new Date(), settings.lastPeriod || "")} />
-      {showPaywall && <PaywallScreen onClose={() => setShowPaywall(false)} mode={settings.mode || "cycle"} />}
+
       </div>
     </div>
   );
@@ -5268,3 +5221,5 @@ const s = {
   nav:        { position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 480, background: "#fff", borderTop: "1px solid #EAF2EA", display: "flex", justifyContent: "space-around", padding: "8px 0 12px", boxShadow: "0 -4px 16px rgba(0,0,0,0.05)", zIndex: 100 },
   navItem:    { cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 60, paddingTop: 4 },
 };
+
+
